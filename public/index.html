@@ -227,6 +227,9 @@ textarea.inp{height:auto;padding:12px 14px;resize:none;line-height:1.5}
 .bwrap{display:flex;flex-direction:column;max-width:80%}.bwrap.me{align-self:flex-end}.bwrap.them{align-self:flex-start}
 .bwrap .bub{max-width:100%;padding:9px 12px;min-width:0}
 .ticks{color:var(--brand);font-weight:800;letter-spacing:-3px;margin-inline-start:4px}
+.morebtn{display:flex;gap:12px;align-items:center;width:100%;padding:14px;border:1.5px dashed var(--line);border-radius:14px;background:var(--surface);color:var(--fg);text-align:start;font:inherit}
+.morebtn .mplus{width:32px;height:32px;border-radius:16px;background:var(--tint);color:var(--brand);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.more{display:flex;flex-direction:column;gap:16px}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -310,7 +313,7 @@ var TX={
   photos:'Photos',upTo:'(jusqu’à 4)',add:'Ajouter',compress:'Les photos sont réduites pour économiser vos données.',title:'Titre',cat:'Catégorie',choose:'Choisir…',price:'Prix',city:'Ville',
   descPh:'État, accessoires, raison de la vente…',contact:'Comment vous contacter ?',publish:'Publier l’annonce',published:'Annonce publiée',
   errTitle:'Indiquez un titre (au moins 4 caractères).',errCat:'Choisissez une catégorie.',errPrice:'Indiquez un prix en chiffres.',
-  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',msgsTitle:'Mes messages',f_all:'Tout',f_unread:'Non lus',f_buy:'Achats',f_sell:'Ventes',noMsgF:'Aucune discussion ici.',aboutSeller:'À propos de ce vendeur',aboutBuyer:'À propos de cet acheteur',today:'Aujourd’hui',yesterday:'Hier',tipsT:'Nos conseils pour acheter en toute confiance',tip1:'Rencontrez le vendeur dans un lieu public, de jour.',tip2:'Vérifiez l’article (et les papiers pour un véhicule) avant de payer.',tip3:'Ne payez jamais à l’avance, même par Bankily, Masrvi ou Sedad.',tipsSellT:'Nos conseils pour vendre en toute confiance',tipS1:'Donnez rendez-vous dans un lieu public.',tipS2:'Ne remettez l’article qu’après avoir reçu le paiement.',tipS3:'Méfiez-vous des faux reçus et captures de paiement.',adGone:'Annonce supprimée',readL:'Lu',sentL:'Envoyé',forgot:'Mot de passe oublié ?',forgotTxt:'Écrivez à l’équipe Souki sur WhatsApp depuis votre numéro : nous vous donnerons un nouveau mot de passe.',forgotNo:'Contactez l’administrateur de Souki pour recevoir un nouveau mot de passe.',forgotMsg:'Bonjour, j’ai oublié mon mot de passe Souki. Mon numéro : ',e_blocked:'Ce compte a été bloqué. Contactez l’équipe Souki.',editAd:'Modifier l’annonce',saveChanges:'Enregistrer les modifications',edit:'Modifier',updated:'Annonce modifiée',noEdit:'Cette annonce ne peut pas être modifiée. Supprimez-la et publiez-en une nouvelle.',admin:'Administration',admUsers:'Utilisateurs',admUsersTotal:'utilisateurs',admNew24:'nouveaux (24 h)',admOnline:'annonces en ligne',admAds24:'annonces (24 h)',admMsgs24:'messages (24 h)',admReports:'Annonces signalées',admNoRep:'Aucun signalement.',admRepN:'{n} signalement(s)',admDelAd:'Supprimer l’annonce',admIgnore:'Ignorer',admSearch:'Rechercher un numéro',admNewPw:'Nouveau mot de passe',admBlock:'Bloquer',admUnblock:'Débloquer',admBlocked:'Bloqué',admPwOk:'Mot de passe changé. Transmettez-le à l’utilisateur.',admDone:'C’est fait.',admAdsN:'{n} annonce(s)',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
+  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',moreT:'Ajouter des détails',moreSub:'Facultatif · les annonces détaillées se vendent plus vite',moreHide:'Masquer les détails',typeL:'Type',msgsTitle:'Mes messages',f_all:'Tout',f_unread:'Non lus',f_buy:'Achats',f_sell:'Ventes',noMsgF:'Aucune discussion ici.',aboutSeller:'À propos de ce vendeur',aboutBuyer:'À propos de cet acheteur',today:'Aujourd’hui',yesterday:'Hier',tipsT:'Nos conseils pour acheter en toute confiance',tip1:'Rencontrez le vendeur dans un lieu public, de jour.',tip2:'Vérifiez l’article (et les papiers pour un véhicule) avant de payer.',tip3:'Ne payez jamais à l’avance, même par Bankily, Masrvi ou Sedad.',tipsSellT:'Nos conseils pour vendre en toute confiance',tipS1:'Donnez rendez-vous dans un lieu public.',tipS2:'Ne remettez l’article qu’après avoir reçu le paiement.',tipS3:'Méfiez-vous des faux reçus et captures de paiement.',adGone:'Annonce supprimée',readL:'Lu',sentL:'Envoyé',forgot:'Mot de passe oublié ?',forgotTxt:'Écrivez à l’équipe Souki sur WhatsApp depuis votre numéro : nous vous donnerons un nouveau mot de passe.',forgotNo:'Contactez l’administrateur de Souki pour recevoir un nouveau mot de passe.',forgotMsg:'Bonjour, j’ai oublié mon mot de passe Souki. Mon numéro : ',e_blocked:'Ce compte a été bloqué. Contactez l’équipe Souki.',editAd:'Modifier l’annonce',saveChanges:'Enregistrer les modifications',edit:'Modifier',updated:'Annonce modifiée',noEdit:'Cette annonce ne peut pas être modifiée. Supprimez-la et publiez-en une nouvelle.',admin:'Administration',admUsers:'Utilisateurs',admUsersTotal:'utilisateurs',admNew24:'nouveaux (24 h)',admOnline:'annonces en ligne',admAds24:'annonces (24 h)',admMsgs24:'messages (24 h)',admReports:'Annonces signalées',admNoRep:'Aucun signalement.',admRepN:'{n} signalement(s)',admDelAd:'Supprimer l’annonce',admIgnore:'Ignorer',admSearch:'Rechercher un numéro',admNewPw:'Nouveau mot de passe',admBlock:'Bloquer',admUnblock:'Débloquer',admBlocked:'Bloqué',admPwOk:'Mot de passe changé. Transmettez-le à l’utilisateur.',admDone:'C’est fait.',admAdsN:'{n} annonce(s)',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
   errPhone:'Le numéro doit contenir 8 chiffres.',codeLbl:'Code reçu',demoCode:'Démo : le code est 1234',verify:'Valider',errCode:'Code incorrect. En démo, tapez 1234.',nameLbl:'Votre nom (affiché sur vos annonces)',
   online:'En ligne',soldTab:'Vendues',noMine:'Vous n’avez pas encore d’annonce.',markSold:'Marquer vendu',del:'Supprimer',confirmDel:'Supprimer définitivement ?',yes:'Oui, supprimer',no:'Annuler',
   logout:'Se déconnecter',lang:'Langue',pro:'Passer en compte commerçant (boutique)',help:'Aide et sécurité',noFav:'Touchez le marque-page d’une annonce pour la retrouver ici.',
@@ -441,7 +444,7 @@ var TX={
   photos:'الصور',upTo:'(حتى 4)',add:'إضافة',compress:'يتم تصغير الصور لتوفير الإنترنت.',title:'العنوان',cat:'الفئة',choose:'اختر…',price:'السعر',city:'المدينة',
   descPh:'الحالة، الملحقات، سبب البيع…',contact:'كيف يتواصلون معك؟',publish:'نشر الإعلان',published:'تم نشر الإعلان',
   errTitle:'اكتب عنواناً (4 أحرف على الأقل).',errCat:'اختر فئة.',errPrice:'اكتب السعر بالأرقام.',
-  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',msgsTitle:'رسائلي',f_all:'الكل',f_unread:'غير مقروءة',f_buy:'مشترياتي',f_sell:'مبيعاتي',noMsgF:'لا توجد محادثات هنا.',aboutSeller:'عن هذا البائع',aboutBuyer:'عن هذا المشتري',today:'اليوم',yesterday:'أمس',tipsT:'نصائحنا للشراء بأمان',tip1:'قابل البائع في مكان عام وفي النهار.',tip2:'افحص السلعة (ووثائق المركبة) قبل الدفع.',tip3:'لا تدفع مسبقاً أبداً، ولو عبر بنكيلي أو مصرفي أو سداد.',tipsSellT:'نصائحنا للبيع بأمان',tipS1:'حدّد موعد اللقاء في مكان عام.',tipS2:'لا تسلّم السلعة إلا بعد استلام المبلغ.',tipS3:'احذر من الإيصالات وصور الدفع المزيفة.',adGone:'إعلان محذوف',readL:'مقروءة',sentL:'أُرسلت',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق سوقي على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول سوقي للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور سوقي. رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق سوقي.',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{N}',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{N}',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
+  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',moreT:'إضافة تفاصيل',moreSub:'اختياري · الإعلانات المفصّلة تُباع أسرع',moreHide:'إخفاء التفاصيل',typeL:'النوع',msgsTitle:'رسائلي',f_all:'الكل',f_unread:'غير مقروءة',f_buy:'مشترياتي',f_sell:'مبيعاتي',noMsgF:'لا توجد محادثات هنا.',aboutSeller:'عن هذا البائع',aboutBuyer:'عن هذا المشتري',today:'اليوم',yesterday:'أمس',tipsT:'نصائحنا للشراء بأمان',tip1:'قابل البائع في مكان عام وفي النهار.',tip2:'افحص السلعة (ووثائق المركبة) قبل الدفع.',tip3:'لا تدفع مسبقاً أبداً، ولو عبر بنكيلي أو مصرفي أو سداد.',tipsSellT:'نصائحنا للبيع بأمان',tipS1:'حدّد موعد اللقاء في مكان عام.',tipS2:'لا تسلّم السلعة إلا بعد استلام المبلغ.',tipS3:'احذر من الإيصالات وصور الدفع المزيفة.',adGone:'إعلان محذوف',readL:'مقروءة',sentL:'أُرسلت',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق سوقي على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول سوقي للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور سوقي. رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق سوقي.',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{N}',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{N}',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
   errPhone:'يجب أن يتكون الرقم من 8 أرقام.',codeLbl:'الرمز المستلم',demoCode:'تجربة: الرمز هو 1234',verify:'تأكيد',errCode:'رمز خاطئ. في التجربة اكتب 1234.',nameLbl:'اسمك (يظهر على إعلاناتك)',
   online:'منشورة',soldTab:'مُباعة',noMine:'ليس لديك إعلانات بعد.',markSold:'تم البيع',del:'حذف',confirmDel:'حذف نهائياً؟',yes:'نعم، احذف',no:'إلغاء',
   logout:'تسجيل الخروج',lang:'اللغة',pro:'حساب تاجر (متجر)',help:'المساعدة والأمان',noFav:'اضغط على علامة الحفظ في أي إعلان ليظهر هنا.',
@@ -748,7 +751,7 @@ if(S.draft&&S.draft.cat==='tel'){S.draft.cat='multi';S.draft.mtype=S.draft.pdtyp
 var _dr=load('draft',null);if(_dr&&typeof _dr==='object'&&(_dr.title||_dr.desc||_dr.price||_dr.cat||(_dr.photos&&_dr.photos.length))){S.draft=Object.assign(newDraft(),_dr);S.draftRestored=true;}
 
 var app=document.getElementById('app');
-function t(k){return TX[S.lang][k]||TX.fr[k]||k;}
+function t(k){if(/_(undefined|null)?$/.test(k))return '';return TX[S.lang][k]||TX.fr[k]||k;}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function cat(id){for(var i=0;i<CATS.length;i++)if(CATS[i].id===id)return CATS[i];return CATS[CATS.length-1];}
 function cname(id){return cat(id)[S.lang];}
@@ -1458,7 +1461,17 @@ function famSpecs(f){
 
 function norm(s){s=String(s==null?'':s).toLowerCase();try{s=s.normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(e){}
   return s.replace(/\u00AD/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[ً-ْ]/g,'');}
-function specLine(a){return a.car?carMeta(a):a.veh?vehMeta(a):a.estate?estMeta(a):a.dev?phMeta(a):a.mm?mmMeta(a):a.home?homeMeta(a):a.mo?moMeta(a):a.fam?famMeta(a):a.job?jobMeta(a):a.anim?animMeta(a):'';}
+function tidySpecs(){
+  Array.prototype.forEach.call(app.querySelectorAll('.specs'),function(sp){
+    Array.prototype.slice.call(sp.children).forEach(function(r){var b=r.querySelector('b');var v=b?b.textContent.trim():'';
+      if(!b||!v||/undefined|NaN|null/.test(v)||/^(km|كم)$/.test(v))r.remove();});
+    var n=sp.children.length;if(!n){var h=sp.previousElementSibling;if(h&&h.tagName==='H2')h.remove();sp.remove();return;}
+    if(n%2){sp.appendChild(document.createElement('div'));}});
+  Array.prototype.forEach.call(app.querySelectorAll('.badges'),function(bd){if(!bd.textContent.trim()){var h=bd.previousElementSibling;if(h&&h.tagName==='H2')h.remove();bd.remove();}});
+}
+function cleanMeta(x){return String(x||'').split(' · ').map(function(p){return p.trim();}).filter(function(p){return p&&!/undefined|NaN|null/.test(p)&&!/^(km|كم|MRU)$/.test(p);}).join(' · ');}
+function specLine(a){return cleanMeta(rawSpec(a));}
+function rawSpec(a){return a.car?carMeta(a):a.veh?vehMeta(a):a.estate?estMeta(a):a.dev?phMeta(a):a.mm?mmMeta(a):a.home?homeMeta(a):a.mo?moMeta(a):a.fam?famMeta(a):a.job?jobMeta(a):a.anim?animMeta(a):'';}
 function hay(a){var o=a.car||a.veh||a.dev||a.mm||a.home||a.mo||{},c=cat(a.cat);
   return norm([a.title,a.desc,a.hood,hoodName(a.hood||''),a.near,a.city,city(a.city),c.fr,c.ar,a.seller,a.shop?a.shop.name:'',a.splace?a.splace.name+' '+(a.splace.addr||''):'',o.brand,o.model,BRAND_AR[o.brand]||'',specLine(a)].join(' '));}
 var BRAND_AR={Toyota:'تويوتا',Hyundai:'هيونداي',Mercedes:'مرسيدس',Nissan:'نيسان',Kia:'كيا',Peugeot:'بيجو',Renault:'رينو',Mitsubishi:'ميتسوبيشي',Ford:'فورد',Suzuki:'سوزوكي','Land Rover':'لاند روفر',Volkswagen:'فولكس فاجن',Honda:'هوندا',Isuzu:'ايسوزو',Samsung:'سامسونج',Apple:'ابل ايفون',Tecno:'تكنو',Infinix:'انفينكس',Itel:'ايتل',Xiaomi:'شاومي',Huawei:'هواوي',Oppo:'اوبو',LG:'ال جي',Sony:'سوني بلايستيشن',HP:'اتش بي',Dell:'ديل',Lenovo:'لينوفو',Yamaha:'ياماها',Midea:'ميديا'};
@@ -1760,18 +1773,20 @@ V.post=function(){
    '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>'+
    '<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+t('titlePh')+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
    '<div class="field"><div class="legend">'+t('cat')+'</div><div class="cattiles" role="group" aria-label="'+t('cat')+'">'+CATS.map(function(c){var on=d.cat===c.id;return '<button type="button" class="ctile" data-a="postcat" data-v="'+c.id+'" aria-pressed="'+on+'"><span class="ic"'+(on?'':' style="color:'+c.c+'"')+'>'+svg(ICONS[c.id],21,1.8)+'</span><span>'+c[S.lang]+'</span></button>';}).join('')+'</div>'+(e.cat?'<div class="err">'+t('errCat')+'</div>':'')+'</div>'+
-   (d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+
+   '<div id="catf">'+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>'+
    '<div class="field"><label for="fprice">'+(d.cat==='immo'&&d.deal==='rent'?t('rent'):d.cat==='auto'&&d.vkind==='service'?t('priceFrom'):d.cat==='fam'&&isFamService(d.fsub)?t('salary'):d.cat==='job'?t(d.joffer==='demand'?'salaryW':'salaryM'):t('price'))+'</label>'+units+
     '<input id="fprice" class="inp" data-f="price" inputmode="numeric" value="'+esc(d.price)+'" placeholder="'+(unit==='old'?'135000':'13500')+'"'+(e.price?' aria-invalid="true"':'')+'>'+(e.price?'<div class="err">'+t('errPrice')+'</div>':'')+
     '<div class="meta" id="phint" style="font-weight:700;color:var(--brand)">'+esc(priceHint(d))+'</div>'+chk('nego',t('nego'))+'</div>'+
    '<div class="two"><div class="field"><label for="fcity">'+t('city')+'</label><select id="fcity" class="inp" data-f="city">'+cityOpts+'</select></div>'+
-    '<div class="field"><label for="fhood">'+t('hood')+(d.cat==='immo'?'':O)+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div></div>'+
-   '<div class="field"><label for="fnear">'+t('nearLbl')+O+'</label><input id="fnear" class="inp" data-f="near" maxlength="50" value="'+esc(d.near)+'" placeholder="'+t('nearPh')+'"></div>'+
-   '<div class="field"><label for="fdesc">'+t('desc')+'</label><textarea id="fdesc" class="inp" rows="4" data-f="desc" maxlength="1000" placeholder="'+t('descPh')+'">'+esc(d.desc)+'</textarea></div>'+
-   '<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div>'+
+    '<div class="field"><label for="fhood">'+t('hood')+O+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div></div>'+
    (d.cat&&d.cat!=='immo'?sellerBlock(d,e):'')+
+   '<button type="button" class="morebtn" data-a="more" aria-expanded="'+!!S.moreOpen+'" aria-controls="more"><span class="mplus">'+(S.moreOpen?'−':'+')+'</span><span style="flex:1;text-align:start"><b>'+t(S.moreOpen?'moreHide':'moreT')+'</b><span class="meta" style="display:block">'+t('moreSub')+'</span></span></button>'+
+   '<div id="more" class="more"'+(S.moreOpen?'':' hidden')+'><div id="catmore"></div>'+
+   '<div class="field"><label for="fdesc">'+t('desc')+O+'</label><textarea id="fdesc" class="inp" rows="4" data-f="desc" maxlength="1000" placeholder="'+t('descPh')+'">'+esc(d.desc)+'</textarea></div>'+
+   '<div class="field"><label for="fnear">'+t('nearLbl')+O+'</label><input id="fnear" class="inp" data-f="near" maxlength="50" value="'+esc(d.near)+'" placeholder="'+t('nearPh')+'"></div>'+
+   '<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div>'+
    '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="legend" style="margin-bottom:4px">'+t('contact')+'</legend>'+chk('wa','WhatsApp')+chk('call',t('call'))+chk('msg',t('message'))+'</fieldset>'+
-   '</div></form><div class="foot"><button class="btn primary wide" data-a="publish" style="height:54px;font-size:17px">'+t(S.editId?'saveChanges':'publish')+'</button></div>';};
+   '</div></div></form><div class="foot"><button class="btn primary wide" data-a="publish" style="height:54px;font-size:17px">'+t(S.editId?'saveChanges':'publish')+'</button></div>';};
 
 V.login=function(){
   var L=S.login,reg=L.mode==='register';
@@ -1964,16 +1979,36 @@ function render(keepScroll){
   app.innerHTML=V[S.screen]()+sheetHTML()+(S.screen==='home'?fsheetHTML():'');
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
-  if(S.screen==='post')saveDraftSoon();
+  if(S.screen==='post'){splitPostForm();saveDraftSoon();}
+  if(S.screen==='detail'||S.screen==='shop')tidySpecs();
   var ns=app.querySelector('.scroll');if(ns)ns.scrollTop=S.screen==='chat'?ns.scrollHeight:top;
   var ci2=app.querySelector('#chatin');if(ci2){ci2.value=cv;if(cfoc)ci2.focus();}
 }
 function go(s){var from=S.screen;if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.confirm=null;render();
   if(!S.popping&&s!==from){try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}}}
+var MAIN_PICK={auto:'[data-a="vkind"]',immo:'[data-a="redeal"],[data-a="rekind"]',multi:'[data-a="mmtype"]',tel:'[data-k="pdtype"],[data-a="pdtype"]',maison:'[data-a="hsub"]',mode:'[data-a="mosub"]',fam:'[data-k="fsub"],[data-a="fsub"]',job:'[data-k="joffer"]',anim:'[data-a="species"],[data-k="species"]'};
+function splitPostForm(){
+  var cf=app.querySelector('#catf'),cm=app.querySelector('#catmore');if(!cf||!cm||!S.draft)return;
+  var keep=MAIN_PICK[S.draft.cat]||'__none__',moved=[],legend='';
+  function rows(box){return Array.prototype.slice.call(box.children);}
+  rows(cf).forEach(function(r){
+    var list=r.classList.contains('carbox')?rows(r):[r];
+    list.forEach(function(x){
+      if(x.classList.contains('legend')&&x.parentNode!==cf){if(!legend)legend=x.textContent;return;}
+      if(x.matches(keep)||x.querySelector(keep))return;
+      moved.push(x);});
+  });
+  if(moved.length){var box=document.createElement('div');box.className='carbox';
+    if(legend){var lg=document.createElement('div');lg.className='legend';lg.textContent=legend;box.appendChild(lg);}
+    moved.forEach(function(x){box.appendChild(x);});cm.appendChild(box);}
+  Array.prototype.slice.call(cf.querySelectorAll('.carbox')).forEach(function(b){
+    var left=Array.prototype.slice.call(b.children).filter(function(x){return !x.classList.contains('legend');});
+    if(!left.length)b.remove();else{var l=b.querySelector(':scope > .legend');if(l)l.remove();}});
+}
 function newDraft(){return {photos:[],title:'',cat:S.cat||'',price:'',city:S.city||(S.user&&S.user.city)||'Nouakchott',desc:'',wa:true,call:true,msg:false,brand:'',model:'',year:'',km:'',fuel:'',gear:'',cond:'',seats:'',doors:'',vtype:'',color:'',deal:'',kind:'',surface:'',hood:'',rooms:'',salons:'',baths:'',furnished:'',papers:'',floor:'',levels:'',place:'',eq:[],
   pdtype:'',pbrand:'',pmodel:'',pstorage:'',pram:'',pcond:'',pcolor:'',pbatt:'',pdual:'',punlock:'',pincl:[],pimei:'',
-  species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'new',nego:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
-function startPost(){if(S.editId){S.editId=null;S.draft=load('draft',null);if(S.draft)S.draft=Object.assign(newDraft(),S.draft);}if(!S.user){S.after='post';S.login={step:1,phone:'',code:'',name:'',err:''};go('login');return;}if(!S.draft){S.draft=newDraft();S.draftRestored=false;}S.errs={};go('post');}
+  species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'new',nego:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'part',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
+function startPost(){S.moreOpen=false;if(S.editId){S.editId=null;S.draft=load('draft',null);if(S.draft)S.draft=Object.assign(newDraft(),S.draft);}if(!S.user){S.after='post';S.login={step:1,phone:'',code:'',name:'',err:''};go('login');return;}if(!S.draft){S.draft=newDraft();S.draftRestored=false;}S.errs={};go('post');}
 
 app.addEventListener('click',function(e){
   var el=e.target.closest('[data-a]');if(!el)return;
@@ -2013,6 +2048,7 @@ app.addEventListener('click',function(e){
    case 'recstart':recStart();break;
    case 'recstop':recStop();break;
    case 'msgf':S.msgF=el.getAttribute('data-v');render(true);break;
+   case 'more':S.moreOpen=!S.moreOpen;render(true);if(S.moreOpen){var mo=app.querySelector('#more');if(mo)setTimeout(function(){try{mo.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}},30);}break;
    case 'rmvoice':S.draft.voice='';render(true);break;
    case 'cleardraft':S.draft=newDraft();S.draftRestored=false;S.errs={};save('draft',null);render();break;
    case 'showph':S.showPh=id;render(true);break;
@@ -2180,13 +2216,7 @@ function publish(){
     var vk=d.vkind;
     if(!vk)e.vkind=1;
     else{
-      if(VBRANDS[vk]&&!d.vbrand)e.vbrand=1;
-      if(vk==='bus'||vk==='truck'){var vy=+d.vyear;if(!/^\d{4}$/.test(String(d.vyear))||vy<1970||vy>2027)e.vyear=1;}
-      if(vk==='moto'&&!d.vmtype)e.vmtype=1;
-      if(vk==='bike'&&!d.vbtype)e.vbtype=1;
-      if(vk==='parts'&&!d.vpart)e.vpart=1;
-      if(vk==='service'&&!d.vservice)e.vservice=1;
-      if(vk!=='service'&&!d.vcond)e.vcond=1;
+      if((vk==='bus'||vk==='truck')&&d.vyear){var vy=+d.vyear;if(!/^\d{4}$/.test(String(d.vyear))||vy<1970||vy>2027)e.vyear=1;}
       veh={kind:vk};
       ['vbrand','vmodel','vyear','vkm','vfuel','vseats','vttype','vload','vmtype','vcc','vbtype','vpart','vcompat','vservice','vhours','vcond'].forEach(function(k){var v=(d[k]||'').toString().trim();if(v)veh[k.slice(1)]=v;});
       if(vk==='service')veh.home=!!d.vhome;
@@ -2194,12 +2224,11 @@ function publish(){
   }
   var car=null;
   if(d.cat==='auto'&&d.vkind==='car'){
-    if(!d.brand)e.brand=1;
-    if(!(d.model||'').trim())e.model=1;
-    var yr=+d.year;if(!/^\d{4}$/.test(d.year)||yr<1980||yr>2027)e.year=1;
-    if(!/^\d+$/.test(String(d.km)))e.km=1;
-    if(!d.fuel)e.fuel=1;if(!d.gear)e.gear=1;if(!d.cond)e.cond=1;
-    car={brand:d.brand,model:(d.model||'').trim(),year:yr,km:+d.km,fuel:d.fuel,gear:d.gear,cond:d.cond,vtype:d.vtype,color:d.color,seats:d.seats,doors:d.doors};
+    var yr=+d.year;if(d.year&&(!/^\d{4}$/.test(String(d.year))||yr<1980||yr>2027))e.year=1;
+    if(d.km!==''&&d.km!=null&&!/^\d+$/.test(String(d.km)))e.km=1;
+    car={brand:d.brand,model:(d.model||'').trim(),fuel:d.fuel,gear:d.gear,cond:d.cond,vtype:d.vtype,color:d.color,seats:d.seats,doors:d.doors};
+    if(d.year&&!e.year)car.year=yr;if(/^\d+$/.test(String(d.km)))car.km=+d.km;
+    Object.keys(car).forEach(function(k){if(car[k]===''||car[k]==null)delete car[k];});
   }
   var estate=null;
   if(d.cat==='immo'){
@@ -2207,11 +2236,8 @@ function publish(){
     if(!d.kind||(d.deal&&kindsFor(d.deal).indexOf(d.kind)<0)){e.kind=1;d.kind='';}
     if(d.deal&&d.kind){
       var k=d.kind,rent=d.deal==='rent';
-      if(!/^\d+$/.test(String(d.surface))||+d.surface<=0)e.surface=1;
-      if(!(d.hood||'').trim())e.hood=1;
-      if(hasRooms(k)&&!d.rooms)e.rooms=1;
-      if(!d.pub)e.pub=1;
-      estate={deal:d.deal,kind:k,surface:+d.surface,eq:(d.eq||[]).filter(function(q){return EQUIP[k].indexOf(q)>-1;})};
+      if(d.surface!==''&&d.surface!=null&&(!/^\d+$/.test(String(d.surface))||+d.surface<=0))e.surface=1;
+      estate={deal:d.deal,kind:k,surface:+d.surface||0,eq:(d.eq||[]).filter(function(q){return EQUIP[k].indexOf(q)>-1;})};
       if(hasRooms(k)){estate.rooms=d.rooms;estate.salons=d.salons;estate.baths=d.baths;if(rent)estate.furnished=d.furnished;}
       if(k==='apt')estate.floor=d.floor;
       if(k==='house')estate.levels=d.levels;
@@ -2226,7 +2252,6 @@ function publish(){
   if(d.cat==='anim'){
     if(!d.species)e.species=1;
     else{
-      if(!/^\d+$/.test(String(d.count))||+d.count<1)e.count=1;
       anim={species:d.species,count:+d.count||1,sex:d.sex,age:d.age,breed:(d.breed||'').trim(),tabaski:!!d.tabaski&&d.species!=='volaille'&&d.species!=='autre',delivery:!!d.delivery};
     }
   }
@@ -2234,9 +2259,6 @@ function publish(){
   if(d.cat==='job'){
     if(!d.joffer)e.joffer=1;
     else{
-      if(d.joffer==='offer'&&!d.jcontract)e.jcontract=1;
-      if(!d.jsector)e.jsector=1;
-      if(!d.jfunc)e.jfunc=1;
       job={offer:d.joffer,contract:d.jcontract,time:d.jtime,sector:d.jsector,func:d.jfunc,exp:d.jexp,edu:d.jedu,langs:(d.flangs||[]).slice()};
       Object.keys(job).forEach(function(k){if(job[k]===''||(job[k]&&job[k].length===0&&typeof job[k]==='object'))delete job[k];});
     }
@@ -2245,12 +2267,8 @@ function publish(){
   if(d.cat==='fam'){
     if(!d.fsub)e.fsub=1;
     else if(isFamService(d.fsub)){
-      if(!d.foffer)e.foffer=1;
-      if(d.fsub==='aideDom'&&!d.frole)e.frole=1;
       fam={sub:d.fsub,offer:d.foffer,role:d.fsub==='aideDom'?d.frole:'',sched:d.fsched,exp:d.foffer!=='demand'?String(d.fexp||''):'',age:d.foffer==='demand'?d.fage:'',langs:(d.flangs||[]).slice()};
     }else{
-      if(FITEMS[d.fsub]&&!d.fitem)e.fitem=1;
-      if(!d.fcond)e.fcond=1;
       fam={sub:d.fsub,item:FITEMS[d.fsub]?d.fitem:'',age:d.fsub!=='vetMat'?d.fage:'',gender:d.fgender,size:d.fsize,cond:d.fcond};
     }
     if(fam)Object.keys(fam).forEach(function(k){if(fam[k]===''||fam[k]==null||(fam[k].length===0&&typeof fam[k]==='object'))delete fam[k];});
@@ -2259,8 +2277,6 @@ function publish(){
   if(d.cat==='mode'){
     if(!d.mosub)e.mosub=1;
     else{
-      if(!d.moitem)e.moitem=1;
-      if(!d.mocond)e.mocond=1;
       mod={sub:d.mosub,item:d.moitem,cond:d.mocond,hand:!!d.mohand};
       ['mopub','mosize','mofabric','mocolor','mobrand','mometal','moweight'].forEach(function(k){var v=(d[k]||'').toString().trim();if(v)mod[k.slice(2)]=v;});
     }
@@ -2269,8 +2285,6 @@ function publish(){
   if(d.cat==='maison'){
     if(!d.hsub)e.hsub=1;
     else{
-      if(!d.hitem)e.hitem=1;
-      if(!d.hcond)e.hcond=1;
       hom={sub:d.hsub,item:d.hitem,cond:d.hcond,delivery:!!d.hdeliv};
       ['hqty','hdims','hmat','hcolor','hbrand','hcap'].forEach(function(k){var v=(d[k]||'').toString().trim();if(v)hom[k.slice(1)]=v;});
     }
@@ -2281,9 +2295,6 @@ function publish(){
     var mt=d.mtype;
     if(!mt)e.mtype=1;
     else{
-      if((mt==='tv'||mt==='console'||isPc(mt))&&!d.mbrand)e.mbrand=1;
-      if(mt==='console'&&!d.mmodel)e.mmodel=1;
-      if(!d.mcond)e.mcond=1;
       mmo={type:mt,brand:d.mbrand,model:(d.mmodel||'').trim(),cond:d.mcond,incl:(d.pincl||[]).filter(function(q){return ['box','charger','invoice','warranty'].indexOf(q)>-1;})};
       if(mt==='tv'){mmo.size=d.msize;mmo.res=d.mres;mmo.smart=d.msmart;}
       if(mt==='console'){mmo.pads=d.mpads;mmo.games=d.mgames;}
@@ -2297,10 +2308,6 @@ function publish(){
     if(!dt)e.pdtype=1;
     else{
       var acc=dt==='acc';
-      if(!d.pbrand)e.pbrand=1;
-      if(!acc&&!(d.pmodel||'').trim())e.pmodel=1;
-      if(needStorage(dt)&&!d.pstorage)e.pstorage=1;
-      if(!d.pcond)e.pcond=1;
       if(!acc&&d.pimei&&!/^\d{15}$/.test(d.pimei))e.pimei=1;
       dev={dtype:dt,brand:d.pbrand,model:(d.pmodel||'').trim(),cond:d.pcond,incl:(d.pincl||[]).slice()};
       if(!acc){
@@ -2315,7 +2322,8 @@ function publish(){
   }
   if(d.cat&&d.cat!=='immo'){if(!d.stype)e.stype=1;else if(d.stype==='pro'&&!(d.sname||'').trim())e.sname=1;}
   S.errs=e;
-  if(Object.keys(e).length){render(true);setTimeout(guideErr,40);return;}
+  if(Object.keys(e).length){var mainErr={title:1,cat:1,price:1,stype:1,sname:1,vkind:1,deal:1,kind:1,mtype:1,pdtype:1,hsub:1,mosub:1,fsub:1,joffer:1,species:1};
+    if(Object.keys(e).some(function(k){return !mainErr[k];}))S.moreOpen=true;render(true);setTimeout(guideErr,40);return;}
   var ad={id:'m'+Date.now(),title:d.title.trim(),cat:d.cat,price:pm,city:d.city,hood:(d.hood||'').trim(),near:(d.near||'').trim(),nego:!!d.nego,t:Date.now(),desc:d.desc.trim(),seller:S.user.name,phone:S.user.phone,photos:d.photos.slice(),contacts:{wa:d.wa,call:d.call,msg:d.msg}};
   if(car)ad.car=car;
   if(veh)ad.veh=veh;
@@ -2346,9 +2354,9 @@ function flowItems(){
   var f=app.querySelector('#pf');if(!f)return [];
   var out=[],seen=[];
   Array.prototype.forEach.call(f.querySelectorAll('input.inp, select.inp, textarea.inp, button[data-a]'),function(x){
-    if(x.tagName==='BUTTON'){if(FLOW_SKIP[x.getAttribute('data-a')])return;var g=x.parentNode;if(seen.indexOf(g)>-1)return;seen.push(g);
+    if(x.tagName==='BUTTON'){if(FLOW_SKIP[x.getAttribute('data-a')]||x.getAttribute('data-a')==='more'||x.closest('#more[hidden]'))return;var g=x.parentNode;if(seen.indexOf(g)>-1)return;seen.push(g);
       var done=!!g.querySelector('[aria-pressed="true"],[aria-checked="true"],[aria-selected="true"]');out.push({el:g,done:done,kind:'group'});}
-    else if(x.offsetParent!==null)out.push({el:x,done:!!String(x.value||'').trim(),kind:x.tagName==='INPUT'||x.tagName==='TEXTAREA'?'text':'select'});});
+    else if(x.offsetParent!==null&&!x.closest('#more[hidden]'))out.push({el:x,done:!!String(x.value||'').trim(),kind:x.tagName==='INPUT'||x.tagName==='TEXTAREA'?'text':'select'});});
   return out;}
 function absTop(el){var sc=app.querySelector('.scroll');return el.getBoundingClientRect().top+(sc?sc.scrollTop:0);}
 function flash(el){el.classList.remove('flowhi');void el.offsetWidth;el.classList.add('flowhi');setTimeout(function(){el.classList.remove('flowhi');},1600);}
