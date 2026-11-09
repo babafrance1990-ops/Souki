@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B6B3A">
 <title>Souki</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
@@ -186,6 +192,8 @@ textarea.inp{height:auto;padding:12px 14px;resize:none;line-height:1.5}
 .sel{height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:0 10px;font-size:14px;font-weight:600}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .2s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.6}}}
 </style>
+</head>
+<body>
 
 <div class="app" id="app"></div>
 
@@ -2236,3 +2244,5 @@ render();
   .then(function(){return Promise.all([loadAds(),loadConvs()]);}).then(function(){render(true);});
 })();
 </script>
+</body>
+</html>
