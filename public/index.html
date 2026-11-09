@@ -5,6 +5,7 @@
 <meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B6B3A">
+<!--og--><meta property="og:type" content="website"><meta property="og:site_name" content="Souki"><meta property="og:title" content="Souki – petites annonces en Mauritanie"><meta property="og:description" content="Achetez et vendez près de chez vous : voitures, immobilier, téléphones, maison, emploi…"><meta property="og:image" content="/icon-512.png"><!--/og-->
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -762,6 +763,7 @@ var AR_PL={min:['دقيقة','دقيقتين','دقائق','دقيقة','دقي�
 function arCount(n,k){var w=AR_PL[k];n=+n;if(n===1)return w[0];if(n===2)return w[1];var r=n%100;return num(n)+' '+(n===0||(r>=3&&r<=10)?w[2]:(r>=11&&r<=99)?w[3]:w[4]);}
 var TC_FORM={av_n:'month',avanceFlag:'month',resultsN:'ad',admRepN:'report',admAdsN:'ad'};
 function tc(k,n){var s=t(k);return S.lang==='ar'&&TC_FORM[k]?s.replace('{N}',arCount(n,TC_FORM[k])):s.replace('{n}',num(n));}
+function adUrl(a){return location.origin+'/?annonce='+encodeURIComponent(a.id);}
 function allAds(){return S.remote;}
 function byId(id){var a=allAds();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
 function isFav(id){return S.favs.indexOf(id)>-1;}
@@ -1719,7 +1721,7 @@ V.detail=function(){
   var ee=normE(a.estate),rentA=ee&&ee.deal==='rent';
   var wl=wilayaOfCity(a.city),loc=(a.hood?hoodName(a.hood)+t('comma'):'')+city(a.city)+(wl&&wl!=='nkc'?' ('+wname(wl)+')':'');
   var shareTxt=t('shareTxt').replace('{t}',a.title).replace('{p}',priceStr(a)+(a.nego?' ('+t('negoB')+')':'')).replace('{l}',loc+(a.near?' – '+t('nearShow')+' '+a.near:''));
-  var wa='https://wa.me/?text='+encodeURIComponent(shareTxt);
+  shareTxt+='\n'+adUrl(a);var wa='https://wa.me/?text='+encodeURIComponent(shareTxt);
   var seller='<div class="box"><div class="avatar" aria-hidden="true">'+esc((a.seller||'?').charAt(0).toUpperCase())+'</div><div style="flex:1;min-width:0"><div style="font-weight:700">'+esc(a.seller)+'</div>'+
    '<div class="meta" style="font-weight:700;color:var(--fg)">'+t('sts_'+stypeOf(a))+(a.splace&&a.splace.name?' · '+esc(a.splace.name):'')+'</div>'+(a.splace&&a.splace.addr?'<div class="meta">'+svg(I.pin,13)+' '+esc(a.splace.addr)+'</div>':'')+
    (a.shop?'<div class="meta vbadge">'+svg(I.check,14,2.5)+t('shopVerified')+(a.shop.market?' · '+esc(a.shop.market):'')+'</div>':'<div class="meta">'+t('verified')+'</div>')+'</div>'+
@@ -1942,11 +1944,11 @@ V.shop=function(){
 
 function sheetHTML(){
   if(!S.sheet)return '';
-  var a=byId(S.id),txt=t('hello').replace('{t}',a?a.title:'');
+  var a=byId(S.id),txt=t('hello').replace('{t}',a?a.title:'')+(a?'\n'+adUrl(a):'');
   var info=S.sheet==='wa'?t('waInfo'):S.sheet==='call'?t('callInfo'):t('msgInfo');
   var dg=String(a&&a.phone||'').replace(/\D/g,'');
   var content=S.sheet==='call'?'<div class="quote" dir="ltr" style="font-size:20px;font-weight:800;text-align:center">+222 '+esc(a.phone||'')+'</div>'+(dg?'<a class="btn wide primary" style="text-decoration:none" href="tel:+222'+dg+'">'+svg(I.phone,20)+t('callNow')+'</a>':'')
-    :'<div class="quote" id="qtxt">'+esc(txt)+'</div>'+(S.sheet==='wa'&&dg?'<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/222'+dg+'?text='+encodeURIComponent(txt)+'">'+svg(I.msg,20)+t('openWa')+'</a>':'')+'<button class="btn wide" data-a="copy">'+t('copy')+'</button>';
+    :'<div class="quote" id="qtxt" style="white-space:pre-wrap;overflow-wrap:anywhere" translate="no">'+esc(txt)+'</div>'+(S.sheet==='wa'&&dg?'<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/222'+dg+'?text='+encodeURIComponent(txt)+'">'+svg(I.msg,20)+t('openWa')+'</a>':'')+'<button class="btn wide" data-a="copy">'+t('copy')+'</button>';
   return '<div class="sheet-wrap" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+t('message')+'" data-stop="1"><p>'+info+'</p>'+content+'<button class="btn wide" data-a="closesheet">'+t('close')+'</button></div></div>';}
 
 var toastTimer;
@@ -2428,7 +2430,12 @@ if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventLi
 
 render();
 (TOKEN?api('GET','me').then(function(d){setUser(d.user);}).catch(function(){}):Promise.resolve())
-  .then(function(){return Promise.all([loadAds(),loadConvs()]);}).then(function(){render(true);});
+  .then(function(){return Promise.all([loadAds(),loadConvs()]);}).then(function(){
+    var dl=null;try{dl=new URLSearchParams(location.search).get('annonce');}catch(e){}
+    if(dl){try{history.replaceState(null,'','/');}catch(e){}
+      if(byId(dl)){S.id=dl;S.prev='home';S.screen='detail';S.seen=[dl].concat(S.seen.filter(function(x){return x!==dl;})).slice(0,20);save('seen',S.seen);render();return;}
+      render(true);toast(t('adGone'));return;}
+    render(true);});
 })();
 </script>
 </body>
