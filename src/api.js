@@ -1,4 +1,4 @@
-// Souki API — Cloudflare Pages Function, base de données D1 (binding "DB").
+// Vends-moi API — Cloudflare Pages Function, base de données D1 (binding "DB").
 // Toutes les routes /api/* passent ici.
 
 const SCHEMA = [

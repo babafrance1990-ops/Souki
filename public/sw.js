@@ -1,6 +1,6 @@
 // Souki : garde une copie de la page pour l'ouvrir même avec un réseau faible.
 // Les données (/api) passent toujours par le réseau.
-const CACHE = 'souki-v1';
+const CACHE = 'vendsmoi-v2';
 self.addEventListener('install', (e) => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/manifest.webmanifest', '/icon-192.png']))); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', (e) => {
