@@ -197,6 +197,7 @@ textarea.inp{height:auto;padding:12px 14px;resize:none;line-height:1.5}
 .filters .inp{height:42px;font-size:15px;padding:0 10px}
 .sel{height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:0 10px;font-size:14px;font-weight:600}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .2s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.6}}}
+.recdot{width:12px;height:12px;border-radius:6px;background:currentColor;animation:recb 1s infinite}@keyframes recb{50%{opacity:.25}}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -285,7 +286,7 @@ var TX={
   online:'En ligne',soldTab:'Vendues',noMine:'Vous n’avez pas encore d’annonce.',markSold:'Marquer vendu',del:'Supprimer',confirmDel:'Supprimer définitivement ?',yes:'Oui, supprimer',no:'Annuler',
   logout:'Se déconnecter',lang:'Langue',pro:'Passer en compte commerçant (boutique)',help:'Aide et sécurité',noFav:'Touchez le marque-page d’une annonce pour la retrouver ici.',
   noMsg:'Vos conversations avec les vendeurs apparaîtront ici.',close:'Fermer',copy:'Copier le message',copied:'Message copié',
-  waInfo:'Dans l’application finale, ce bouton ouvre WhatsApp avec ce message déjà écrit :',callInfo:'Dans l’application finale, ce bouton lance l’appel vers le vendeur :',
+  waInfo:'Ce message sera envoyé au vendeur sur WhatsApp :',callInfo:'Numéro du vendeur :',openWa:'Ouvrir WhatsApp',callNow:'Appeler maintenant',recNo:'Votre navigateur ne permet pas d’enregistrer. Choisissez un fichier audio.',recDenied:'Autorisez le micro pour enregistrer votre message.',recStop:'Arrêter l’enregistrement',recFile:'ou choisir un fichier audio',recOn:'Enregistrement…',
   msgInfo:'La messagerie intégrée sera ajoutée dans une prochaine version. Message prévu :',hello:'Bonjour, votre annonce « {t} » est-elle toujours disponible ?',
   reported:'Merci. L’annonce sera vérifiée par un modérateur.',demo:'Prototype de démonstration : les annonces marquées « Exemple » sont fictives.',
   ago:{m:'il y a {n} min',h:'il y a {n} h',d:'il y a {n} j',now:'à l’instant'},needLogin:'Connectez-vous pour déposer une annonce.',removeFav:'Retiré des favoris',addFav:'Ajouté aux favoris',
@@ -411,12 +412,12 @@ var TX={
   photos:'الصور',upTo:'(حتى 4)',add:'إضافة',compress:'يتم تصغير الصور لتوفير الإنترنت.',title:'العنوان',cat:'الفئة',choose:'اختر…',price:'السعر',city:'المدينة',
   descPh:'الحالة، الملحقات، سبب البيع…',contact:'كيف يتواصلون معك؟',publish:'نشر الإعلان',published:'تم نشر الإعلان',
   errTitle:'اكتب عنواناً (4 أحرف على الأقل).',errCat:'اختر فئة.',errPrice:'اكتب السعر بالأرقام.',
-  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق سوقي على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول سوقي للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور سوقي. رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق سوقي.',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{n} بلاغ',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{n} إعلان',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
+  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق سوقي على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول سوقي للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور سوقي. رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق سوقي.',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{N}',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{N}',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
   errPhone:'يجب أن يتكون الرقم من 8 أرقام.',codeLbl:'الرمز المستلم',demoCode:'تجربة: الرمز هو 1234',verify:'تأكيد',errCode:'رمز خاطئ. في التجربة اكتب 1234.',nameLbl:'اسمك (يظهر على إعلاناتك)',
   online:'منشورة',soldTab:'مُباعة',noMine:'ليس لديك إعلانات بعد.',markSold:'تم البيع',del:'حذف',confirmDel:'حذف نهائياً؟',yes:'نعم، احذف',no:'إلغاء',
   logout:'تسجيل الخروج',lang:'اللغة',pro:'حساب تاجر (متجر)',help:'المساعدة والأمان',noFav:'اضغط على علامة الحفظ في أي إعلان ليظهر هنا.',
   noMsg:'ستظهر هنا محادثاتك مع البائعين.',close:'إغلاق',copy:'نسخ الرسالة',copied:'تم النسخ',
-  waInfo:'في التطبيق النهائي يفتح هذا الزر واتساب مع هذه الرسالة:',callInfo:'في التطبيق النهائي يتصل هذا الزر بالبائع:',
+  waInfo:'سيتم إرسال هذه الرسالة إلى البائع على واتساب:',callInfo:'رقم البائع:',openWa:'فتح واتساب',callNow:'اتصل الآن',recNo:'متصفحك لا يدعم التسجيل. اختر ملفاً صوتياً.',recDenied:'اسمح باستخدام الميكروفون لتسجيل الرسالة.',recStop:'إيقاف التسجيل',recFile:'أو اختر ملفاً صوتياً',recOn:'جارٍ التسجيل…',
   msgInfo:'ستضاف المراسلة الداخلية في نسخة قادمة. الرسالة:',hello:'السلام عليكم، هل إعلانكم «{t}» ما زال متاحاً؟',
   reported:'شكراً. سيراجع المشرف الإعلان.',demo:'نموذج تجريبي: الإعلانات المكتوب عليها «مثال» وهمية.',
   ago:{m:'منذ {n} دقيقة',h:'منذ {n} ساعة',d:'منذ {n} يوم',now:'الآن'},needLogin:'سجّل الدخول لإضافة إعلان.',removeFav:'أزيل من المفضلة',addFav:'أضيف إلى المفضلة',
@@ -427,7 +428,7 @@ var TX={
   errBrand:'اختر الماركة.',errModel:'اكتب الموديل.',errYear:'اكتب سنة بين 1980 و2027.',errKm:'اكتب عدد الكيلومترات بالأرقام.',errFuel:'اختر نوع الوقود.',errGear:'اختر ناقل الحركة.',errCond:'اختر الحالة.',modelPh:'مثال: هايلكس',
   optional:'(اختياري)',seats:'عدد المقاعد',doors:'عدد الأبواب',vtype:'نوع السيارة',color:'اللون',
   errSeats:'اختر عدد المقاعد.',errDoors:'اختر عدد الأبواب.',errVtype:'اختر نوع السيارة.',errColor:'اختر اللون.',
-  v_berline:'سيدان',v_suv:'دفع رباعي',v_pickup:'بيك أب',v_citadine:'سيارة صغيرة',v_utilitaire:'نفعية',v_monospace:'ميني فان',
+  v_berline:'سيدان',v_suv:'دفع رباعي',v_pickup:'بيك أب',v_citadine:'سيارة صغيرة',v_utilitaire:'سيارة نفعية',v_monospace:'ميني فان',
   k_blanc:'أبيض',k_noir:'أسود',k_gris:'رمادي',k_argent:'فضي',k_bleu:'أزرق',k_rouge:'أحمر',k_vert:'أخضر',k_beige:'بيج',k_marron:'بني',k_autre:'آخر',
   buyM:'شراء',rentM:'إيجار',rentMin:'أدنى إيجار',rentMax:'أعلى إيجار',reInfo:'معلومات العقار',reType:'نوع الإعلان',re_land:'أرض للبيع',re_house:'منزل للبيع',re_rent:'منزل للإيجار',allTypes:'كل العقارات',
   dealLbl:'بيع أو إيجار',dealSale:'للبيع',dealRent:'للإيجار',kind:'نوع العقار',k2_apt:'شقة',k2_house:'منزل',k2_shop:'محل',k2_land:'أرض',
@@ -452,7 +453,7 @@ var TX={
   voiceLbl:'إعلان صوتي',voiceRec:'سجّل رسالة صوتية',voiceHelp:'صف سلعتك في 30 ثانية بالحسانية أو العربية أو الفرنسية.',voiceDel:'حذف الرسالة الصوتية',voiceTooBig:'الرسالة طويلة جداً: دقيقة واحدة كحد أقصى.',voiceBad:'اختر ملفاً صوتياً.',voiceListen:'استمع إلى البائع',voiceTag:'صوتي',
   eco:'توفير الإنترنت',ecoOn:'مفعّل',ecoOff:'غير مفعّل',ecoShow:'عرض الصورة',ecoToastOn:'تم تفعيل توفير الإنترنت: لا تُحمّل الصور إلا عند فتحها.',ecoToastOff:'تم إيقاف توفير الإنترنت',
   draftBack:'تم استرجاع المسودة: إعلانك محفوظ كما تركته.',draftClear:'البدء من جديد',
-  shareWa:'مشاركة على واتساب',shareTxt:'{t} – {p}\n{l}\nإعلان على تطبيق سوقي',
+  shareWa:'مشاركة على واتساب',shareTxt:'{t} – {p}\n{l}\nإعلان على سوقي',
   shopVerified:'متجر موثّق',seeShop:'عرض المتجر',shopAds:'إعلانات منشورة',proTitle:'حساب تاجر',proIntro:'للمتاجر وتجار الأسواق.',
   proB1:'شارة «متجر موثّق» على كل إعلاناتك',proB2:'واجهة خاصة بمتجرك تجمع كل إعلاناتك',proB3:'رفع إعلاناتك إلى أعلى القائمة كل أسبوع',proPrice:'[السعر] أوقية شهرياً',
   shopName:'اسم المتجر',shopMarket:'السوق أو المكان',shopMarketPh:'مثال: سوق العاصمة',payWith:'الدفع عبر',payBtn:'ادفع وفعّل (تجربة)',proOk:'تم تفعيل حساب التاجر (تجربة: لا يوجد دفع حقيقي).',
@@ -478,7 +479,7 @@ var TX={
   errStype:'حدد إن كنت فرداً أو تاجراً.',errSname:'اكتب اسم المتجر.',fl_pro:'تاجر',fl_vendeur:'بائع',se_vendeur:'بائعون',zoneL:'المنطقة (ولاية، مدينة، حي)',inW:'كل ولاية {w}',atPlace:'إعلانات في {p}',qAtPlace:'«{q}» في {p}',didYouMean:'هل تقصد «{t}»؟',
   filtersT:'الفلاتر',sortBy:'ترتيب حسب',dateL:'تاريخ النشر',dt_all:'الكل',dt_today:'اليوم',dt_7d:'آخر 7 أيام',dt_30d:'آخر 30 يوماً',
   sellerL:'البائع',se_all:'الكل',se_part:'أفراد',se_pro:'تجار',priceL:'السعر (أوقية)',optL:'خيارات',o_photo:'مع صور',o_nego:'السعر قابل للتفاوض',o_voice:'مع إعلان صوتي',
-  seeN:'عرض {n} إعلان',clearAll:'مسح الكل',inCat:'«{q}» في {c}',seeCat:'عرض فئة {c}',recentL:'عمليات البحث الأخيرة',clearRecent:'مسح',priceChip:'السعر: {a} – {b}',
+  seeN:'عرض النتائج ({n})',clearAll:'مسح الكل',inCat:'«{q}» في {c}',seeCat:'عرض فئة {c}',recentL:'عمليات البحث الأخيرة',clearRecent:'مسح',priceChip:'السعر: {a} – {b}',
   fs_bebeEquip:'تجهيزات الرضيع',fs_mobEnfant:'أثاث الأطفال',fs_vetBebe:'ملابس الرضع',fs_vetEnfant:'ملابس الأطفال',fs_vetMat:'ملابس الحوامل',fs_chausEnfant:'أحذية الأطفال',
   fs_bijouxEnfant:'ساعات ومجوهرات الأطفال',fs_accEnfant:'إكسسوارات وحقائب الأطفال',fs_jouets:'ألعاب',fs_babysit:'رعاية الأطفال',fs_aideDom:'عمال المنازل',
   fi_poussette:'عربة أطفال',fi_siegeAuto:'كرسي سيارة',fi_litBebe:'سرير رضيع',fi_chaiseHaute:'كرسي طعام للطفل',fi_porteBebe:'حمالة رضيع',fi_baignoire:'حوض استحمام',fi_other:'أخرى',
@@ -520,16 +521,16 @@ var TX={
   mat:'المادة',mt2_bois:'خشب',mt2_metal:'حديد',mt2_plastique:'بلاستيك',mt2_verre:'زجاج',mt2_autre:'أخرى',hcolor:'اللون / القماش',hcolorPh:'مثال: قطيفة عنابية',cap:'السعة / القوة',capPh:'مثال: 300 لتر، 12000 وحدة حرارية',brandFirst:'اختر الماركة أولاً',allModels:'كل الموديلات',imeiPh:'15 رقماً',sortLbl:'ترتيب',navLbl:'التنقل الرئيسي',soonT:'متاح في نسخة قادمة',
   pubLbl:'نُشر من طرف',pub_owner:'مالك (فرد)',pub_agent:'سمسار / وكالة',errPub:'حدد من ينشر الإعلان.',
   commLbl:'عمولة السمسار',cm_none:'بدون عمولة',cm_half:'نصف شهر إيجار',cm_one:'شهر إيجار',cm_p1:'1% من السعر',cm_p2:'2% من السعر',cm_p3:'3% من السعر',cm_nego:'قابلة للتفاوض',noComm:'بدون عمولة',
-  avance:'المقدّم المطلوب',av_0:'بدون مقدّم',av_n:'{n} أشهر',caution:'الضمان',ca_0:'بدون ضمان',durLbl:'مدة الإيجار',du_year:'سنوي',du_month:'شهري',du_short:'قصير المدة (أيام، أسابيع)',avanceFlag:'مقدّم {n} أشهر',
+  avance:'المقدّم المطلوب',av_0:'بدون مقدّم',av_n:'{N}',caution:'الضمان',ca_0:'بدون ضمان',durLbl:'مدة الإيجار',du_year:'سنوي',du_month:'شهري',du_short:'قصير المدة (أيام، أسابيع)',avanceFlag:'مقدّم {N}',
   utilLbl:'الماء والكهرباء',otherEq:'مزايا أخرى',utilShort:'ماء SNDE + كهرباء SOMELEC',
   e_snde:'ماء SNDE',e_somelec:'كهرباء SOMELEC',e_tank:'خزان ماء',e_borehole:'بئر / حفر',e_solar:'ألواح شمسية',e_genset:'مولد كهربائي',
   ilot:'إيلو (Îlot)',ilotPh:'مثال: K',lotN:'رقم القطعة',lotPh:'مثال: 245',dims:'الأبعاد (م)',dimL:'الطول',dimW:'العرض',dimHint:'= {v} م² (تُملأ المساحة تلقائياً)',
   built:'حالة الأرض',bt_bare:'أرض فارغة',bt_built:'بها بناء',servic:'مجهزة (ماء، كهرباء، طريق)',ilotLot:'إيلو / قطعة',ilotFmt:'إيلو {i}، قطعة {l}',
-  acctIntro:'أنشئ حسابك في دقيقة واحدة برقم هاتفك.',acctB1:'احتفظ بإعلاناتك المفضلة',acctB2:'تحدث مع البائعين',acctB3:'تابع إعلاناتك وأدرها',acctB4:'احفظ عمليات بحثك',
+  acctIntro:'أنشئ حسابك في دقيقة برقم هاتفك وكلمة مرور.',acctB1:'احتفظ بإعلاناتك المفضلة',acctB2:'تحدث مع البائعين',acctB3:'تابع إعلاناتك وأدرها',acctB4:'احفظ عمليات بحثك',
   since:'عضو منذ {d}',editProfile:'تعديل الملف الشخصي',save:'حفظ',profSaved:'تم حفظ الملف الشخصي',errName:'اكتب اسمك.',
   myAds:'إعلاناتي',myFavs:'مفضلتي',myConvs:'محادثاتي',mySearches:'عمليات البحث المحفوظة',seenT:'شوهدت مؤخراً',activity:'نشاطي',settingsT:'الإعدادات',
   stAds:'إعلانات',stFavs:'مفضلة',stConvs:'محادثات',
-  saveSearch:'احفظ هذا البحث',searchSaved:'تم حفظ البحث في حسابك',noSearch:'لا توجد عمليات بحث محفوظة. ابحث في الصفحة الرئيسية ثم اضغط «احفظ هذا البحث».',resultsN:'{n} إعلان اليوم',delSearch:'حذف',needLoginS:'سجّل الدخول لحفظ عمليات البحث.',
+  saveSearch:'احفظ هذا البحث',searchSaved:'تم حفظ البحث في حسابك',noSearch:'لا توجد عمليات بحث محفوظة. ابحث في الصفحة الرئيسية ثم اضغط «احفظ هذا البحث».',resultsN:'{N} اليوم',delSearch:'حذف',needLoginS:'سجّل الدخول لحفظ عمليات البحث.',
   noSeen:'ستظهر هنا الإعلانات التي تفتحها.',clearSeen:'مسح السجل',
   chatDemo:'تجربة: بائعو الإعلانات التجريبية يردون تلقائياً.',chatPh:'اكتب رسالة…',send:'إرسال',q1:'السلام عليكم، هل ما زال متاحاً؟',q2:'ما هو آخر سعر؟',q3:'أين يمكن أن نلتقي؟',
   r1:'نعم، ما زال متاحاً. يمكنك المرور لرؤيته.',r2:'آخر سعر هو {p}. يمكننا التفاهم عند اللقاء.',r3:'يمكن أن نلتقي قرب: {l}. اتصل بي قبل المجيء.',
@@ -555,7 +556,7 @@ function hasRooms(k){return k==='apt'||k==='house';}
 function normE(e){if(!e||e.deal)return e;var n={};for(var k in e)n[k]=e[k];n.deal=e.type==='rent'?'rent':'sale';n.kind=e.type==='land'?'land':'house';return n;}
 function kindDeal(e){return t('k2_'+e.kind)+' '+(S.lang==='fr'?t(e.deal==='rent'?'dealRent':'dealSale').toLowerCase():t(e.deal==='rent'?'dealRent':'dealSale'));}
 function priceStr(a){var e=normE(a.estate);return fmt(a.price)+((e&&e.deal==='rent')||a.job?t('perMonth'):'');}
-function estMeta(a){var e=normE(a.estate);if(!e)return '';var p=[kindDeal(e)];if(hasRooms(e.kind)&&e.rooms)p.push(e.rooms+' '+t('rooms').toLowerCase());if(e.surface)p.push(e.surface+' '+U('m2'));return p.join(' · ');}
+function estMeta(a){var e=normE(a.estate);if(!e)return '';var p=[kindDeal(e)];if(hasRooms(e.kind)&&e.rooms)p.push(S.lang==='ar'?arCount(e.rooms,'room'):e.rooms+' '+t('rooms').toLowerCase());if(e.surface)p.push(e.surface+' '+U('m2'));return p.join(' · ');}
 var VTYPES=['berline','suv','pickup','citadine','utilitaire','monospace'];
 var COLORS=['blanc','noir','gris','argent','bleu','rouge','vert','beige','marron','autre'];
 var BRANDS=['Toyota','Hyundai','Mercedes','Nissan','Kia','Peugeot','Renault','Mitsubishi','Ford','Suzuki','Land Rover','Volkswagen','Honda','Isuzu','Autre'];
@@ -602,7 +603,7 @@ function placeMatch(a){
   if(S.city==='Nouakchott'&&S.hood){if(S.hood.indexOf('w:')===0){if(hoodGroup(a.hood)!==S.hood.slice(2))return false;}else if(a.hood!==S.hood)return false;}
   return true;}
 function hoodName(h){if(h&&h.indexOf('w:')===0)return wname(h.slice(2));if(h==='Centre'&&S.lang==='ar')return 'وسط المدينة';for(var i=0;i<HOODS.length;i++)if(HOODS[i][0]===h)return S.lang==='ar'?HOODS[i][1]:h;return h;}
-function animMeta(a){var x=a.anim;return t('sp_'+x.species)+' · '+x.count+' '+t(+x.count>1?'heads':'head');}
+function animMeta(a){var x=a.anim;return t('sp_'+x.species)+' · '+(S.lang==='ar'?arCount(x.count,'head'):x.count+' '+t(+x.count>1?'heads':'head'));}
 function priceHint(d){var p=String(d.price||'').replace(/\D/g,'');if(!p)return '';return d.punit==='old'?t('eqNew').replace('{v}',num(Math.round(+p/10))):t('eqOld').replace('{v}',num(+p*10));}
 
 var H=3600e3, now=Date.now();
@@ -725,7 +726,14 @@ function cname(id){return cat(id)[S.lang];}
 function city(c){for(var i=0;i<CITIES.length;i++)if(CITIES[i][0]===c)return S.lang==='ar'?CITIES[i][1]:c;return c;}
 function fmt(n){return num(n)+' '+U('MRU');}
 function ago(ts){var m=Math.round((Date.now()-ts)/60000),a=t('ago');
-  if(m<1)return a.now;if(m<60)return a.m.replace('{n}',m);var h=Math.round(m/60);if(h<24)return a.h.replace('{n}',h);return a.d.replace('{n}',Math.round(h/24));}
+  var ar=S.lang==='ar';
+  if(m<1)return a.now;if(m<60)return ar?'منذ '+arCount(m,'min'):a.m.replace('{n}',m);var h=Math.round(m/60);if(h<24)return ar?'منذ '+arCount(h,'hour'):a.h.replace('{n}',h);var dd=Math.round(h/24);return ar?'منذ '+arCount(dd,'day'):a.d.replace('{n}',dd);}
+var AR_PL={min:['دقيقة','دقيقتين','دقائق','دقيقة','دقيقة'],hour:['ساعة','ساعتين','ساعات','ساعة','ساعة'],day:['يوم','يومين','أيام','يوماً','يوم'],
+  ad:['إعلان واحد','إعلانان','إعلانات','إعلاناً','إعلان'],result:['نتيجة واحدة','نتيجتان','نتائج','نتيجة','نتيجة'],report:['بلاغ واحد','بلاغان','بلاغات','بلاغاً','بلاغ'],
+  month:['شهر واحد','شهران','أشهر','شهراً','شهر'],head:['رأس واحد','رأسان','رؤوس','رأساً','رأس'],room:['غرفة واحدة','غرفتان','غرف','غرفة','غرفة']};
+function arCount(n,k){var w=AR_PL[k];n=+n;if(n===1)return w[0];if(n===2)return w[1];var r=n%100;return num(n)+' '+(n===0||(r>=3&&r<=10)?w[2]:(r>=11&&r<=99)?w[3]:w[4]);}
+var TC_FORM={av_n:'month',avanceFlag:'month',resultsN:'ad',admRepN:'report',admAdsN:'ad'};
+function tc(k,n){var s=t(k);return S.lang==='ar'&&TC_FORM[k]?s.replace('{N}',arCount(n,TC_FORM[k])):s.replace('{n}',num(n));}
 function allAds(){return S.remote;}
 function byId(id){var a=allAds();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
 function isFav(id){return S.favs.indexOf(id)>-1;}
@@ -739,7 +747,7 @@ function thumb(a,big){
 
 function card(a){
   var spec=specLine(a);
-  var flags=(a.voice?'<span class="flag">'+svg(I.mic,12)+t('voiceTag')+'</span>':'')+(a.nego?'<span class="flag">'+t('negoB')+'</span>':'')+(a.estate&&noComm(a.estate)?'<span class="flag">'+t('noComm')+'</span>':'')+(a.estate&&a.estate.avance&&a.estate.avance!=='0'?'<span class="flag">'+t('avanceFlag').replace('{n}',a.estate.avance)+'</span>':'')+
+  var flags=(a.voice?'<span class="flag">'+svg(I.mic,12)+t('voiceTag')+'</span>':'')+(a.nego?'<span class="flag">'+t('negoB')+'</span>':'')+(a.estate&&noComm(a.estate)?'<span class="flag">'+t('noComm')+'</span>':'')+(a.estate&&a.estate.avance&&a.estate.avance!=='0'?'<span class="flag">'+tc('avanceFlag',a.estate.avance)+'</span>':'')+
     (!a.shop&&stypeOf(a)==='pro'?'<span class="flag">'+svg(I.shop2,12)+t('fl_pro')+'</span>':'');
   return '<button class="card" data-a="open" data-id="'+a.id+'"><div class="thumb">'+thumb(a)+'</div><div class="cbody"><div class="ctitle">'+esc(a.title)+'</div><div class="price">'+priceStr(a)+'</div>'+
    (spec?'<div class="meta" style="font-weight:700;color:var(--fg)">'+spec+'</div>':'')+(a.shop?'<div class="meta vbadge">'+svg(I.check,13,2.5)+t('shopVerified')+'</div>':'')+(flags?'<div class="flags">'+flags+'</div>':'')+
@@ -838,7 +846,7 @@ function filtered(){
 
 function listHTML(){
   var r=filtered();
-  var head='<div class="row between"><h2>'+(S.q||S.cat||S.city?r.length+' '+t(r.length===1?'result1':'results'):t('recent'))+'</h2><label for="sort" style="position:absolute;left:-9999px">'+t('sortLbl')+'</label><select id="sort" class="sel"><option value="new"'+(S.sort==='new'?' selected':'')+'>'+t('sortNew')+'</option><option value="low"'+(S.sort==='low'?' selected':'')+'>'+t('sortLow')+'</option><option value="high"'+(S.sort==='high'?' selected':'')+'>'+t('sortHigh')+'</option></select></div>'+
+  var head='<div class="row between"><h2>'+(S.q||S.cat||S.city?(S.lang==='ar'?arCount(r.length,'result'):r.length+' '+t(r.length===1?'result1':'results')):t('recent'))+'</h2><label for="sort" style="position:absolute;left:-9999px">'+t('sortLbl')+'</label><select id="sort" class="sel"><option value="new"'+(S.sort==='new'?' selected':'')+'>'+t('sortNew')+'</option><option value="low"'+(S.sort==='low'?' selected':'')+'>'+t('sortLow')+'</option><option value="high"'+(S.sort==='high'?' selected':'')+'>'+t('sortHigh')+'</option></select></div>'+
    (S.q||S.cat||S.city?'<button class="linkbtn" data-a="savesearch" style="color:var(--brand);text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:800">'+svg(I.fav,16)+t('saveSearch')+'</button>':'');
   if(!S.remote.filter(function(a){return a.status!=='sold';}).length)return '<div class="empty">'+svg(I.list,40)+'<div style="font-weight:800;color:var(--fg)">'+t('noAdsYet')+'</div><button class="btn primary" data-a="post">'+t('post')+'</button></div>';
   if(!r.length)return head+'<div class="empty">'+svg(I.search,40)+'<div>'+t('noRes')+'</div></div>';
@@ -1006,8 +1014,8 @@ function estateFields(d,e){
   if(k==='shop')extra.push(sel('fplace','place',t('place'),['road','market','street'].map(function(p){return opt(p,t('pl_'+p),d.place);}).join('')));
   if(rent&&hasRooms(k))extra.push(sel('ffurn','furnished',t('furnished'),opt('yes',t('yesO'),d.furnished)+opt('no',t('noO'),d.furnished)));
   if(rent){
-    extra.push(sel('favance','avance',t('avance'),opt('0',t('av_0'),d.avance)+['1','2','3','4','6','12'].map(function(n){return opt(n,t('av_n').replace('{n}',n),d.avance);}).join('')));
-    extra.push(sel('fcaution','caution',t('caution'),opt('0',t('ca_0'),d.caution)+['1','2','3'].map(function(n){return opt(n,t('av_n').replace('{n}',n),d.caution);}).join('')));
+    extra.push(sel('favance','avance',t('avance'),opt('0',t('av_0'),d.avance)+['1','2','3','4','6','12'].map(function(n){return opt(n,tc('av_n',n),d.avance);}).join('')));
+    extra.push(sel('fcaution','caution',t('caution'),opt('0',t('ca_0'),d.caution)+['1','2','3'].map(function(n){return opt(n,tc('av_n',n),d.caution);}).join('')));
     extra.push(sel('fdur','dur',t('durLbl'),['year','month','short'].map(function(x){return opt(x,t('du_'+x),d.dur);}).join('')));
   }
   if(!rent)extra.push(sel('fpapers','papers',t('papers'),['titre','permis','autre'].map(function(p){return opt(p,t('p_'+p),d.papers);}).join('')));
@@ -1031,8 +1039,8 @@ function estateSpecs(es,hood){
    (es.rooms?it(t('rooms'),esc(es.rooms)):'')+(es.salons?it(t('salons'),esc(es.salons)):'')+(es.baths?it(t('baths'),esc(es.baths)):'')+
    (es.floor?it(t('floor'),es.floor==='0'?t('rdc'):es.floor==='5'?'5+':esc(es.floor)):'')+(es.levels?it(t('levels'),t('lv_'+es.levels)):'')+(es.place?it(t('place'),t('pl_'+es.place)):'')+
    (es.furnished?it(t('furnished'),t(es.furnished==='yes'?'yesO':'noO')):'')+
-   (es.avance?it(t('avance'),es.avance==='0'?t('av_0'):t('av_n').replace('{n}',es.avance)):'')+
-   (es.caution?it(t('caution'),es.caution==='0'?t('ca_0'):t('av_n').replace('{n}',es.caution)):'')+
+   (es.avance?it(t('avance'),es.avance==='0'?t('av_0'):tc('av_n',es.avance)):'')+
+   (es.caution?it(t('caution'),es.caution==='0'?t('ca_0'):tc('av_n',es.caution)):'')+
    (es.dur?it(t('durLbl'),t('du_'+es.dur)):'')+(es.papers?it(t('papers'),t('p_'+es.papers)):'')+
    (es.pub?it(t('pubLbl'),t('pub_'+es.pub)):'')+(es.pub==='agent'&&es.comm?it(t('commLbl'),t('cm_'+es.comm)):'');
   var all=es.eq||[];
@@ -1547,7 +1555,7 @@ function fsheetHTML(){
    '<div class="field"><div class="legend">'+t('priceL')+'</div><div class="two"><div class="field"><label for="gfpmin" style="font-size:13px;font-weight:600">'+t('priceMin')+'</label><input id="gfpmin" class="inp" data-gf="pmin" inputmode="numeric" value="'+esc(g.pmin)+'" placeholder="0"></div>'+
     '<div class="field"><label for="gfpmax" style="font-size:13px;font-weight:600">'+t('priceMax')+'</label><input id="gfpmax" class="inp" data-gf="pmax" inputmode="numeric" value="'+esc(g.pmax)+'" placeholder="—"></div></div></div>'+
    '<div class="field"><div class="legend">'+t('optL')+'</div>'+box('photo',t('o_photo'))+box('nego',t('o_nego'))+box('voice',t('o_voice'))+'</div>'+
-   '</div><div class="two" style="padding-top:4px"><button type="button" class="btn" data-a="gfclear">'+t('clearAll')+'</button><button type="button" class="btn primary" data-a="closefs" id="fscount">'+t('seeN').replace('{n}',filtered().length)+'</button></div>'+
+   '</div><div class="two" style="padding-top:4px"><button type="button" class="btn" data-a="gfclear">'+t('clearAll')+'</button><button type="button" class="btn primary" data-a="closefs" id="fscount">'+tc('seeN',filtered().length)+'</button></div>'+
    '</div></div>';}
 
 
@@ -1715,7 +1723,8 @@ V.post=function(){
   var unit=d.punit==='old'?'old':'new';
   var units='<div class="row" style="flex-wrap:wrap;gap:6px">'+['new','old'].map(function(u){return '<button type="button" class="chip" data-a="punit" data-v="'+u+'" aria-pressed="'+(unit===u)+'">'+t('u_'+u)+'</button>';}).join('')+'</div>';
   var voice=d.voice?'<audio controls src="'+d.voice+'" style="width:100%"></audio><button type="button" class="linkbtn" data-a="rmvoice">'+t('voiceDel')+'</button>'
-    :'<label class="btn wide" for="vfile" style="border-style:dashed;cursor:pointer">'+svg(I.mic,20)+t('voiceRec')+'</label><input id="vfile" type="file" accept="audio/*" capture hidden>';
+    :S.rec?'<button type="button" class="btn wide danger" data-a="recstop" style="gap:10px"><span class="recdot"></span>'+t('recStop')+' <span id="rectime" dir="ltr">0:00</span></button><div class="meta" role="status">'+t('recOn')+'</div>'
+    :'<button type="button" class="btn wide" data-a="recstart" style="border-style:dashed">'+svg(I.mic,20)+t('voiceRec')+'</button><label class="linkbtn" for="vfile" style="color:var(--brand);cursor:pointer;align-self:center">'+t('recFile')+'</label><input id="vfile" type="file" accept="audio/*" hidden>';
   return topbar(t(S.editId?'editAd':'post'),S.editId?'myads':'home')+'<form id="pf" class="scroll" novalidate><div class="sec" style="gap:16px">'+
    (S.draftRestored&&!S.editId?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
    '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>'+
@@ -1845,7 +1854,7 @@ V.seen=function(){
 
 V.searches=function(){
   var rows=S.searches.map(function(s,i){
-    return '<div class="srow"><button class="sbtn" data-a="runsearch" data-i="'+i+'"><span class="row" style="gap:10px;align-items:flex-start">'+svg(I.search,20)+'<span style="min-width:0"><b style="display:block">'+esc(searchLabel(s))+'</b><span class="meta">'+t('resultsN').replace('{n}',countFor(s))+'</span></span></span></button>'+
+    return '<div class="srow"><button class="sbtn" data-a="runsearch" data-i="'+i+'"><span class="row" style="gap:10px;align-items:flex-start">'+svg(I.search,20)+'<span style="min-width:0"><b style="display:block">'+esc(searchLabel(s))+'</b><span class="meta">'+tc('resultsN',countFor(s))+'</span></span></span></button>'+
      '<button class="icon" data-a="delsearch" data-i="'+i+'" aria-label="'+t('delSearch')+'">'+svg(I.close,20)+'</button></div>';}).join('');
   return topbar(t('mySearches'),'account')+'<div class="scroll"><div class="sec" style="gap:8px">'+(rows||'<div class="empty">'+svg(I.search,40)+'<div>'+t('noSearch')+'</div></div>')+'</div></div>'+tabs('account');};
 
@@ -1884,8 +1893,10 @@ function sheetHTML(){
   if(!S.sheet)return '';
   var a=byId(S.id),txt=t('hello').replace('{t}',a?a.title:'');
   var info=S.sheet==='wa'?t('waInfo'):S.sheet==='call'?t('callInfo'):t('msgInfo');
-  var content=S.sheet==='call'?'<div class="quote" dir="ltr" style="font-size:20px;font-weight:800;text-align:center">+222 '+esc(a.phone||'')+'</div>':'<div class="quote" id="qtxt">'+esc(txt)+'</div><button class="btn wide" data-a="copy">'+t('copy')+'</button>';
-  return '<div class="sheet-wrap" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+t('message')+'" data-stop="1"><p>'+info+'</p>'+content+'<button class="btn primary wide" data-a="closesheet">'+t('close')+'</button></div></div>';}
+  var dg=String(a&&a.phone||'').replace(/\D/g,'');
+  var content=S.sheet==='call'?'<div class="quote" dir="ltr" style="font-size:20px;font-weight:800;text-align:center">+222 '+esc(a.phone||'')+'</div>'+(dg?'<a class="btn wide primary" style="text-decoration:none" href="tel:+222'+dg+'">'+svg(I.phone,20)+t('callNow')+'</a>':'')
+    :'<div class="quote" id="qtxt">'+esc(txt)+'</div>'+(S.sheet==='wa'&&dg?'<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/222'+dg+'?text='+encodeURIComponent(txt)+'">'+svg(I.msg,20)+t('openWa')+'</a>':'')+'<button class="btn wide" data-a="copy">'+t('copy')+'</button>';
+  return '<div class="sheet-wrap" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+t('message')+'" data-stop="1"><p>'+info+'</p>'+content+'<button class="btn wide" data-a="closesheet">'+t('close')+'</button></div></div>';}
 
 var toastTimer;
 function toast(msg){var old=app.querySelector('.toast');if(old)old.remove();var d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=msg;app.appendChild(d);clearTimeout(toastTimer);toastTimer=setTimeout(function(){d.remove();},2200);}
@@ -1945,6 +1956,8 @@ app.addEventListener('click',function(e){
    case 'resetaf':S.af={species:'',tabaski:false,pmin:'',pmax:''};render(true);break;
    case 'species':S.draft.species=el.getAttribute('data-v');delete S.errs.species;render(true);break;
    case 'punit':S.draft.punit=el.getAttribute('data-v');render(true);break;
+   case 'recstart':recStart();break;
+   case 'recstop':recStop();break;
    case 'rmvoice':S.draft.voice='';render(true);break;
    case 'cleardraft':S.draft=newDraft();S.draftRestored=false;S.errs={};save('draft',null);render();break;
    case 'showph':S.showPh=id;render(true);break;
@@ -2018,7 +2031,7 @@ app.addEventListener('click',function(e){
 app.addEventListener('input',function(e){
   var el=e.target;
   if(el.id==='q'){S.q=el.value;var l=app.querySelector('#list');if(l)l.innerHTML=listHTML();updateSugg();return;}
-  var gfk=el.getAttribute('data-gf');if(gfk){var gv=el.value.replace(/\D/g,'');if(gv!==el.value)el.value=gv;S.gf[gfk]=gv;var ll2=app.querySelector('#list');if(ll2)ll2.innerHTML=listHTML();var fc=app.querySelector('#fscount');if(fc)fc.textContent=t('seeN').replace('{n}',filtered().length);return;}
+  var gfk=el.getAttribute('data-gf');if(gfk){var gv=el.value.replace(/\D/g,'');if(gv!==el.value)el.value=gv;S.gf[gfk]=gv;var ll2=app.querySelector('#list');if(ll2)ll2.innerHTML=listHTML();var fc=app.querySelector('#fscount');if(fc)fc.textContent=tc('seeN',filtered().length);return;}
   var prk=el.getAttribute('data-pro');if(prk&&S.proForm){S.proForm[prk]=el.value;return;}
   var pfo=el.getAttribute('data-prof');if(pfo&&S.profForm){S.profForm[pfo]=el.value;return;}
   var cfk=el.getAttribute('data-cf'),rfk=el.getAttribute('data-rf'),pfk=el.getAttribute('data-pf'),afk=el.getAttribute('data-af'),mfk=el.getAttribute('data-mf'),hfk=el.getAttribute('data-hf'),ofk=el.getAttribute('data-of'),ffk=el.getAttribute('data-ff'),jfk=el.getAttribute('data-jf');
@@ -2074,6 +2087,27 @@ function addPhotos(files){
   });
 }
 
+var recM=null,recTick=null;
+function recStart(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){toast(t('recNo'));return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
+    var chunks=[],mt=['audio/mp4;codecs=mp4a.40.2','audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg'].filter(function(m){try{return MediaRecorder.isTypeSupported(m);}catch(e){return false;}})[0];
+    var opt={audioBitsPerSecond:32000};if(mt)opt.mimeType=mt;
+    try{recM=new MediaRecorder(st,opt);}catch(e){recM=new MediaRecorder(st);}
+    recM.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data);};
+    recM.onstop=function(){
+      st.getTracks().forEach(function(tr){tr.stop();});clearInterval(recTick);S.rec=null;
+      var type=(recM.mimeType||mt||'audio/webm'),blob=new Blob(chunks,{type:type});recM=null;
+      if(!blob.size){render(true);return;}
+      if(blob.size>1500000){toast(t('voiceTooBig'));render(true);return;}
+      var r=new FileReader();r.onload=function(){if(S.draft)S.draft.voice=r.result;if(S.screen==='post')render(true);};r.readAsDataURL(blob);};
+    recM.start(500);S.rec={start:Date.now()};render(true);
+    recTick=setInterval(function(){
+      if(!S.rec)return;var sec=Math.floor((Date.now()-S.rec.start)/1000),el=app.querySelector('#rectime');
+      if(el)el.textContent=Math.floor(sec/60)+':'+('0'+sec%60).slice(-2);
+      if(sec>=60||S.screen!=='post')recStop();},250);
+  }).catch(function(){toast(t('recDenied'));});}
+function recStop(){if(recM&&recM.state!=='inactive')recM.stop();}
 function addVoice(f){
   if(!f||!S.draft)return;
   if(!/^audio\//.test(f.type)&&!/\.(m4a|mp3|aac|ogg|opus|wav|webm|3gp|amr)$/i.test(f.name||'')){toast(t('voiceBad'));return;}
@@ -2304,14 +2338,14 @@ V.admin=function(){
   var stats='<div class="stats" style="grid-template-columns:repeat(3,1fr)">'+st(c.users,t('admUsersTotal'))+st(c.users24,t('admNew24'))+st(c.online,t('admOnline'))+st(c.ads24,t('admAds24'))+st(c.msgs24,t('admMsgs24'))+'</div>';
   var reps=A.reports.length?A.reports.map(function(r){
     return '<div class="box" style="flex-direction:column;align-items:stretch;gap:6px"><button class="linkbtn" data-a="open" data-id="'+esc(r.adId)+'" style="text-align:start;font-weight:800;color:var(--fg)">'+esc(r.title)+'</button>'+
-     '<div class="meta" style="color:var(--danger);font-weight:700">'+t('admRepN').replace('{n}',r.n)+' · '+ago(r.last)+'</div>'+(r.reasons?'<div class="meta">'+esc(r.reasons)+'</div>':'')+
+     '<div class="meta" style="color:var(--danger);font-weight:700">'+tc('admRepN',r.n)+' · '+ago(r.last)+'</div>'+(r.reasons?'<div class="meta">'+esc(r.reasons)+'</div>':'')+
      '<div class="meta">'+esc(r.ownerName)+' · <span dir="ltr">+222 '+esc(r.ownerPhone)+'</span></div>'+
      '<div class="row" style="flex-wrap:wrap"><button class="btn small danger" data-a="admdel" data-id="'+esc(r.adId)+'">'+t('admDelAd')+'</button><button class="btn small" data-a="admok" data-id="'+esc(r.adId)+'">'+t('admIgnore')+'</button></div></div>';}).join('')
     :'<p class="meta" style="margin:0">'+t('admNoRep')+'</p>';
   var users=A.users.map(function(u){
     var pw=S.admPw===u.id?'<div class="row" style="gap:6px;width:100%"><label for="admpw" style="position:absolute;left:-9999px">'+t('admNewPw')+'</label><input id="admpw" class="inp" data-adm="admPwVal" value="'+esc(S.admPwVal)+'" placeholder="'+t('passHelp')+'" style="flex:1" autocomplete="off"><button class="btn small primary" data-a="admpwok" data-id="'+u.id+'">'+t('verify')+'</button></div>':'';
     return '<div class="box" style="flex-direction:column;align-items:stretch;gap:6px"><div class="row between"><b>'+esc(u.name)+(u.blocked?' <span class="badge" style="color:var(--danger)">'+t('admBlocked')+'</span>':'')+'</b><span class="meta" dir="ltr">+222 '+esc(u.phone)+'</span></div>'+
-     '<div class="meta">'+t('admAdsN').replace('{n}',u.ads)+' · '+t('since').replace('{d}',monthYear(u.since))+'</div>'+
+     '<div class="meta">'+tc('admAdsN',u.ads)+' · '+t('since').replace('{d}',monthYear(u.since))+'</div>'+
      '<div class="row" style="flex-wrap:wrap"><button class="btn small" data-a="admpw" data-id="'+u.id+'">'+t('admNewPw')+'</button>'+(u.id===S.user.id?'':'<button class="btn small '+(u.blocked?'':'danger')+'" data-a="admblock" data-id="'+u.id+'" data-v="'+(u.blocked?0:1)+'">'+t(u.blocked?'admUnblock':'admBlock')+'</button>')+'</div>'+pw+'</div>';}).join('');
   return topbar(t('admin'),'account')+'<div class="scroll"><div class="sec" style="gap:14px">'+stats+'<h2>'+t('admReports')+'</h2>'+reps+
    '<h2>'+t('admUsers')+'</h2><div class="field"><label for="admq">'+t('admSearch')+'</label><input id="admq" class="inp" data-adm="admQ" inputmode="numeric" value="'+esc(S.admQ)+'" placeholder="XX XX XX XX"></div>'+users+'</div></div>';};
