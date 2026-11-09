@@ -1968,7 +1968,8 @@ function render(keepScroll){
   var ns=app.querySelector('.scroll');if(ns)ns.scrollTop=S.screen==='chat'?ns.scrollHeight:top;
   var ci2=app.querySelector('#chatin');if(ci2){ci2.value=cv;if(cfoc)ci2.focus();}
 }
-function go(s){if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.confirm=null;render();}
+function go(s){var from=S.screen;if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.confirm=null;render();
+  if(!S.popping&&s!==from){try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}}}
 function newDraft(){return {photos:[],title:'',cat:S.cat||'',price:'',city:S.city||(S.user&&S.user.city)||'Nouakchott',desc:'',wa:true,call:true,msg:false,brand:'',model:'',year:'',km:'',fuel:'',gear:'',cond:'',seats:'',doors:'',vtype:'',color:'',deal:'',kind:'',surface:'',hood:'',rooms:'',salons:'',baths:'',furnished:'',papers:'',floor:'',levels:'',place:'',eq:[],
   pdtype:'',pbrand:'',pmodel:'',pstorage:'',pram:'',pcond:'',pcolor:'',pbatt:'',pdual:'',punlock:'',pincl:[],pimei:'',
   species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'new',nego:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
@@ -2427,6 +2428,38 @@ app.addEventListener('input',function(e){
   S[k]=el.value;if(k==='admQ'){clearTimeout(admT);admT=setTimeout(function(){loadAdmin().then(function(){var q=app.querySelector('#admq');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}});},400);}
   e.stopImmediatePropagation();},true);
 if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
+
+/* ---------- Retour : bouton du téléphone, geste de balayage depuis le bord ---------- */
+try{history.replaceState({souki:1,d:0},'');}catch(e){}
+function backButton(){return app.querySelector('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"]');}
+app.addEventListener('click',function(e){
+  var bb=e.target.closest('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"]');
+  if(!bb||S.popping||!history.state||!(history.state.d>0))return;
+  e.preventDefault();e.stopImmediatePropagation();history.back();},true);
+window.addEventListener('popstate',function(){
+  S.popping=true;
+  try{if(S.sheet){S.sheet=null;render(true);}else if(S.fsheet){S.fsheet=false;render(true);}
+    else{var b=backButton();if(b)b.click();else if(S.screen!=='home')go('home');}}finally{S.popping=false;}});
+(function(){
+  var iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
+  if(iosBrowser)return; // Safari sur iPhone a déjà ce geste : il passe par l'historique ci-dessus
+  var sx=0,sy=0,dx=0,on=false,moved=false;
+  function reset(anim){app.style.transition=anim?'transform .2s ease-out':'none';app.style.transform='';}
+  app.addEventListener('touchstart',function(e){
+    if(e.touches.length!==1||S.sheet||S.fsheet||!backButton())return;
+    var x=e.touches[0].clientX,r=app.getBoundingClientRect(),edge=S.lang==='ar'?r.right-x:x-r.left;
+    if(edge>32)return;on=true;moved=false;dx=0;sx=x;sy=e.touches[0].clientY;},{passive:true});
+  app.addEventListener('touchmove',function(e){
+    if(!on)return;var x=e.touches[0].clientX,y=e.touches[0].clientY;dx=S.lang==='ar'?sx-x:x-sx;
+    if(!moved){if(Math.abs(y-sy)>12&&Math.abs(y-sy)>Math.abs(dx)){on=false;return;}if(dx>10)moved=true;}
+    if(moved){var d=Math.max(0,dx);app.style.transition='none';app.style.transform='translateX('+(S.lang==='ar'?-d:d)+'px)';app.style.boxShadow='-8px 0 24px rgba(0,0,0,.15)';}},{passive:true});
+  function end(){
+    if(!on)return;on=false;var w=app.clientWidth;
+    if(moved&&dx>Math.min(110,w*0.3)){app.style.transition='transform .16s ease-out';app.style.transform='translateX('+(S.lang==='ar'?-w:w)+'px)';
+      setTimeout(function(){reset(false);app.style.boxShadow='';var b=backButton();if(b)b.click();},160);}
+    else{reset(true);setTimeout(function(){app.style.boxShadow='';},200);}}
+  app.addEventListener('touchend',end);app.addEventListener('touchcancel',function(){on=false;reset(true);});
+})();
 
 render();
 (TOKEN?api('GET','me').then(function(d){setUser(d.user);}).catch(function(){}):Promise.resolve())
