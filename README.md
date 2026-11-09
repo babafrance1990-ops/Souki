@@ -1,35 +1,25 @@
 # Souki (سوقي) — site web
 
-Petites annonces pour la Mauritanie. Hébergement gratuit sur **Cloudflare Pages** avec une base de données **Cloudflare D1**.
+Petites annonces pour la Mauritanie. Hébergement gratuit sur **Cloudflare Workers** avec une base de données **Cloudflare D1**.
 
 ## Contenu
 
 | Dossier / fichier | Rôle |
 |---|---|
 | `public/index.html` | Le site (français / arabe) |
-| `functions/api/[[path]].js` | Le serveur : comptes, annonces, photos, favoris, messages |
+| `src/api.js` | Le serveur : comptes, annonces, photos, favoris, messages |
+| `src/worker.js` | Point d'entrée Cloudflare (envoie `/api/...` au serveur, le reste au site) |
+| `wrangler.jsonc` | Réglages Cloudflare, dont l'**ID de la base D1** à coller |
 | `schema.sql` | Structure de la base (créée automatiquement au premier lancement) |
 
-## Mise en ligne sur Cloudflare (une seule fois)
+## Mise en ligne sur Cloudflare Workers (une seule fois)
 
-1. **Créer la base de données**
-   Cloudflare → *Storage & Databases* → *D1* → **Create** → nom : `souki-db`.
-2. **Créer le site**
-   Cloudflare → *Workers & Pages* → **Create** → onglet *Pages* → **Connect to Git** → choisir le dépôt `souki`.
-   - Framework preset : **None**
-   - Build command : *(laisser vide)*
-   - Build output directory : `public`
-   → **Save and Deploy**.
-3. **Relier la base au site**
-   Projet `souki` → *Settings* → *Bindings* → **Add** → *D1 database* :
-   - Variable name : `DB` (en majuscules)
-   - D1 database : `souki-db`
-   → **Save**.
-4. **Relancer le déploiement**
-   Onglet *Deployments* → sur le dernier déploiement, menu **⋯** → **Retry deployment**.
-5. Ouvrir **https://souki.pages.dev** (ou le nom affiché par Cloudflare).
+1. Cloudflare → *Stockage et bases de données* → *D1* → **Créer** → nom : `souki-db`. Copier son **ID** (Database ID).
+2. Sur GitHub, ouvrir `wrangler.jsonc` → crayon ✏️ → remplacer `COLLEZ-ICI-L-ID-DE-LA-BASE-D1` par cet ID → *Commit changes*.
+3. Cloudflare relance la compilation tout seul (sinon : *Déploiements* → **Retry build**). Commande de déploiement : `npx wrangler deploy`, répertoire racine `/`.
+4. Ouvrir l'adresse affichée dans *Vue d'ensemble* (du type `souki.<compte>.workers.dev`).
 
-Ensuite, chaque modification envoyée sur GitHub est mise en ligne automatiquement en une minute environ.
+Ensuite, chaque modification envoyée sur GitHub est mise en ligne automatiquement.
 
 ## Limites du plan gratuit (largement suffisantes pour démarrer)
 
