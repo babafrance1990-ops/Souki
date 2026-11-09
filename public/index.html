@@ -345,7 +345,7 @@ var TX={
   surface:'Surface (m²)',rooms:'Chambres',salons:'Salons',baths:'Salles de bain',furnished:'Meublée',yesO:'Oui',noO:'Non',papers:'Papiers',
   p_titre:'Titre foncier',p_permis:'Permis d’occuper',p_autre:'Autre document',hood:'Quartier',hoodPh:'Ex. : Tevragh Zeina',rent:'Loyer par mois',perMonth:' /mois',roomsMin:'Chambres min.',
   errReType:'Choisissez le type d’annonce.',errSurface:'Indiquez la surface en chiffres.',errRooms:'Indiquez le nombre de chambres.',errHood:'Indiquez le quartier.',
-  u_new:'Nouvelle ouguiya (MRU)',u_old:'Ancienne ouguiya',eqNew:'= {v} MRU (nouvelle ouguiya)',eqOld:'= {v} anciennes ouguiyas',nego:'Prix à discuter',negoB:'À discuter',
+  u_new:'Nouvelle ouguiya (MRU)',u_old:'Ancienne ouguiya',oldUnit:'UM (anciennes ouguiyas)',eqNew:'= {v} MRU (nouvelle ouguiya)',eqOld:'= {v} anciennes ouguiyas',nego:'Prix à discuter',negoB:'À discuter',
   hoodPh2:'Ex. : Centre',nearLbl:'Près de… (repère connu)',nearPh:'Ex. : marché Capitale, Carrefour Madrid',nearShow:'Près de',allHoods:'Tous les quartiers',
   animInfo:'Informations sur les animaux',species:'Espèce',sp_mouton:'Mouton',sp_chevre:'Chèvre',sp_chameau:'Chameau',sp_vache:'Vache',sp_volaille:'Volaille',sp_autre:'Autre',
   count:'Nombre de têtes',heads:'têtes',head:'tête',sex:'Sexe',sx_m:'Mâle',sx_f:'Femelle',sx_mix:'Mâles et femelles',age:'Âge',ag_0:'Moins d’1 an',ag_1:'1 à 2 ans',ag_2:'2 à 4 ans',ag_4:'Plus de 4 ans',
@@ -476,7 +476,7 @@ var TX={
   surface:'المساحة (م²)',rooms:'غرف النوم',salons:'الصالونات',baths:'الحمامات',furnished:'مفروش',yesO:'نعم',noO:'لا',papers:'الوثائق',
   p_titre:'سند ملكية',p_permis:'رخصة إشغال',p_autre:'وثيقة أخرى',hood:'الحي',hoodPh:'مثال: تفرغ زينة',rent:'الإيجار الشهري',perMonth:' /شهر',roomsMin:'أقل عدد غرف',
   errReType:'اختر نوع الإعلان.',errSurface:'اكتب المساحة بالأرقام.',errRooms:'اكتب عدد الغرف.',errHood:'اكتب اسم الحي.',
-  u_new:'الأوقية الجديدة',u_old:'الأوقية القديمة',eqNew:'أي {v} أوقية جديدة',eqOld:'أي {v} أوقية قديمة',nego:'السعر قابل للتفاوض',negoB:'قابل للتفاوض',
+  u_new:'الأوقية الجديدة',u_old:'الأوقية القديمة',oldUnit:'أوقية قديمة',eqNew:'أي {v} أوقية جديدة',eqOld:'أي {v} أوقية قديمة',nego:'السعر قابل للتفاوض',negoB:'قابل للتفاوض',
   hoodPh2:'مثال: وسط المدينة',nearLbl:'قرب… (معلم معروف)',nearPh:'مثال: سوق العاصمة، كارفور مدريد',nearShow:'قرب',allHoods:'كل المقاطعات',
   animInfo:'معلومات المواشي',species:'النوع',sp_mouton:'خروف',sp_chevre:'ماعز',sp_chameau:'جمل',sp_vache:'بقرة',sp_volaille:'دواجن',sp_autre:'أخرى',
   count:'عدد الرؤوس',heads:'رؤوس',head:'رأس',sex:'الجنس',sx_m:'ذكر',sx_f:'أنثى',sx_mix:'ذكور وإناث',age:'العمر',ag_0:'أقل من سنة',ag_1:'من سنة إلى سنتين',ag_2:'من سنتين إلى 4 سنوات',ag_4:'أكثر من 4 سنوات',
@@ -587,7 +587,7 @@ function noComm(e){return !!e&&(e.pub==='owner'||(e.pub==='agent'&&e.comm==='non
 function hasRooms(k){return k==='apt'||k==='house';}
 function normE(e){if(!e||e.deal)return e;var n={};for(var k in e)n[k]=e[k];n.deal=e.type==='rent'?'rent':'sale';n.kind=e.type==='land'?'land':'house';return n;}
 function kindDeal(e){return t('k2_'+e.kind)+' '+(S.lang==='fr'?t(e.deal==='rent'?'dealRent':'dealSale').toLowerCase():t(e.deal==='rent'?'dealRent':'dealSale'));}
-function priceStr(a){var e=normE(a.estate);return fmt(a.price)+((e&&e.deal==='rent')||a.job?t('perMonth'):'');}
+function priceStr(a){var e=normE(a.estate);return (a.punit==='old'?num(a.priceOld||a.price*10)+' '+t('oldUnit'):fmt(a.price))+((e&&e.deal==='rent')||a.job?t('perMonth'):'');}
 function estMeta(a){var e=normE(a.estate);if(!e)return '';var p=[kindDeal(e)];if(hasRooms(e.kind)&&e.rooms)p.push(S.lang==='ar'?arCount(e.rooms,'room'):e.rooms+' '+t('rooms').toLowerCase());if(e.surface)p.push(e.surface+' '+U('m2'));return p.join(' · ');}
 var VTYPES=['berline','suv','pickup','citadine','utilitaire','monospace'];
 var COLORS=['blanc','noir','gris','argent','bleu','rouge','vert','beige','marron','autre'];
@@ -1742,7 +1742,7 @@ V.detail=function(){
   return '<div class="scroll"><div class="hero">'+photos+'<div class="tl"><button class="icon solid" data-a="go" data-s="'+S.prev+'" aria-label="'+t('back')+'">'+svg(S.lang==='ar'?I.chev:I.back,22)+'</button></div>'+
    '<div class="tr"><button class="icon solid" data-a="fav" data-id="'+a.id+'" aria-pressed="'+isFav(a.id)+'" aria-label="'+t('favs')+'"><span style="color:'+(isFav(a.id)?'var(--brand)':'inherit')+'">'+svg(I.fav.replace('<path','<path fill="'+(isFav(a.id)?'currentColor':'none')+'"'),22)+'</span></button></div>'+
    (a.sample?'<span class="tag" style="top:auto;bottom:10px">'+t('example')+'</span>':'')+(showPh&&a.photos.length>1?'<span class="tag" style="top:auto;bottom:10px;inset-inline-start:auto;inset-inline-end:10px">1 / '+a.photos.length+'</span>':'')+'</div>'+
-   '<div class="sec"><h1>'+esc(a.title)+'</h1><div><div class="price" style="font-size:26px">'+priceStr(a)+'</div><div class="meta"><b style="color:var(--fg)">'+t('newOug')+'</b> · '+t('eqOld').replace('{v}',num(a.price*10))+(rentA?t('perMonth'):'')+'</div></div>'+
+   '<div class="sec"><h1>'+esc(a.title)+'</h1><div><div class="price" style="font-size:26px">'+priceStr(a)+'</div><div class="meta">'+(a.punit==='old'?'<b style="color:var(--fg)">'+t('u_old')+'</b> · '+t('eqNew').replace('{v}',num(a.price)):'<b style="color:var(--fg)">'+t('newOug')+'</b> · '+t('eqOld').replace('{v}',num(a.price*10)))+(rentA?t('perMonth'):'')+'</div></div>'+
    '<div><div class="row meta" style="font-size:14px">'+svg(I.pin,16)+esc(loc)+' · '+ago(a.t)+'</div>'+(a.near?'<div class="meta" style="font-size:14px;padding-inline-start:24px">'+t('nearShow')+' : <b style="color:var(--fg)">'+esc(a.near)+'</b></div>':'')+'</div>'+
    '<div class="badges"><span class="badge">'+cname(a.cat)+'</span>'+(a.nego?'<span class="badge" style="color:var(--brand)">'+t('negoB')+'</span>':'')+(a.status==='sold'?'<span class="badge" style="color:var(--danger)">'+t('sold')+'</span>':'')+'</div>'+
    '<a class="btn wide sharewa" href="'+esc(wa)+'" target="_blank" rel="noopener">'+svg(I.share,20)+t('shareWa')+'</a>'+
@@ -2324,7 +2324,7 @@ function publish(){
   S.errs=e;
   if(Object.keys(e).length){var mainErr={title:1,cat:1,price:1,stype:1,sname:1,vkind:1,deal:1,kind:1,mtype:1,pdtype:1,hsub:1,mosub:1,fsub:1,joffer:1,species:1};
     if(Object.keys(e).some(function(k){return !mainErr[k];}))S.moreOpen=true;render(true);setTimeout(guideErr,40);return;}
-  var ad={id:'m'+Date.now(),title:d.title.trim(),cat:d.cat,price:pm,city:d.city,hood:(d.hood||'').trim(),near:(d.near||'').trim(),nego:!!d.nego,t:Date.now(),desc:d.desc.trim(),seller:S.user.name,phone:S.user.phone,photos:d.photos.slice(),contacts:{wa:d.wa,call:d.call,msg:d.msg}};
+  var ad={id:'m'+Date.now(),punit:d.punit==='old'?'old':'new',priceOld:d.punit==='old'?+p:undefined,title:d.title.trim(),cat:d.cat,price:pm,city:d.city,hood:(d.hood||'').trim(),near:(d.near||'').trim(),nego:!!d.nego,t:Date.now(),desc:d.desc.trim(),seller:S.user.name,phone:S.user.phone,photos:d.photos.slice(),contacts:{wa:d.wa,call:d.call,msg:d.msg}};
   if(car)ad.car=car;
   if(veh)ad.veh=veh;
   if(estate){ad.estate=estate;ad.hood=d.hood.trim();}
@@ -2423,7 +2423,7 @@ function adminClick(a,el,id){
     case 'forgot':S.forgot=!S.forgot;render(true);return true;
     case 'report':if(!S.user){S.after='detail';S.login={step:1,phone:'',code:'',name:'',pass:'',err:''};go('login');return true;}
       api('POST','ads/'+S.id+'/report',{reason:''}).then(function(){toast(t('reported'));}).catch(function(){toast(t('netErr'));});return true;
-    case 'editad':var ea=byId(id);if(!ea)return true;var base=ea._d?JSON.parse(JSON.stringify(ea._d)):{title:ea.title||'',cat:ea.cat||'',price:String(ea.price||''),punit:'new',city:ea.city||'Nouakchott',hood:ea.hood||'',near:ea.near||'',desc:ea.desc||'',nego:!!ea.nego,stype:ea.stype||'',
+    case 'editad':var ea=byId(id);if(!ea)return true;var base=ea._d?JSON.parse(JSON.stringify(ea._d)):{title:ea.title||'',cat:ea.cat||'',price:String(ea.punit==='old'?(ea.priceOld||(ea.price||0)*10):(ea.price||'')),punit:ea.punit==='old'?'old':'new',city:ea.city||'Nouakchott',hood:ea.hood||'',near:ea.near||'',desc:ea.desc||'',nego:!!ea.nego,stype:ea.stype||'',
         sname:(ea.splace&&ea.splace.name)||'',saddr:(ea.splace&&ea.splace.addr)||'',wa:!ea.contacts||!!ea.contacts.wa,call:!ea.contacts||!!ea.contacts.call,msg:!!(ea.contacts&&ea.contacts.msg)};
       S.editId=id;S.draft=Object.assign(newDraft(),base,{photos:(ea.photos||[]).slice(),voice:ea.voice||''});S.draftRestored=false;S.errs={};go('post');var sc=app.querySelector('.scroll');if(sc)sc.scrollTop=0;return true;
   }

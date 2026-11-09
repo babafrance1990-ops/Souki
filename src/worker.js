@@ -10,7 +10,8 @@ async function withAdPreview(request, env, url, id) {
     const row = await env.DB.prepare('SELECT data FROM ads WHERE id = ?').bind(id).first();
     if (!row) return res;
     const a = JSON.parse(row.data);
-    const price = new Intl.NumberFormat('fr-FR').format(a.price || 0).replace(/\u202f|\u00a0/g, ' ') + ' MRU';
+    const old = a.punit === 'old';
+    const price = new Intl.NumberFormat('fr-FR').format(old ? (a.priceOld || (a.price || 0) * 10) : (a.price || 0)).replace(/\u202f|\u00a0/g, ' ') + (old ? ' UM (anciennes ouguiyas)' : ' MRU');
     const img = a.photos && a.photos[0] ? url.origin + a.photos[0] : url.origin + '/icon-512.png';
     const place = [a.hood, a.city].filter(Boolean).join(', ');
     const desc = (place ? place + ' · ' : '') + String(a.desc || '').slice(0, 140);
