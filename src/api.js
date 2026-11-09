@@ -10,11 +10,14 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS convs (id TEXT PRIMARY KEY, ad_id TEXT NOT NULL, buyer_id TEXT NOT NULL, seller_id TEXT NOT NULL, title TEXT, updated INTEGER NOT NULL, buyer_read INTEGER DEFAULT 0, seller_read INTEGER DEFAULT 0, UNIQUE(ad_id, buyer_id))`,
   `CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, conv_id TEXT NOT NULL, sender_id TEXT NOT NULL, txt TEXT NOT NULL, t INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS messages_conv ON messages(conv_id, t)`,
+  `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
   await db.batch(SCHEMA.map((s) => db.prepare(s)));
+  for (const m of MIGRATIONS) { try { await db.prepare(m).run(); } catch (e) { /* déjà appliquée */ } }
   schemaReady = true;
 }
 
@@ -34,8 +37,12 @@ async function hashPass(pass, saltB64) {
 }
 function sameStr(a, b) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
 
-function publicUser(u) {
-  return { id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]') };
+function isAdmin(env, u) {
+  const list = String(env.ADMIN_PHONES || '').split(',').map((x) => x.replace(/\D/g, '')).filter(Boolean);
+  return !!u && list.includes(u.phone);
+}
+function publicUser(u, env) {
+  return { admin: isAdmin(env || {}, u), id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]') };
 }
 async function newSession(db, userId) {
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -46,7 +53,7 @@ async function currentUser(db, req) {
   const h = req.headers.get('authorization') || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : '';
   if (!token) return null;
-  return db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?').bind(token).first();
+  return db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND COALESCE(u.blocked, 0) = 0').bind(token).first();
 }
 function adOut(row) {
   const a = JSON.parse(row.data);
@@ -99,11 +106,12 @@ export async function onRequest(ctx) {
         const id = uid('u');
         await db.prepare('INSERT INTO users (id, phone, name, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?)').bind(id, phone, name, await hashPass(pass, salt), salt, Date.now()).run();
         const u = await db.prepare('SELECT * FROM users WHERE id = ?').bind(id).first();
-        return json({ token: await newSession(db, id), user: publicUser(u) });
+        return json({ token: await newSession(db, id), user: publicUser(u, env) });
       }
       if (parts[1] === 'login' && method === 'POST') {
         const u = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(phone).first();
         if (!u) return fail('nouser', 404);
+        if (u.blocked) return fail('blocked', 403);
         if (u.lock_until > Date.now()) return fail('locked', 429);
         if (!sameStr(await hashPass(pass, u.salt), u.pass_hash)) {
           const fails = (u.fails || 0) + 1;
@@ -111,7 +119,7 @@ export async function onRequest(ctx) {
           return fail('badpass', 401);
         }
         await db.prepare('UPDATE users SET fails = 0, lock_until = 0 WHERE id = ?').bind(u.id).run();
-        return json({ token: await newSession(db, u.id), user: publicUser(u) });
+        return json({ token: await newSession(db, u.id), user: publicUser(u, env) });
       }
       if (parts[1] === 'logout' && method === 'POST') {
         const h = req.headers.get('authorization') || '';
@@ -121,9 +129,13 @@ export async function onRequest(ctx) {
       return fail('not_found', 404);
     }
 
+    if (parts[0] === 'config' && method === 'GET') {
+      return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, '') });
+    }
+
     // ---------- Annonces (lecture publique) ----------
     if (parts[0] === 'ads' && !parts[1] && method === 'GET') {
-      const { results } = await db.prepare('SELECT * FROM ads ORDER BY created DESC LIMIT 1000').all();
+      const { results } = await db.prepare('SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE COALESCE(u.blocked, 0) = 0 ORDER BY a.created DESC LIMIT 1000').all();
       return json({ ads: results.map(adOut) });
     }
 
@@ -132,7 +144,7 @@ export async function onRequest(ctx) {
     if (!me) return fail('auth', 401);
 
     if (parts[0] === 'me') {
-      if (method === 'GET') return json({ user: publicUser(me) });
+      if (method === 'GET') return json({ user: publicUser(me, env) });
       if (method === 'PUT') {
         const b = await readBody(req);
         const name = b.name !== undefined ? String(b.name).trim().slice(0, 30) : me.name;
@@ -147,7 +159,7 @@ export async function onRequest(ctx) {
           if (st.length) await db.batch(st);
         }
         const u = await db.prepare('SELECT * FROM users WHERE id = ?').bind(me.id).first();
-        return json({ user: publicUser(u) });
+        return json({ user: publicUser(u, env) });
       }
     }
 
@@ -176,15 +188,99 @@ export async function onRequest(ctx) {
       }
       const row = parts[1] ? await db.prepare('SELECT * FROM ads WHERE id = ?').bind(parts[1]).first() : null;
       if (!row) return fail('not_found', 404);
-      if (row.user_id !== me.id) return fail('forbidden', 403);
+      if (parts[2] === 'report' && method === 'POST') {
+        const b = await readBody(req);
+        const dup = await db.prepare('SELECT id FROM reports WHERE ad_id = ? AND reporter_id = ?').bind(row.id, me.id).first();
+        if (!dup) await db.prepare('INSERT INTO reports (ad_id, reporter_id, reason, t) VALUES (?, ?, ?, ?)').bind(row.id, me.id, String(b.reason || '').slice(0, 300), Date.now()).run();
+        return json({ ok: true });
+      }
+      const admin = isAdmin(env, me);
+      if (row.user_id !== me.id && !(admin && !parts[2] && method === 'DELETE')) return fail('forbidden', 403);
+      if (!parts[2] && method === 'PUT') {
+        const b = await readBody(req);
+        const ad = b.ad || {};
+        if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
+        const keep = [], photos = [];
+        for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 4)) {
+          const m = /^\/api\/media\/(\w+)$/.exec(p || '');
+          if (m) {
+            const own = await db.prepare('SELECT id FROM media WHERE id = ? AND ad_id = ?').bind(m[1], row.id).first();
+            if (own) { keep.push(m[1]); photos.push(p); }
+          } else {
+            const u = await storeMedia(db, me.id, row.id, p, 1500000);
+            if (u) { keep.push(u.split('/').pop()); photos.push(u); }
+          }
+        }
+        ad.photos = photos;
+        const vm = /^\/api\/media\/(\w+)$/.exec(ad.voice || '');
+        if (vm) keep.push(vm[1]);
+        else if (ad.voice) { ad.voice = await storeMedia(db, me.id, row.id, ad.voice, 1600000); if (ad.voice) keep.push(ad.voice.split('/').pop()); }
+        if (!ad.voice) delete ad.voice;
+        const { results: old } = await db.prepare('SELECT id FROM media WHERE ad_id = ?').bind(row.id).all();
+        const drop = old.filter((o) => !keep.includes(o.id)).map((o) => db.prepare('DELETE FROM media WHERE id = ?').bind(o.id));
+        if (drop.length) await db.batch(drop);
+        delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample;
+        ad.seller = me.name; ad.phone = fmtPhone(me.phone);
+        if (me.shop) ad.shop = JSON.parse(me.shop); else delete ad.shop;
+        ad.edited = Date.now();
+        await db.prepare('UPDATE ads SET data = ? WHERE id = ?').bind(JSON.stringify(ad), row.id).run();
+        return json({ ad: adOut({ ...row, data: JSON.stringify(ad) }) });
+      }
       if (parts[2] === 'sold' && method === 'POST') {
         await db.prepare("UPDATE ads SET status = 'sold' WHERE id = ?").bind(row.id).run();
         return json({ ok: true });
       }
       if (!parts[2] && method === 'DELETE') {
-        await db.batch([db.prepare('DELETE FROM ads WHERE id = ?').bind(row.id), db.prepare('DELETE FROM media WHERE ad_id = ?').bind(row.id)]);
+        await db.batch([db.prepare('DELETE FROM ads WHERE id = ?').bind(row.id), db.prepare('DELETE FROM media WHERE ad_id = ?').bind(row.id), db.prepare('DELETE FROM reports WHERE ad_id = ?').bind(row.id)]);
         return json({ ok: true });
       }
+    }
+
+    // ---------- Administration ----------
+    if (parts[0] === 'admin') {
+      if (!isAdmin(env, me)) return fail('forbidden', 403);
+      if (parts[1] === 'overview' && method === 'GET') {
+        const day = Date.now() - 86400000;
+        const c = await db.prepare(`SELECT (SELECT COUNT(*) FROM users) AS users, (SELECT COUNT(*) FROM users WHERE created > ?) AS users24,
+          (SELECT COUNT(*) FROM ads WHERE status = 'online') AS online, (SELECT COUNT(*) FROM ads WHERE created > ?) AS ads24,
+          (SELECT COUNT(*) FROM messages WHERE t > ?) AS msgs24`).bind(day, day, day).first();
+        const { results: reps } = await db.prepare(`SELECT r.ad_id, COUNT(*) AS n, MAX(r.t) AS last, GROUP_CONCAT(r.reason, ' | ') AS reasons, a.data, a.user_id, u.name, u.phone
+          FROM reports r JOIN ads a ON a.id = r.ad_id JOIN users u ON u.id = a.user_id GROUP BY r.ad_id ORDER BY last DESC LIMIT 100`).all();
+        return json({ counts: c, reports: reps.map((r) => ({ adId: r.ad_id, n: r.n, last: r.last, reasons: (r.reasons || '').replace(/^[ |]+|[ |]+$/g, ''), title: JSON.parse(r.data).title, ownerId: r.user_id, ownerName: r.name, ownerPhone: fmtPhone(r.phone) })) });
+      }
+      if (parts[1] === 'users' && !parts[2] && method === 'GET') {
+        const q = (url.searchParams.get('q') || '').replace(/\D/g, '');
+        const { results } = await db.prepare(`SELECT u.id, u.phone, u.name, u.created, COALESCE(u.blocked, 0) AS blocked, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id) AS ads
+          FROM users u WHERE u.phone LIKE ? ORDER BY u.created DESC LIMIT 50`).bind('%' + q + '%').all();
+        return json({ users: results.map((u) => ({ id: u.id, phone: fmtPhone(u.phone), name: u.name, since: u.created, blocked: !!u.blocked, ads: u.ads })) });
+      }
+      const target = parts[1] === 'users' && parts[2] ? await db.prepare('SELECT * FROM users WHERE id = ?').bind(parts[2]).first() : null;
+      if (target && method === 'POST') {
+        const b = await readBody(req);
+        if (parts[3] === 'password') {
+          const pass = String(b.password || '');
+          if (pass.length < 6) return fail('pass_short');
+          const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+          await db.batch([
+            db.prepare('UPDATE users SET pass_hash = ?, salt = ?, fails = 0, lock_until = 0 WHERE id = ?').bind(await hashPass(pass, salt), salt, target.id),
+            db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(target.id),
+          ]);
+          return json({ ok: true });
+        }
+        if (parts[3] === 'block') {
+          if (target.id === me.id) return fail('self');
+          const v = b.blocked ? 1 : 0;
+          const st = [db.prepare('UPDATE users SET blocked = ? WHERE id = ?').bind(v, target.id)];
+          if (v) st.push(db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(target.id));
+          await db.batch(st);
+          return json({ ok: true });
+        }
+      }
+      if (parts[1] === 'reports' && parts[2] && method === 'DELETE') {
+        await db.prepare('DELETE FROM reports WHERE ad_id = ?').bind(parts[2]).run();
+        return json({ ok: true });
+      }
+      return fail('not_found', 404);
     }
 
     // ---------- Messagerie ----------

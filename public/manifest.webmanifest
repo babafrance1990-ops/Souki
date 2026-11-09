@@ -1,0 +1,16 @@
+{
+  "name": "Souki — petites annonces en Mauritanie",
+  "short_name": "Souki",
+  "description": "Achetez et vendez près de chez vous en Mauritanie : voitures, immobilier, téléphones, maison, emploi…",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7F3EA",
+  "theme_color": "#0B6B3A",
+  "lang": "fr",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

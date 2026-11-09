@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B6B3A">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Souki">
 <title>Souki</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap">
@@ -191,6 +197,7 @@ textarea.inp{height:auto;padding:12px 14px;resize:none;line-height:1.5}
 .filters .inp{height:42px;font-size:15px;padding:0 10px}
 .sel{height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:0 10px;font-size:14px;font-weight:600}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .2s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.6}}}
+.flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
 <body>
@@ -273,14 +280,14 @@ var TX={
   photos:'Photos',upTo:'(jusqu’à 4)',add:'Ajouter',compress:'Les photos sont réduites pour économiser vos données.',title:'Titre',cat:'Catégorie',choose:'Choisir…',price:'Prix',city:'Ville',
   descPh:'État, accessoires, raison de la vente…',contact:'Comment vous contacter ?',publish:'Publier l’annonce',published:'Annonce publiée',
   errTitle:'Indiquez un titre (au moins 4 caractères).',errCat:'Choisissez une catégorie.',errPrice:'Indiquez un prix en chiffres.',
-  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
+  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',forgot:'Mot de passe oublié ?',forgotTxt:'Écrivez à l’équipe Souki sur WhatsApp depuis votre numéro : nous vous donnerons un nouveau mot de passe.',forgotNo:'Contactez l’administrateur de Souki pour recevoir un nouveau mot de passe.',forgotMsg:'Bonjour, j’ai oublié mon mot de passe Souki. Mon numéro : ',e_blocked:'Ce compte a été bloqué. Contactez l’équipe Souki.',editAd:'Modifier l’annonce',saveChanges:'Enregistrer les modifications',edit:'Modifier',updated:'Annonce modifiée',noEdit:'Cette annonce ne peut pas être modifiée. Supprimez-la et publiez-en une nouvelle.',admin:'Administration',admUsers:'Utilisateurs',admUsersTotal:'utilisateurs',admNew24:'nouveaux (24 h)',admOnline:'annonces en ligne',admAds24:'annonces (24 h)',admMsgs24:'messages (24 h)',admReports:'Annonces signalées',admNoRep:'Aucun signalement.',admRepN:'{n} signalement(s)',admDelAd:'Supprimer l’annonce',admIgnore:'Ignorer',admSearch:'Rechercher un numéro',admNewPw:'Nouveau mot de passe',admBlock:'Bloquer',admUnblock:'Débloquer',admBlocked:'Bloqué',admPwOk:'Mot de passe changé. Transmettez-le à l’utilisateur.',admDone:'C’est fait.',admAdsN:'{n} annonce(s)',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
   errPhone:'Le numéro doit contenir 8 chiffres.',codeLbl:'Code reçu',demoCode:'Démo : le code est 1234',verify:'Valider',errCode:'Code incorrect. En démo, tapez 1234.',nameLbl:'Votre nom (affiché sur vos annonces)',
   online:'En ligne',soldTab:'Vendues',noMine:'Vous n’avez pas encore d’annonce.',markSold:'Marquer vendu',del:'Supprimer',confirmDel:'Supprimer définitivement ?',yes:'Oui, supprimer',no:'Annuler',
   logout:'Se déconnecter',lang:'Langue',pro:'Passer en compte commerçant (boutique)',help:'Aide et sécurité',noFav:'Touchez le marque-page d’une annonce pour la retrouver ici.',
   noMsg:'Vos conversations avec les vendeurs apparaîtront ici.',close:'Fermer',copy:'Copier le message',copied:'Message copié',
   waInfo:'Dans l’application finale, ce bouton ouvre WhatsApp avec ce message déjà écrit :',callInfo:'Dans l’application finale, ce bouton lance l’appel vers le vendeur :',
   msgInfo:'La messagerie intégrée sera ajoutée dans une prochaine version. Message prévu :',hello:'Bonjour, votre annonce « {t} » est-elle toujours disponible ?',
-  reported:'Merci. L’annonce sera vérifiée par un modérateur (démo).',demo:'Prototype de démonstration : les annonces marquées « Exemple » sont fictives.',
+  reported:'Merci. L’annonce sera vérifiée par un modérateur.',demo:'Prototype de démonstration : les annonces marquées « Exemple » sont fictives.',
   ago:{m:'il y a {n} min',h:'il y a {n} h',d:'il y a {n} j',now:'à l’instant'},needLogin:'Connectez-vous pour déposer une annonce.',removeFav:'Retiré des favoris',addFav:'Ajouté aux favoris',
   share:'Partager',back:'Retour',seeAll:'Voir',mineTitle:'Mes annonces',settings:'Paramètres',
   carInfo:'Informations sur la voiture',brand:'Marque',model:'Modèle',year:'Année',km:'Kilométrage (km)',fuel:'Carburant',petrol:'Essence',diesel:'Diesel',
@@ -404,14 +411,14 @@ var TX={
   photos:'الصور',upTo:'(حتى 4)',add:'إضافة',compress:'يتم تصغير الصور لتوفير الإنترنت.',title:'العنوان',cat:'الفئة',choose:'اختر…',price:'السعر',city:'المدينة',
   descPh:'الحالة، الملحقات، سبب البيع…',contact:'كيف يتواصلون معك؟',publish:'نشر الإعلان',published:'تم نشر الإعلان',
   errTitle:'اكتب عنواناً (4 أحرف على الأقل).',errCat:'اختر فئة.',errPrice:'اكتب السعر بالأرقام.',
-  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
+  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق سوقي على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول سوقي للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور سوقي. رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق سوقي.',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{n} بلاغ',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{n} إعلان',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
   errPhone:'يجب أن يتكون الرقم من 8 أرقام.',codeLbl:'الرمز المستلم',demoCode:'تجربة: الرمز هو 1234',verify:'تأكيد',errCode:'رمز خاطئ. في التجربة اكتب 1234.',nameLbl:'اسمك (يظهر على إعلاناتك)',
   online:'منشورة',soldTab:'مُباعة',noMine:'ليس لديك إعلانات بعد.',markSold:'تم البيع',del:'حذف',confirmDel:'حذف نهائياً؟',yes:'نعم، احذف',no:'إلغاء',
   logout:'تسجيل الخروج',lang:'اللغة',pro:'حساب تاجر (متجر)',help:'المساعدة والأمان',noFav:'اضغط على علامة الحفظ في أي إعلان ليظهر هنا.',
   noMsg:'ستظهر هنا محادثاتك مع البائعين.',close:'إغلاق',copy:'نسخ الرسالة',copied:'تم النسخ',
   waInfo:'في التطبيق النهائي يفتح هذا الزر واتساب مع هذه الرسالة:',callInfo:'في التطبيق النهائي يتصل هذا الزر بالبائع:',
   msgInfo:'ستضاف المراسلة الداخلية في نسخة قادمة. الرسالة:',hello:'السلام عليكم، هل إعلانكم «{t}» ما زال متاحاً؟',
-  reported:'شكراً. سيراجع المشرف الإعلان (تجربة).',demo:'نموذج تجريبي: الإعلانات المكتوب عليها «مثال» وهمية.',
+  reported:'شكراً. سيراجع المشرف الإعلان.',demo:'نموذج تجريبي: الإعلانات المكتوب عليها «مثال» وهمية.',
   ago:{m:'منذ {n} دقيقة',h:'منذ {n} ساعة',d:'منذ {n} يوم',now:'الآن'},needLogin:'سجّل الدخول لإضافة إعلان.',removeFav:'أزيل من المفضلة',addFav:'أضيف إلى المفضلة',
   share:'مشاركة',back:'رجوع',seeAll:'عرض',mineTitle:'إعلاناتي',settings:'الإعدادات',
   carInfo:'معلومات السيارة',brand:'الماركة',model:'الموديل',year:'السنة',km:'عدد الكيلومترات',fuel:'الوقود',petrol:'بنزين',diesel:'ديزل',
@@ -1615,7 +1622,7 @@ function refreshMine(){S.mine=S.user?S.remote.filter(function(a){return a.owner=
 function loadAds(){return api('GET','ads').then(function(d){S.remote=d.ads||[];refreshMine();}).catch(function(){toast(t('netErr'));});}
 function saveFavs(){save('favs',S.favs);if(S.user)api('PUT','me',{favs:S.favs}).catch(function(){});}
 function setUser(u,merge){
-  S.user={id:u.id,phone:u.phone,name:u.name,since:u.since,city:u.city||'',shop:u.shop||null};save('user',S.user);
+  S.user={id:u.id,phone:u.phone,name:u.name,since:u.since,city:u.city||'',shop:u.shop||null,admin:!!u.admin};save('user',S.user);
   var f=(u.favs||[]).slice();
   if(merge){S.favs.forEach(function(x){if(f.indexOf(x)<0)f.push(x);});S.favs=f;saveFavs();}else{S.favs=f;save('favs',S.favs);}
   refreshMine();}
@@ -1648,7 +1655,7 @@ function doLogin(){
   api('POST','auth/'+(reg?'register':'login'),{phone:L.phone,password:L.pass,name:L.name}).then(function(d){
     S.busy=false;TOKEN=d.token;save('token',TOKEN);setUser(d.user,true);S.login={step:1,phone:'',code:'',name:'',pass:'',err:''};
     return Promise.all([loadAds(),loadConvs()]).then(afterLogin);
-  }).catch(function(e){S.busy=false;L.err=t({exists:'e_exists',nouser:'e_nouser',badpass:'e_badpass',locked:'e_locked',phone:'errPhone',pass_short:'errPass',name:'errName'}[e.code]||'netErr');render();});}
+  }).catch(function(e){S.busy=false;L.err=t({exists:'e_exists',nouser:'e_nouser',badpass:'e_badpass',locked:'e_locked',blocked:'e_blocked',phone:'errPhone',pass_short:'errPass',name:'errName'}[e.code]||'netErr');render();});}
 var lastPoll=0;setInterval(function(){if(!S.user||document.hidden)return;var fast=S.screen==='chat'||S.screen==='msgs';if(Date.now()-lastPoll>=(fast?10000:60000)){lastPoll=Date.now();loadConvs();}},5000);
 document.addEventListener('visibilitychange',function(){if(document.hidden)return;loadConvs();
   if(S.screen==='home'&&!S.sfocus)loadAds().then(function(){if(S.screen==='home'&&!S.sfocus)render(true);});});
@@ -1692,7 +1699,7 @@ V.detail=function(){
    (a.car?specsHTML(a.car):'')+(a.veh?vehSpecs(a.veh):'')+(a.estate?estateSpecs(a.estate,a.hood?hoodName(a.hood):''):'')+(a.dev?phoneSpecs(a.dev):'')+(a.mm?multiSpecs(a.mm):'')+(a.home?homeSpecs(a.home):'')+(a.mo?modeSpecs(a.mo):'')+(a.fam?famSpecs(a.fam):'')+(a.job?jobSpecs(a.job):'')+(a.anim?animSpecs(a.anim):'')+
    (a.desc?'<h2>'+t('desc')+'</h2><p style="margin:0;line-height:1.6;white-space:pre-line">'+esc(a.desc)+'</p>':'')+
    seller+'<div class="tip">'+svg(I.shield,22)+'<p>'+t('safety')+'</p></div>'+(mineAd?'':'<button class="linkbtn" data-a="report">'+t('report')+'</button>')+'</div></div>'+
-   (mineAd?'':'<div class="bar"><button class="btn wa" data-a="contact" data-k="wa">'+svg(I.msg,20)+'WhatsApp</button><button class="btn" data-a="contact" data-k="call">'+svg(I.phone,20)+t('call')+'</button><button class="btn" data-a="chat">'+svg(I.msg,20)+t('message')+'</button></div>');};
+   (mineAd?'<div class="bar"><button class="btn primary" data-a="editad" data-id="'+a.id+'">'+svg(I.edit,20)+t('edit')+'</button></div>':'<div class="bar"><button class="btn wa" data-a="contact" data-k="wa">'+svg(I.msg,20)+'WhatsApp</button><button class="btn" data-a="contact" data-k="call">'+svg(I.phone,20)+t('call')+'</button><button class="btn" data-a="chat">'+svg(I.msg,20)+t('message')+'</button></div>');};
 
 V.post=function(){
   var d=S.draft,e=S.errs;
@@ -1709,8 +1716,8 @@ V.post=function(){
   var units='<div class="row" style="flex-wrap:wrap;gap:6px">'+['new','old'].map(function(u){return '<button type="button" class="chip" data-a="punit" data-v="'+u+'" aria-pressed="'+(unit===u)+'">'+t('u_'+u)+'</button>';}).join('')+'</div>';
   var voice=d.voice?'<audio controls src="'+d.voice+'" style="width:100%"></audio><button type="button" class="linkbtn" data-a="rmvoice">'+t('voiceDel')+'</button>'
     :'<label class="btn wide" for="vfile" style="border-style:dashed;cursor:pointer">'+svg(I.mic,20)+t('voiceRec')+'</label><input id="vfile" type="file" accept="audio/*" capture hidden>';
-  return topbar(t('post'),'home')+'<form id="pf" class="scroll" novalidate><div class="sec" style="gap:16px">'+
-   (S.draftRestored?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
+  return topbar(t(S.editId?'editAd':'post'),S.editId?'myads':'home')+'<form id="pf" class="scroll" novalidate><div class="sec" style="gap:16px">'+
+   (S.draftRestored&&!S.editId?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
    '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>'+
    '<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+t('titlePh')+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
    '<div class="field"><div class="legend">'+t('cat')+'</div><div class="cattiles" role="group" aria-label="'+t('cat')+'">'+CATS.map(function(c){var on=d.cat===c.id;return '<button type="button" class="ctile" data-a="postcat" data-v="'+c.id+'" aria-pressed="'+on+'"><span class="ic"'+(on?'':' style="color:'+c.c+'"')+'>'+svg(ICONS[c.id],21,1.8)+'</span><span>'+c[S.lang]+'</span></button>';}).join('')+'</div>'+(e.cat?'<div class="err">'+t('errCat')+'</div>':'')+'</div>'+
@@ -1725,7 +1732,7 @@ V.post=function(){
    '<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div>'+
    (d.cat&&d.cat!=='immo'?sellerBlock(d,e):'')+
    '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="legend" style="margin-bottom:4px">'+t('contact')+'</legend>'+chk('wa','WhatsApp')+chk('call',t('call'))+chk('msg',t('message'))+'</fieldset>'+
-   '</div></form><div class="foot"><button class="btn primary wide" data-a="publish" style="height:54px;font-size:17px">'+t('publish')+'</button></div>';};
+   '</div></form><div class="foot"><button class="btn primary wide" data-a="publish" style="height:54px;font-size:17px">'+t(S.editId?'saveChanges':'publish')+'</button></div>';};
 
 V.login=function(){
   var L=S.login,reg=L.mode==='register';
@@ -1735,6 +1742,7 @@ V.login=function(){
    '<div class="field"><label for="lpass">'+t('passLbl')+'</label><input id="lpass" class="inp" type="password" data-l="pass" autocomplete="'+(reg?'new-password':'current-password')+'" maxlength="64" value="'+esc(L.pass||'')+'">'+(reg?'<div class="meta">'+t('passHelp')+'</div>':'')+'</div>'+
    (reg?'<div class="field"><label for="lname">'+t('nameLbl')+'</label><input id="lname" class="inp" data-l="name" autocomplete="name" maxlength="30" value="'+esc(L.name)+'"></div>':'')+
    (L.err?'<div class="err" role="alert">'+L.err+'</div>':'')+
+   (reg?'':'<button type="button" class="linkbtn" data-a="forgot" style="color:var(--brand);align-self:flex-start">'+t('forgot')+'</button>'+(S.forgot?'<div class="tip" style="background:var(--tint);color:var(--fg);flex-direction:column;align-items:stretch;gap:10px"><p>'+t(S.support?'forgotTxt':'forgotNo')+'</p>'+(S.support?'<a class="btn wa" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/'+esc(S.support)+'?text='+encodeURIComponent(t('forgotMsg')+(L.phone||''))+'">WhatsApp</a>':'')+'</div>':''))+
    '<button class="btn primary wide" data-a="dologin"'+(S.busy?' disabled':'')+'>'+(S.busy?t('sending'):t(reg?'doRegister':'doLogin'))+'</button>';
   return topbar(t('login'),'home')+'<div class="scroll"><div class="sec" style="gap:16px;padding-top:20px">'+body+'</div></div>';};
 
@@ -1802,7 +1810,7 @@ V.account=function(){
   var chev=svg(S.lang==='ar'?I.back:I.chev,18);
   function row(a,ic,l,cnt,extra){return '<button data-a="'+a+'"'+(extra||'')+'><span class="row" style="gap:10px;min-width:0">'+svg(ic,20)+'<span>'+l+'</span></span><span class="row" style="gap:6px">'+(cnt!=null?'<span class="cnt">'+cnt+'</span>':'')+chev+'</span></button>';}
   var settings='<h2>'+t('settingsT')+'</h2><div class="list">'+row('lang',I.globe,t('lang')+' : '+(S.lang==='fr'?'Français':'العربية'))+row('eco',I.wifi,t('eco')+' : '+t(S.eco?'ecoOn':'ecoOff'))+
-   (S.user?row('pro',I.shop2,t('pro')):'')+row('soon',I.shield,t('help'))+(S.user?row('logout',I.logout,t('logout')):'')+'</div>';
+   (S.user&&S.user.admin?row('go',I.shield,t('admin'),null,' data-s="admin"'):'')+(S.user?row('pro',I.shop2,t('pro')):'')+row('soon',I.shield,t('help'))+(S.user?row('logout',I.logout,t('logout')):'')+'</div>';
   if(!S.user){
     var ben=['acctB1','acctB2','acctB3','acctB4'].map(function(k){return '<div class="row" style="gap:10px"><span style="color:var(--brand)">'+svg(I.check,20,2.5)+'</span><span>'+t(k)+'</span></div>';}).join('');
     return topbar(t('account'),'home')+'<div class="scroll"><div class="sec" style="gap:14px"><div class="box" style="flex-direction:column;align-items:stretch;gap:12px"><div style="font-size:17px;font-weight:800;line-height:1.35">'+t('acctIntro')+'</div>'+ben+
@@ -1826,7 +1834,7 @@ V.myads=function(){
     var conf=S.confirm===a.id;
     return '<div class="mine"><button class="thumb" data-a="open" data-id="'+a.id+'" style="border:none;padding:0" aria-label="'+esc(a.title)+'">'+thumb(a)+'</button><div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><div class="ctitle">'+esc(a.title)+'</div><div class="price">'+priceStr(a)+'</div><div class="meta">'+esc(city(a.city))+' · '+ago(a.t)+'</div>'+
      '<div class="row" style="margin-top:6px;flex-wrap:wrap">'+(conf?'<span class="err">'+t('confirmDel')+'</span><button class="btn small danger" data-a="del" data-id="'+a.id+'">'+t('yes')+'</button><button class="btn small" data-a="nodel">'+t('no')+'</button>':
-     (a.status!=='sold'?'<button class="btn small gold" data-a="sold" data-id="'+a.id+'">'+t('markSold')+'</button>':'')+'<button class="btn small danger" data-a="askdel" data-id="'+a.id+'">'+t('del')+'</button>')+'</div></div></div>';}).join('')
+     (a.status!=='sold'?'<button class="btn small gold" data-a="sold" data-id="'+a.id+'">'+t('markSold')+'</button>':'')+'<button class="btn small" data-a="editad" data-id="'+a.id+'">'+t('edit')+'</button><button class="btn small danger" data-a="askdel" data-id="'+a.id+'">'+t('del')+'</button>')+'</div></div></div>';}).join('')
     :'<div class="empty">'+t('noMine')+'<button class="btn primary" data-a="post">'+t('post')+'</button></div>';
   var nOn=S.mine.filter(function(a){return a.status!=='sold';}).length,nSold=S.mine.length-nOn;
   return topbar(t('myAds'),'account')+'<div class="scroll"><div class="sec"><div class="seg" role="tablist"><button role="tab" data-a="acctab" data-v="online" aria-selected="'+(S.accTab==='online')+'">'+t('online')+' ('+nOn+')</button><button role="tab" data-a="acctab" data-v="sold" aria-selected="'+(S.accTab==='sold')+'">'+t('soldTab')+' ('+nSold+')</button></div>'+items+'</div></div>'+tabs('account');};
@@ -1883,7 +1891,7 @@ var toastTimer;
 function toast(msg){var old=app.querySelector('.toast');if(old)old.remove();var d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=msg;app.appendChild(d);clearTimeout(toastTimer);toastTimer=setTimeout(function(){d.remove();},2200);}
 
 var draftTimer;
-function saveDraftSoon(){clearTimeout(draftTimer);draftTimer=setTimeout(function(){if(S.draft)save('draft',S.draft);},700);}
+function saveDraftSoon(){clearTimeout(draftTimer);draftTimer=setTimeout(function(){if(S.draft&&!S.editId)save('draft',S.draft);},700);}
 function render(keepScroll){
   var sc=app.querySelector('.scroll'),top=keepScroll&&sc?sc.scrollTop:0;
   var ci=app.querySelector('#chatin'),cv=ci?ci.value:'',cfoc=!!ci&&document.activeElement===ci;
@@ -1900,14 +1908,14 @@ function go(s){if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.c
 function newDraft(){return {photos:[],title:'',cat:S.cat||'',price:'',city:S.city||(S.user&&S.user.city)||'Nouakchott',desc:'',wa:true,call:true,msg:false,brand:'',model:'',year:'',km:'',fuel:'',gear:'',cond:'',seats:'',doors:'',vtype:'',color:'',deal:'',kind:'',surface:'',hood:'',rooms:'',salons:'',baths:'',furnished:'',papers:'',floor:'',levels:'',place:'',eq:[],
   pdtype:'',pbrand:'',pmodel:'',pstorage:'',pram:'',pcond:'',pcolor:'',pbatt:'',pdual:'',punlock:'',pincl:[],pimei:'',
   species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'new',nego:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
-function startPost(){if(!S.user){S.after='post';S.login={step:1,phone:'',code:'',name:'',err:''};go('login');return;}if(!S.draft){S.draft=newDraft();S.draftRestored=false;}S.errs={};go('post');}
+function startPost(){if(S.editId){S.editId=null;S.draft=load('draft',null);if(S.draft)S.draft=Object.assign(newDraft(),S.draft);}if(!S.user){S.after='post';S.login={step:1,phone:'',code:'',name:'',err:''};go('login');return;}if(!S.draft){S.draft=newDraft();S.draftRestored=false;}S.errs={};go('post');}
 
 app.addEventListener('click',function(e){
   var el=e.target.closest('[data-a]');if(!el)return;
   var a0=el.getAttribute('data-a');if((a0==='closesheet'||a0==='closefs')&&e.target.closest('[data-stop]')&&!e.target.closest('button'))return;
   var a=el.getAttribute('data-a'),id=el.getAttribute('data-id');
   switch(a){
-   case 'go':var tg=el.getAttribute('data-s');if(tg==='profile')S.profForm=null;go(tg);break;
+   case 'go':var tg=el.getAttribute('data-s');if(tg==='profile')S.profForm=null;if(tg==='admin'){S.adm=null;loadAdmin();}go(tg);break;
    case 'chat':if(!S.user){S.after='chat';S.pendingAd=S.id;S.login={step:1,phone:'',code:'',name:'',err:''};go('login');}else openConv(byId(S.id));break;
    case 'openconv':var oc=convById(id);if(oc){if(oc.srv&&oc.unread)api('POST','convs/'+oc.id+'/read').catch(function(){});oc.unread=0;saveConvs();}S.convId=id;go('chat');break;
    case 'quick':sendMsg(t(el.getAttribute('data-v')));break;
@@ -2218,7 +2226,7 @@ function publish(){
   }
   if(d.cat&&d.cat!=='immo'){if(!d.stype)e.stype=1;else if(d.stype==='pro'&&!(d.sname||'').trim())e.sname=1;}
   S.errs=e;
-  if(Object.keys(e).length){render(true);return;}
+  if(Object.keys(e).length){render(true);setTimeout(guideErr,40);return;}
   var ad={id:'m'+Date.now(),title:d.title.trim(),cat:d.cat,price:pm,city:d.city,hood:(d.hood||'').trim(),near:(d.near||'').trim(),nego:!!d.nego,t:Date.now(),desc:d.desc.trim(),seller:S.user.name,phone:S.user.phone,photos:d.photos.slice(),contacts:{wa:d.wa,call:d.call,msg:d.msg}};
   if(car)ad.car=car;
   if(veh)ad.veh=veh;
@@ -2234,11 +2242,102 @@ function publish(){
   if(anim)ad.anim=anim;
   if(d.voice)ad.voice=d.voice;
   if(S.user.shop)ad.shop=S.user.shop;
-  if(S.busy)return;S.busy=true;toast(t('sending'));
-  api('POST','ads',{ad:ad}).then(function(r){S.busy=false;S.remote.unshift(r.ad);refreshMine();
-    S.draft=null;S.draftRestored=false;save('draft',null);S.id=r.ad.id;S.prev='home';S.screen='detail';render();toast(t('published'));
+  var dd=JSON.parse(JSON.stringify(d));delete dd.photos;delete dd.voice;ad._d=dd;
+  if(S.busy)return;S.busy=true;toast(t('sending'));var eid=S.editId;
+  api(eid?'PUT':'POST',eid?'ads/'+eid:'ads',{ad:ad}).then(function(r){S.busy=false;
+    if(eid){S.remote=S.remote.map(function(x){return x.id===eid?r.ad:x;});S.editId=null;S.draft=null;}
+    else{S.remote.unshift(r.ad);S.draft=null;S.draftRestored=false;save('draft',null);}
+    refreshMine();S.id=r.ad.id;S.prev=eid?'myads':'home';S.screen='detail';render();toast(t(eid?'updated':'published'));
   }).catch(function(err){S.busy=false;toast(t(err.code==='too_big'?'e_too_big':err.code==='too_many'?'e_too_many':'netErr'));});
 }
+
+/* ---------- Guidage du formulaire : aller au champ suivant ---------- */
+var FLOW_SKIP={publish:1,rmph:1,cleardraft:1,rmvoice:1,go:1};
+function flowItems(){
+  var f=app.querySelector('#pf');if(!f)return [];
+  var out=[],seen=[];
+  Array.prototype.forEach.call(f.querySelectorAll('input.inp, select.inp, textarea.inp, button[data-a]'),function(x){
+    if(x.tagName==='BUTTON'){if(FLOW_SKIP[x.getAttribute('data-a')])return;var g=x.parentNode;if(seen.indexOf(g)>-1)return;seen.push(g);
+      var done=!!g.querySelector('[aria-pressed="true"],[aria-checked="true"],[aria-selected="true"]');out.push({el:g,done:done,kind:'group'});}
+    else if(x.offsetParent!==null)out.push({el:x,done:!!String(x.value||'').trim(),kind:x.tagName==='INPUT'||x.tagName==='TEXTAREA'?'text':'select'});});
+  return out;}
+function absTop(el){var sc=app.querySelector('.scroll');return el.getBoundingClientRect().top+(sc?sc.scrollTop:0);}
+function flash(el){el.classList.remove('flowhi');void el.offsetWidth;el.classList.add('flowhi');setTimeout(function(){el.classList.remove('flowhi');},1600);}
+function guideTo(item){
+  if(!item)return;var el=item.el;
+  try{el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){el.scrollIntoView();}
+  flash(item.kind==='group'?(el.closest('.field')||el):el);
+  if(item.kind==='text')setTimeout(function(){try{el.focus({preventScroll:true});}catch(e){el.focus();}},350);}
+function guideAfter(y){
+  var it=flowItems();for(var i=0;i<it.length;i++){var tp=absTop(it[i].el);if(tp>y+8&&!it[i].done){guideTo(it[i]);return;}}}
+function guideErr(){
+  var el=app.querySelector('#pf [aria-invalid="true"], #pf .err');if(!el)return;
+  var tgt=el.classList.contains('err')?(el.parentNode.querySelector('input.inp,select.inp,textarea.inp')||el.parentNode):el;
+  guideTo({el:tgt,kind:tgt.matches&&tgt.matches('input,textarea')?'text':'group'});}
+app.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'||S.screen!=='post')return;var el=e.target;
+  if(!el.matches||!el.matches('#pf input.inp'))return;e.preventDefault();
+  var it=flowItems(),y=absTop(el);
+  for(var i=0;i<it.length;i++){if(it[i].el!==el&&absTop(it[i].el)>y+4){guideTo(it[i]);if(it[i].kind!=='text')el.blur();return;}}
+  el.blur();});
+var flowY=null;
+app.addEventListener('click',function(e){
+  if(S.screen!=='post')return;var b=e.target.closest('#pf button[data-a]');if(!b||FLOW_SKIP[b.getAttribute('data-a')])return;
+  flowY=absTop(b);setTimeout(function(){if(flowY!=null&&S.screen==='post'){var y=flowY;flowY=null;guideAfter(y);}},60);},true);
+app.addEventListener('change',function(e){
+  if(S.screen!=='post')return;var el=e.target;if(!el.matches||!el.matches('#pf select.inp'))return;
+  var y=absTop(el);setTimeout(function(){var n=app.querySelector('#'+el.id);guideAfter(n?absTop(n):y);},60);});
+
+/* ---------- Configuration, signalement, administration ---------- */
+S.support='';S.adm=null;S.admQ='';S.admPw=null;S.admPwVal='';S.editId=null;S.forgot=false;
+api('GET','config').then(function(d){S.support=d.support||'';}).catch(function(){});
+var admT=null;
+function loadAdmin(){
+  return Promise.all([api('GET','admin/overview'),api('GET','admin/users?q='+encodeURIComponent(S.admQ||''))]).then(function(r){
+    S.adm={counts:r[0].counts,reports:r[0].reports,users:r[1].users};if(S.screen==='admin')render(true);
+  }).catch(function(){toast(t('netErr'));});}
+V.admin=function(){
+  if(!S.user||!S.user.admin){S.screen='account';return V.account();}
+  var A=S.adm;if(!A)return topbar(t('admin'),'account')+'<div class="scroll"><div class="empty">…</div></div>';
+  var c=A.counts||{};
+  function st(n,l){return '<div class="stat" style="cursor:default"><b>'+num(n||0)+'</b>'+l+'</div>';}
+  var stats='<div class="stats" style="grid-template-columns:repeat(3,1fr)">'+st(c.users,t('admUsersTotal'))+st(c.users24,t('admNew24'))+st(c.online,t('admOnline'))+st(c.ads24,t('admAds24'))+st(c.msgs24,t('admMsgs24'))+'</div>';
+  var reps=A.reports.length?A.reports.map(function(r){
+    return '<div class="box" style="flex-direction:column;align-items:stretch;gap:6px"><button class="linkbtn" data-a="open" data-id="'+esc(r.adId)+'" style="text-align:start;font-weight:800;color:var(--fg)">'+esc(r.title)+'</button>'+
+     '<div class="meta" style="color:var(--danger);font-weight:700">'+t('admRepN').replace('{n}',r.n)+' · '+ago(r.last)+'</div>'+(r.reasons?'<div class="meta">'+esc(r.reasons)+'</div>':'')+
+     '<div class="meta">'+esc(r.ownerName)+' · <span dir="ltr">+222 '+esc(r.ownerPhone)+'</span></div>'+
+     '<div class="row" style="flex-wrap:wrap"><button class="btn small danger" data-a="admdel" data-id="'+esc(r.adId)+'">'+t('admDelAd')+'</button><button class="btn small" data-a="admok" data-id="'+esc(r.adId)+'">'+t('admIgnore')+'</button></div></div>';}).join('')
+    :'<p class="meta" style="margin:0">'+t('admNoRep')+'</p>';
+  var users=A.users.map(function(u){
+    var pw=S.admPw===u.id?'<div class="row" style="gap:6px;width:100%"><label for="admpw" style="position:absolute;left:-9999px">'+t('admNewPw')+'</label><input id="admpw" class="inp" data-adm="admPwVal" value="'+esc(S.admPwVal)+'" placeholder="'+t('passHelp')+'" style="flex:1" autocomplete="off"><button class="btn small primary" data-a="admpwok" data-id="'+u.id+'">'+t('verify')+'</button></div>':'';
+    return '<div class="box" style="flex-direction:column;align-items:stretch;gap:6px"><div class="row between"><b>'+esc(u.name)+(u.blocked?' <span class="badge" style="color:var(--danger)">'+t('admBlocked')+'</span>':'')+'</b><span class="meta" dir="ltr">+222 '+esc(u.phone)+'</span></div>'+
+     '<div class="meta">'+t('admAdsN').replace('{n}',u.ads)+' · '+t('since').replace('{d}',monthYear(u.since))+'</div>'+
+     '<div class="row" style="flex-wrap:wrap"><button class="btn small" data-a="admpw" data-id="'+u.id+'">'+t('admNewPw')+'</button>'+(u.id===S.user.id?'':'<button class="btn small '+(u.blocked?'':'danger')+'" data-a="admblock" data-id="'+u.id+'" data-v="'+(u.blocked?0:1)+'">'+t(u.blocked?'admUnblock':'admBlock')+'</button>')+'</div>'+pw+'</div>';}).join('');
+  return topbar(t('admin'),'account')+'<div class="scroll"><div class="sec" style="gap:14px">'+stats+'<h2>'+t('admReports')+'</h2>'+reps+
+   '<h2>'+t('admUsers')+'</h2><div class="field"><label for="admq">'+t('admSearch')+'</label><input id="admq" class="inp" data-adm="admQ" inputmode="numeric" value="'+esc(S.admQ)+'" placeholder="XX XX XX XX"></div>'+users+'</div></div>';};
+function adminClick(a,el,id){
+  switch(a){
+    case 'admdel':api('DELETE','ads/'+id).then(function(){S.remote=S.remote.filter(function(x){return x.id!==id;});refreshMine();toast(t('admDone'));loadAdmin();}).catch(function(){toast(t('netErr'));});return true;
+    case 'admok':api('DELETE','admin/reports/'+id).then(function(){toast(t('admDone'));loadAdmin();}).catch(function(){toast(t('netErr'));});return true;
+    case 'admpw':S.admPw=S.admPw===id?null:id;S.admPwVal='';render(true);var pi=app.querySelector('#admpw');if(pi)pi.focus();return true;
+    case 'admpwok':if(S.admPwVal.length<6){toast(t('errPass'));return true;}
+      api('POST','admin/users/'+id+'/password',{password:S.admPwVal}).then(function(){S.admPw=null;S.admPwVal='';toast(t('admPwOk'));render(true);}).catch(function(){toast(t('netErr'));});return true;
+    case 'admblock':api('POST','admin/users/'+id+'/block',{blocked:el.getAttribute('data-v')==='1'}).then(function(){toast(t('admDone'));loadAdmin();loadAds();}).catch(function(){toast(t('netErr'));});return true;
+    case 'forgot':S.forgot=!S.forgot;render(true);return true;
+    case 'report':if(!S.user){S.after='detail';S.login={step:1,phone:'',code:'',name:'',pass:'',err:''};go('login');return true;}
+      api('POST','ads/'+S.id+'/report',{reason:''}).then(function(){toast(t('reported'));}).catch(function(){toast(t('netErr'));});return true;
+    case 'editad':var ea=byId(id);if(!ea)return true;if(!ea._d){toast(t('noEdit'));return true;}
+      S.editId=id;S.draft=Object.assign(newDraft(),JSON.parse(JSON.stringify(ea._d)),{photos:(ea.photos||[]).slice(),voice:ea.voice||''});S.draftRestored=false;S.errs={};go('post');var sc=app.querySelector('.scroll');if(sc)sc.scrollTop=0;return true;
+  }
+  return false;}
+app.addEventListener('click',function(e){
+  var el=e.target.closest('[data-a]');if(!el)return;var a=el.getAttribute('data-a');
+  if(adminClick(a,el,el.getAttribute('data-id'))){e.stopImmediatePropagation();}},true);
+app.addEventListener('input',function(e){
+  var el=e.target,k=el.getAttribute&&el.getAttribute('data-adm');if(!k)return;
+  S[k]=el.value;if(k==='admQ'){clearTimeout(admT);admT=setTimeout(function(){loadAdmin().then(function(){var q=app.querySelector('#admq');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}});},400);}
+  e.stopImmediatePropagation();},true);
+if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 
 render();
 (TOKEN?api('GET','me').then(function(d){setUser(d.user);}).catch(function(){}):Promise.resolve())
