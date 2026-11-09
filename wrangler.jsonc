@@ -8,8 +8,8 @@
     "run_worker_first": ["/api/*"]
   },
   "vars": {
-    "ADMIN_PHONES": "",
-    "SUPPORT_WHATSAPP": ""
+    "ADMIN_PHONES": "37264646",
+    "SUPPORT_WHATSAPP": "22237264646"
   },
   "d1_databases": [
     {
