@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0B6B3A">
 <!--og--><meta property="og:type" content="website"><meta property="og:site_name" content="Souki"><meta property="og:title" content="Souki – petites annonces en Mauritanie"><meta property="og:description" content="Achetez et vendez près de chez vous : voitures, immobilier, téléphones, maison, emploi…"><meta property="og:image" content="/icon-512.png"><!--/og-->
 <link rel="manifest" href="/manifest.webmanifest">
@@ -230,6 +230,8 @@ textarea.inp{height:auto;padding:12px 14px;resize:none;line-height:1.5}
 .morebtn{display:flex;gap:12px;align-items:center;width:100%;padding:14px;border:1.5px dashed var(--line);border-radius:14px;background:var(--surface);color:var(--fg);text-align:start;font:inherit}
 .morebtn .mplus{width:32px;height:32px;border-radius:16px;background:var(--tint);color:var(--brand);font-size:22px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .more{display:flex;flex-direction:column;gap:16px}
+@media (max-width:599px){.app{height:var(--vvh,100%)}}
+.app.kbd .tabs,.app.kbd .foot{display:none}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -2467,6 +2469,28 @@ window.addEventListener('popstate',function(){
       setTimeout(function(){reset(false);app.style.boxShadow='';var b=backButton();if(b)b.click();},160);}
     else{reset(true);setTimeout(function(){app.style.boxShadow='';},200);}}
   app.addEventListener('touchend',end);app.addEventListener('touchcancel',function(){on=false;reset(true);});
+})();
+
+/* ---------- Clavier : l'écran se réduit au-dessus du clavier et le champ reste visible ---------- */
+(function(){
+  var vv=window.visualViewport,maxH=window.innerHeight;
+  function fit(){
+    if(!vv)return;var full=window.innerHeight,h=vv.height;
+    if(window.innerWidth<600){document.documentElement.style.setProperty('--vvh',Math.round(h)+'px');if(vv.offsetTop)window.scrollTo(0,0);}
+    if(!document.activeElement||!/INPUT|TEXTAREA/.test(document.activeElement.tagName))maxH=Math.max(maxH,full,h);
+    var open=Math.max(maxH,full)-h>140;
+    app.classList.toggle('kbd',!!open&&window.innerWidth<600);
+    showField();}
+  function showField(){
+    var el=document.activeElement;if(!el||!app.contains(el)||!/INPUT|TEXTAREA/.test(el.tagName))return;
+    if(el.id==='chatin'){var sc=app.querySelector('.scroll');if(sc)sc.scrollTop=sc.scrollHeight;return;}
+    var r=el.getBoundingClientRect(),top=vv?vv.offsetTop:0,bottom=(vv?vv.height:window.innerHeight)+top;
+    if(r.top<top+70||r.bottom>bottom-20){try{el.scrollIntoView({block:'center',behavior:'smooth'});}catch(e){el.scrollIntoView();}}}
+  if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',function(){if(vv.offsetTop&&window.innerWidth<600)window.scrollTo(0,0);});}
+  app.addEventListener('focusin',function(e){if(!/INPUT|TEXTAREA/.test(e.target.tagName)||e.target.type==='file'||e.target.type==='checkbox')return;
+    setTimeout(fit,60);setTimeout(showField,320);setTimeout(showField,650);});
+  app.addEventListener('focusout',function(){setTimeout(fit,120);});
+  fit();
 })();
 
 render();
