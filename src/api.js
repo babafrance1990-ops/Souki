@@ -287,7 +287,7 @@ export async function onRequest(ctx) {
     if (parts[0] === 'convs') {
       if (!parts[1] && method === 'GET') {
         const { results: cs } = await db.prepare(
-          `SELECT c.*, ub.name AS buyer_name, us.name AS seller_name FROM convs c JOIN users ub ON ub.id = c.buyer_id JOIN users us ON us.id = c.seller_id
+          `SELECT c.*, ub.name AS buyer_name, us.name AS seller_name, ub.created AS buyer_created, us.created AS seller_created, ub.city AS buyer_city, us.city AS seller_city FROM convs c JOIN users ub ON ub.id = c.buyer_id JOIN users us ON us.id = c.seller_id
            WHERE c.buyer_id = ? OR c.seller_id = ? ORDER BY c.updated DESC LIMIT 200`).bind(me.id, me.id).all();
         if (!cs.length) return json({ convs: [] });
         const ids = cs.map((c) => c.id);
@@ -295,7 +295,7 @@ export async function onRequest(ctx) {
         return json({ convs: cs.map((c) => {
           const buyer = c.buyer_id === me.id, read = buyer ? c.buyer_read : c.seller_read;
           const msgs = ms.filter((m) => m.conv_id === c.id).map((m) => ({ me: m.sender_id === me.id, txt: m.txt, t: m.t }));
-          return { id: c.id, adId: c.ad_id, title: c.title, seller: buyer ? c.seller_name : c.buyer_name, buyer, updated: c.updated, msgs, unread: msgs.filter((m) => !m.me && m.t > read).length };
+          return { id: c.id, adId: c.ad_id, title: c.title, seller: buyer ? c.seller_name : c.buyer_name, otherSince: buyer ? c.seller_created : c.buyer_created, otherCity: (buyer ? c.seller_city : c.buyer_city) || '', otherRead: buyer ? c.seller_read : c.buyer_read, buyer, updated: c.updated, msgs, unread: msgs.filter((m) => !m.me && m.t > read).length };
         }) });
       }
       if (!parts[1] && method === 'POST') {

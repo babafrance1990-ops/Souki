@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="light" translate="no">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0B6B3A">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -198,6 +199,33 @@ textarea.inp{height:auto;padding:12px 14px;resize:none;line-height:1.5}
 .sel{height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface);padding:0 10px;font-size:14px;font-weight:600}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .2s ease-out}@keyframes up{from{transform:translateY(40px);opacity:.6}}}
 .recdot{width:12px;height:12px;border-radius:6px;background:currentColor;animation:recb 1s infinite}@keyframes recb{50%{opacity:.25}}
+.mchips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none}
+.mrow{display:flex;gap:12px;align-items:center;padding:12px 4px;border:none;border-bottom:1px solid var(--line);background:none;width:100%;text-align:start;color:inherit}
+.mrow .mth{width:68px;height:68px;border-radius:12px;flex-shrink:0;overflow:hidden;background:var(--ph);display:flex;align-items:center;justify-content:center}
+.mrow .mth img{width:100%;height:100%;object-fit:cover}
+.mrow .mmid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mrow .mt{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .mp{font-size:14px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .mp.unread{color:var(--fg);font-weight:800}
+.mrow .mm{font-size:13px;color:var(--muted)}
+.mrow .ub{min-width:24px;height:24px;border-radius:12px;background:var(--brand);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 7px;flex-shrink:0}
+.chead{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.chead .av{width:42px;height:42px;border-radius:21px;background:var(--brand);color:#fff;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.chead .nm{font-weight:800;font-size:17px;line-height:1.2}
+.chead .sub{font-size:13px;color:var(--muted)}
+.cad{display:flex;gap:12px;align-items:center;padding:10px 12px;background:var(--surface);border:none;border-bottom:1px solid var(--line);width:100%;text-align:start;color:inherit;box-shadow:0 4px 10px rgba(0,0,0,.04)}
+.cad .mth{width:56px;height:56px;border-radius:10px;overflow:hidden;background:var(--ph);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.cad .mth img{width:100%;height:100%;object-fit:cover}
+.about{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.about b{font-size:16px}.about div{display:flex;gap:8px;align-items:center;color:var(--fg);font-size:14px}.about svg{color:var(--muted);flex-shrink:0}
+.dsep{align-self:center;font-size:13px;color:var(--muted);margin:8px 0 2px}
+.tipsbox{background:#E8F1FB;color:#1C2A22;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.tipsbox b{font-size:15px}
+.bub.me{background:#DCEFE3;color:#0B3D22}
+.bmeta{display:block;text-align:end;font-size:11px;color:var(--muted);margin-top:2px}
+.bwrap{display:flex;flex-direction:column;max-width:80%}.bwrap.me{align-self:flex-end}.bwrap.them{align-self:flex-start}
+.bwrap .bub{max-width:100%;padding:9px 12px;min-width:0}
+.ticks{color:var(--brand);font-weight:800;letter-spacing:-3px;margin-inline-start:4px}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -247,7 +275,7 @@ var ICONS={
  anim:'<path d="M6.5 9.5a2.5 2.5 0 0 1 4-2 2.5 2.5 0 0 1 4.5.5 2.5 2.5 0 0 1 1 4.6V13a3 3 0 0 1-3 3H8.5a3 3 0 0 1-3-3v-.6a2.5 2.5 0 0 1 1-2.9z"/><path d="M8 16v4M14 16v4M17 9.5h2a2 2 0 0 1 2 2v.5a1.5 1.5 0 0 1-1.5 1.5H17"/>',
  autre:'<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>'};
 function svg(p,s,w){return '<svg aria-hidden="true" width="'+(s||22)+'" height="'+(s||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(w||2)+'" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
-var I={
+var I={chat:'<path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M8 9h8M8 13h5"/>',
  home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
  fav:'<path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
  plus:'<path d="M12 5v14M5 12h14"/>',
@@ -281,7 +309,7 @@ var TX={
   photos:'Photos',upTo:'(jusqu’à 4)',add:'Ajouter',compress:'Les photos sont réduites pour économiser vos données.',title:'Titre',cat:'Catégorie',choose:'Choisir…',price:'Prix',city:'Ville',
   descPh:'État, accessoires, raison de la vente…',contact:'Comment vous contacter ?',publish:'Publier l’annonce',published:'Annonce publiée',
   errTitle:'Indiquez un titre (au moins 4 caractères).',errCat:'Choisissez une catégorie.',errPrice:'Indiquez un prix en chiffres.',
-  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',forgot:'Mot de passe oublié ?',forgotTxt:'Écrivez à l’équipe Souki sur WhatsApp depuis votre numéro : nous vous donnerons un nouveau mot de passe.',forgotNo:'Contactez l’administrateur de Souki pour recevoir un nouveau mot de passe.',forgotMsg:'Bonjour, j’ai oublié mon mot de passe Souki. Mon numéro : ',e_blocked:'Ce compte a été bloqué. Contactez l’équipe Souki.',editAd:'Modifier l’annonce',saveChanges:'Enregistrer les modifications',edit:'Modifier',updated:'Annonce modifiée',noEdit:'Cette annonce ne peut pas être modifiée. Supprimez-la et publiez-en une nouvelle.',admin:'Administration',admUsers:'Utilisateurs',admUsersTotal:'utilisateurs',admNew24:'nouveaux (24 h)',admOnline:'annonces en ligne',admAds24:'annonces (24 h)',admMsgs24:'messages (24 h)',admReports:'Annonces signalées',admNoRep:'Aucun signalement.',admRepN:'{n} signalement(s)',admDelAd:'Supprimer l’annonce',admIgnore:'Ignorer',admSearch:'Rechercher un numéro',admNewPw:'Nouveau mot de passe',admBlock:'Bloquer',admUnblock:'Débloquer',admBlocked:'Bloqué',admPwOk:'Mot de passe changé. Transmettez-le à l’utilisateur.',admDone:'C’est fait.',admAdsN:'{n} annonce(s)',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
+  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',msgsTitle:'Mes messages',f_all:'Tout',f_unread:'Non lus',f_buy:'Achats',f_sell:'Ventes',noMsgF:'Aucune discussion ici.',aboutSeller:'À propos de ce vendeur',aboutBuyer:'À propos de cet acheteur',today:'Aujourd’hui',yesterday:'Hier',tipsT:'Nos conseils pour acheter en toute confiance',tip1:'Rencontrez le vendeur dans un lieu public, de jour.',tip2:'Vérifiez l’article (et les papiers pour un véhicule) avant de payer.',tip3:'Ne payez jamais à l’avance, même par Bankily, Masrvi ou Sedad.',tipsSellT:'Nos conseils pour vendre en toute confiance',tipS1:'Donnez rendez-vous dans un lieu public.',tipS2:'Ne remettez l’article qu’après avoir reçu le paiement.',tipS3:'Méfiez-vous des faux reçus et captures de paiement.',adGone:'Annonce supprimée',readL:'Lu',sentL:'Envoyé',forgot:'Mot de passe oublié ?',forgotTxt:'Écrivez à l’équipe Souki sur WhatsApp depuis votre numéro : nous vous donnerons un nouveau mot de passe.',forgotNo:'Contactez l’administrateur de Souki pour recevoir un nouveau mot de passe.',forgotMsg:'Bonjour, j’ai oublié mon mot de passe Souki. Mon numéro : ',e_blocked:'Ce compte a été bloqué. Contactez l’équipe Souki.',editAd:'Modifier l’annonce',saveChanges:'Enregistrer les modifications',edit:'Modifier',updated:'Annonce modifiée',noEdit:'Cette annonce ne peut pas être modifiée. Supprimez-la et publiez-en une nouvelle.',admin:'Administration',admUsers:'Utilisateurs',admUsersTotal:'utilisateurs',admNew24:'nouveaux (24 h)',admOnline:'annonces en ligne',admAds24:'annonces (24 h)',admMsgs24:'messages (24 h)',admReports:'Annonces signalées',admNoRep:'Aucun signalement.',admRepN:'{n} signalement(s)',admDelAd:'Supprimer l’annonce',admIgnore:'Ignorer',admSearch:'Rechercher un numéro',admNewPw:'Nouveau mot de passe',admBlock:'Bloquer',admUnblock:'Débloquer',admBlocked:'Bloqué',admPwOk:'Mot de passe changé. Transmettez-le à l’utilisateur.',admDone:'C’est fait.',admAdsN:'{n} annonce(s)',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
   errPhone:'Le numéro doit contenir 8 chiffres.',codeLbl:'Code reçu',demoCode:'Démo : le code est 1234',verify:'Valider',errCode:'Code incorrect. En démo, tapez 1234.',nameLbl:'Votre nom (affiché sur vos annonces)',
   online:'En ligne',soldTab:'Vendues',noMine:'Vous n’avez pas encore d’annonce.',markSold:'Marquer vendu',del:'Supprimer',confirmDel:'Supprimer définitivement ?',yes:'Oui, supprimer',no:'Annuler',
   logout:'Se déconnecter',lang:'Langue',pro:'Passer en compte commerçant (boutique)',help:'Aide et sécurité',noFav:'Touchez le marque-page d’une annonce pour la retrouver ici.',
@@ -412,7 +440,7 @@ var TX={
   photos:'الصور',upTo:'(حتى 4)',add:'إضافة',compress:'يتم تصغير الصور لتوفير الإنترنت.',title:'العنوان',cat:'الفئة',choose:'اختر…',price:'السعر',city:'المدينة',
   descPh:'الحالة، الملحقات، سبب البيع…',contact:'كيف يتواصلون معك؟',publish:'نشر الإعلان',published:'تم نشر الإعلان',
   errTitle:'اكتب عنواناً (4 أحرف على الأقل).',errCat:'اختر فئة.',errPrice:'اكتب السعر بالأرقام.',
-  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق سوقي على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول سوقي للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور سوقي. رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق سوقي.',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{N}',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{N}',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
+  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',msgsTitle:'رسائلي',f_all:'الكل',f_unread:'غير مقروءة',f_buy:'مشترياتي',f_sell:'مبيعاتي',noMsgF:'لا توجد محادثات هنا.',aboutSeller:'عن هذا البائع',aboutBuyer:'عن هذا المشتري',today:'اليوم',yesterday:'أمس',tipsT:'نصائحنا للشراء بأمان',tip1:'قابل البائع في مكان عام وفي النهار.',tip2:'افحص السلعة (ووثائق المركبة) قبل الدفع.',tip3:'لا تدفع مسبقاً أبداً، ولو عبر بنكيلي أو مصرفي أو سداد.',tipsSellT:'نصائحنا للبيع بأمان',tipS1:'حدّد موعد اللقاء في مكان عام.',tipS2:'لا تسلّم السلعة إلا بعد استلام المبلغ.',tipS3:'احذر من الإيصالات وصور الدفع المزيفة.',adGone:'إعلان محذوف',readL:'مقروءة',sentL:'أُرسلت',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق سوقي على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول سوقي للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور سوقي. رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق سوقي.',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{N}',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{N}',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
   errPhone:'يجب أن يتكون الرقم من 8 أرقام.',codeLbl:'الرمز المستلم',demoCode:'تجربة: الرمز هو 1234',verify:'تأكيد',errCode:'رمز خاطئ. في التجربة اكتب 1234.',nameLbl:'اسمك (يظهر على إعلاناتك)',
   online:'منشورة',soldTab:'مُباعة',noMine:'ليس لديك إعلانات بعد.',markSold:'تم البيع',del:'حذف',confirmDel:'حذف نهائياً؟',yes:'نعم، احذف',no:'إلغاء',
   logout:'تسجيل الخروج',lang:'اللغة',pro:'حساب تاجر (متجر)',help:'المساعدة والأمان',noFav:'اضغط على علامة الحفظ في أي إعلان ليظهر هنا.',
@@ -749,7 +777,7 @@ function card(a){
   var spec=specLine(a);
   var flags=(a.voice?'<span class="flag">'+svg(I.mic,12)+t('voiceTag')+'</span>':'')+(a.nego?'<span class="flag">'+t('negoB')+'</span>':'')+(a.estate&&noComm(a.estate)?'<span class="flag">'+t('noComm')+'</span>':'')+(a.estate&&a.estate.avance&&a.estate.avance!=='0'?'<span class="flag">'+tc('avanceFlag',a.estate.avance)+'</span>':'')+
     (!a.shop&&stypeOf(a)==='pro'?'<span class="flag">'+svg(I.shop2,12)+t('fl_pro')+'</span>':'');
-  return '<button class="card" data-a="open" data-id="'+a.id+'"><div class="thumb">'+thumb(a)+'</div><div class="cbody"><div class="ctitle">'+esc(a.title)+'</div><div class="price">'+priceStr(a)+'</div>'+
+  return '<button class="card" data-a="open" data-id="'+a.id+'"><div class="thumb">'+thumb(a)+'</div><div class="cbody"><div class="ctitle" translate="no">'+esc(a.title)+'</div><div class="price">'+priceStr(a)+'</div>'+
    (spec?'<div class="meta" style="font-weight:700;color:var(--fg)">'+spec+'</div>':'')+(a.shop?'<div class="meta vbadge">'+svg(I.check,13,2.5)+t('shopVerified')+'</div>':'')+(flags?'<div class="flags">'+flags+'</div>':'')+
    '<div class="meta">'+esc(a.hood?hoodName(a.hood)+t('comma'):'')+esc(city(a.city))+' · '+ago(a.t)+'</div></div></button>';}
 
@@ -854,7 +882,7 @@ function listHTML(){
 
 function tabs(active){
   function tb(id,ic,lbl){var n=id==='msgs'?unreadCount():0;return '<button class="tab" data-a="go" data-s="'+id+'"'+(active===id?' aria-current="page"':'')+'><span class="tabic">'+svg(ic,24)+(n?'<span class="tabbadge">'+n+'</span>':'')+'</span>'+lbl+'</button>';}
-  return '<nav class="tabs" aria-label="'+t('navLbl')+'">'+tb('home',I.home,t('home'))+tb('favs',I.fav,t('favs'))+'<button class="tab post" data-a="post"><span class="fab">'+svg(I.plus,28,2.5)+'</span><span class="postlbl">'+t('post')+'</span></button>'+tb('msgs',I.msg,t('msgs'))+tb('account',I.user,t('account'))+'</nav>';}
+  return '<nav class="tabs" aria-label="'+t('navLbl')+'">'+tb('home',I.home,t('home'))+tb('favs',I.fav,t('favs'))+'<button class="tab post" data-a="post"><span class="fab">'+svg(I.plus,28,2.5)+'</span><span class="postlbl">'+t('post')+'</span></button>'+tb('msgs',I.chat,t('msgs'))+tb('account',I.user,t('account'))+'</nav>';}
 
 function topbar(title,backTo){return '<div class="topbar"><button class="icon" data-a="go" data-s="'+(backTo||'home')+'" aria-label="'+t('back')+'">'+svg(S.lang==='ar'?I.chev:I.back,24)+'</button><h1>'+title+'</h1></div>';}
 
@@ -1796,24 +1824,47 @@ V.favs=function(){
   var f=S.favs.map(byId).filter(Boolean);
   return topbar(t('myFavs'),'home')+'<div class="scroll"><div class="sec">'+(f.length?'<div class="grid">'+f.map(card).join('')+'</div>':'<div class="empty">'+svg(I.fav,40)+'<div>'+t('noFav')+'</div></div>')+'</div></div>'+tabs('favs');};
 
+function adThumbSmall(a){var c=cat(a.cat||'autre'),ph=a.photos&&a.photos[0];return ph&&!S.eco?'<img alt="" src="'+ph+'">':'<span style="color:'+c.c+'">'+svg(ICONS[a.dev?'tel':(a.cat||'autre')]||I.list,30,1.5)+'</span>';}
+function dayLabel(ts){var d=new Date(ts),n=new Date(),y=new Date(Date.now()-86400000);
+  if(d.toDateString()===n.toDateString())return t('today');if(d.toDateString()===y.toDateString())return t('yesterday');
+  try{return d.toLocaleDateString(S.lang==='ar'?'ar':'fr-FR',{day:'numeric',month:'long',year:'numeric'});}catch(e){return d.toDateString();}}
 V.msgs=function(){
-  if(!S.user)return topbar(t('myConvs'),'home')+'<div class="scroll"><div class="empty">'+svg(I.msg,40)+'<div>'+t('noMsgLogin')+'</div><button class="btn primary" data-a="go" data-s="login">'+t('login')+'</button></div></div>'+tabs('msgs');
-  var cs=S.convs.slice().sort(function(x,y){return y.updated-x.updated;});
+  var head='<div class="topbar" style="justify-content:center"><h1 style="text-align:center;flex:1">'+t('msgsTitle')+'</h1></div>';
+  if(!S.user)return head+'<div class="scroll"><div class="empty">'+svg(I.chat,40)+'<div>'+t('noMsgLogin')+'</div><button class="btn primary" data-a="go" data-s="login">'+t('login')+'</button></div></div>'+tabs('msgs');
+  var f=S.msgF||'all';
+  var all=S.convs.slice().sort(function(x,y){return y.updated-x.updated;});
+  var cs=all.filter(function(c){return f==='unread'?c.unread>0:f==='buy'?c.buyer!==false:f==='sell'?c.buyer===false:true;});
+  var chips='<div class="mchips" role="tablist">'+['all','unread','buy','sell'].map(function(k){var on=f===k;return '<button role="tab" class="chip" data-a="msgf" data-v="'+k+'" aria-pressed="'+on+'">'+(on?svg(I.check,14,3)+' ':'')+t('f_'+k)+'</button>';}).join('')+'</div>';
   var rows=cs.map(function(c){
-    var a=byId(c.adId)||{cat:'autre',photos:[],title:c.title},last=c.msgs[c.msgs.length-1];
-    return '<button class="conv" data-a="openconv" data-id="'+c.id+'"><div class="thumb cthumb">'+thumb(a)+'</div><div class="cmid"><div class="row between" style="gap:6px"><b class="cname">'+esc(c.seller)+'</b><span class="meta">'+(last?ago(last.t):'')+'</span></div>'+
-     '<div class="meta ctitle1">'+esc((byId(c.adId)||c).title)+'</div><div class="cprev'+(c.unread?' unread':'')+'">'+(last?(last.me?t('you')+' : ':'')+esc(last.txt):'…')+'</div></div>'+(c.unread?'<span class="ubadge">'+c.unread+'</span>':'')+'</button>';}).join('');
-  return topbar(t('myConvs'),'home')+'<div class="scroll"><div class="sec" style="gap:8px">'+(rows||'<div class="empty">'+svg(I.msg,40)+'<div>'+t('noMsg')+'</div></div>')+'</div></div>'+tabs('msgs');};
+    var a=byId(c.adId),last=c.msgs[c.msgs.length-1];
+    return '<button class="mrow" data-a="openconv" data-id="'+c.id+'"><div class="mth">'+(a?adThumbSmall(a):svg(I.list,28,1.5))+'</div><div class="mmid">'+
+     '<div class="mt" translate="no">'+esc(a?a.title:c.title)+'</div>'+
+     '<div class="mp'+(c.unread?' unread':'')+'" translate="no" dir="auto">'+(a?(last?(last.me?t('you')+' : ':'')+esc(last.txt):'…'):t('adGone'))+'</div>'+
+     '<div class="mm"><span translate="no">'+esc(c.seller)+'</span> · '+(last?ago(last.t):ago(c.updated))+'</div></div>'+
+     (c.unread?'<span class="ub">'+c.unread+'</span>':'')+'</button>';}).join('');
+  var empty='<div class="empty">'+svg(I.chat,40)+'<div>'+t(all.length?'noMsgF':'noMsg')+'</div></div>';
+  return head+'<div class="scroll"><div class="sec" style="gap:6px;padding-top:12px">'+chips+(rows||empty)+'</div></div>'+tabs('msgs');};
 
 V.chat=function(){
   var c=convById(S.convId);if(!c){S.screen='msgs';return V.msgs();}
-  var a=byId(c.adId);
-  var head='<div class="topbar">'+backBtn('msgs')+'<div class="avatar" style="width:38px;height:38px;font-size:15px" aria-hidden="true">'+esc((c.seller||'?').charAt(0).toUpperCase())+'</div><h1 style="font-size:17px">'+esc(c.seller)+'</h1></div>';
-  var adrow=a?'<button class="adrow" data-a="open" data-id="'+a.id+'"><div class="thumb cthumb">'+thumb(a)+'</div><div style="min-width:0;flex:1;text-align:start"><div class="ctitle">'+esc(a.title)+'</div><div class="price" style="font-size:14px">'+priceStr(a)+'</div></div></button>':'';
-  var msgs=c.msgs.map(function(m){return '<div class="bub '+(m.me?'me':'them')+'">'+esc(m.txt)+'<span class="btime">'+hm(m.t)+'</span></div>';}).join('');
+  var a=byId(c.adId),buyer=c.buyer!==false;
+  var sub=c.otherSince?t('since').replace('{d}',monthYear(c.otherSince)):'';
+  var head='<div class="chead">'+backBtn('msgs')+'<div class="av" aria-hidden="true">'+esc((c.seller||'?').charAt(0).toUpperCase())+'</div><div style="min-width:0;flex:1"><div class="nm" translate="no">'+esc(c.seller)+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div></div>';
+  var adrow=a?'<button class="cad" data-a="open" data-id="'+a.id+'"><div class="mth">'+adThumbSmall(a)+'</div><div style="min-width:0;flex:1"><div class="ctitle" translate="no" style="font-weight:800">'+esc(a.title)+'</div><div class="price" style="font-size:16px">'+priceStr(a)+'</div>'+(a.status==='sold'?'<span class="badge">'+t('sold')+'</span>':'')+'</div></button>'
+    :'<div class="cad"><div class="mth">'+svg(I.list,26,1.5)+'</div><div><div class="ctitle" translate="no">'+esc(c.title||'')+'</div><div class="meta">'+t('adGone')+'</div></div></div>';
+  var about=c.srv?'<div class="about"><b>'+t(buyer?'aboutSeller':'aboutBuyer')+'</b>'+(c.otherCity?'<div>'+svg(I.pin,18)+'<span>'+esc(city(c.otherCity))+'</span></div>':'')+
+    (c.otherSince?'<div>'+svg(I.user,18)+'<span>'+t('since').replace('{d}',monthYear(c.otherSince))+'</span></div>':'')+'</div>':'';
+  var tips='<div class="tipsbox"><b>'+t(buyer?'tipsT':'tipsSellT')+'</b>'+(buyer?['tip1','tip2','tip3']:['tipS1','tipS2','tipS3']).map(function(k){return '<div>✔ '+t(k)+'</div>';}).join('')+'</div>';
+  var out='',lastDay='',seenRead=c.otherRead||0;
+  c.msgs.forEach(function(m,i){
+    var dl=dayLabel(m.t);if(dl!==lastDay){out+='<div class="dsep">'+dl+'</div>';lastDay=dl;}
+    var tick=m.me&&c.srv?'<span class="ticks" aria-label="'+t(m.t<=seenRead?'readL':'sentL')+'" style="'+(m.t<=seenRead?'':'color:var(--muted)')+'">'+(m.t<=seenRead?'✓✓':'✓')+'</span>':'';
+    out+='<div class="bwrap '+(m.me?'me':'them')+'"><div class="bub '+(m.me?'me':'them')+'" translate="no" dir="auto">'+esc(m.txt)+'</div><span class="bmeta">'+hm(m.t)+tick+'</span></div>';
+    if(i===0)out+=tips;});
+  if(!c.msgs.length)out+=tips;
   var quick=c.msgs.length<2?'<div class="row" style="flex-wrap:wrap;gap:6px">'+['q1','q2','q3'].map(function(k){return '<button type="button" class="chip" data-a="quick" data-v="'+k+'">'+t(k)+'</button>';}).join('')+'</div>':'';
-  return head+adrow+'<div class="scroll"><div class="sec" style="gap:8px">'+(a&&a.sample?'<p class="demo" style="padding:0">'+t('chatDemo')+'</p>':'')+msgs+(S.typing===c.id?'<div class="bub them" aria-label="…">…</div>':'')+'</div></div>'+
-   '<form id="chatform" class="chatbar">'+quick+'<div class="row" style="gap:8px"><label for="chatin" style="position:absolute;left:-9999px">'+t('chatPh')+'</label><input id="chatin" class="inp" autocomplete="off" placeholder="'+t('chatPh')+'" maxlength="500"><button class="fabsend" type="submit" aria-label="'+t('send')+'">'+svg(I.send,22)+'</button></div></form>';};
+  return head+adrow+'<div class="scroll"><div class="sec" style="gap:8px">'+about+out+(S.typing===c.id?'<div class="bub them" aria-label="…">…</div>':'')+'</div></div>'+
+   '<form id="chatform" class="chatbar">'+quick+'<div class="row" style="gap:8px"><label for="chatin" style="position:absolute;left:-9999px">'+t('chatPh')+'</label><input id="chatin" class="inp" autocomplete="off" placeholder="'+t('chatPh')+'" maxlength="500" translate="no" dir="auto"><button class="fabsend" type="submit" aria-label="'+t('send')+'">'+svg(I.send,22)+'</button></div></form>';};
 
 V.account=function(){
   var chev=svg(S.lang==='ar'?I.back:I.chev,18);
@@ -1907,7 +1958,7 @@ function render(keepScroll){
   var sc=app.querySelector('.scroll'),top=keepScroll&&sc?sc.scrollTop:0;
   var ci=app.querySelector('#chatin'),cv=ci?ci.value:'',cfoc=!!ci&&document.activeElement===ci;
   var fsb=app.querySelector('.fsbody'),fst=fsb?fsb.scrollTop:0,fsOpen=!!fsb;
-  document.documentElement.lang=S.lang;app.dir=S.lang==='ar'?'rtl':'ltr';
+  document.documentElement.lang=S.lang;document.documentElement.setAttribute('translate','no');app.dir=S.lang==='ar'?'rtl':'ltr';
   app.innerHTML=V[S.screen]()+sheetHTML()+(S.screen==='home'?fsheetHTML():'');
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
@@ -1958,6 +2009,7 @@ app.addEventListener('click',function(e){
    case 'punit':S.draft.punit=el.getAttribute('data-v');render(true);break;
    case 'recstart':recStart();break;
    case 'recstop':recStop();break;
+   case 'msgf':S.msgF=el.getAttribute('data-v');render(true);break;
    case 'rmvoice':S.draft.voice='';render(true);break;
    case 'cleardraft':S.draft=newDraft();S.draftRestored=false;S.errs={};save('draft',null);render();break;
    case 'showph':S.showPh=id;render(true);break;
