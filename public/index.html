@@ -2412,8 +2412,9 @@ function adminClick(a,el,id){
     case 'forgot':S.forgot=!S.forgot;render(true);return true;
     case 'report':if(!S.user){S.after='detail';S.login={step:1,phone:'',code:'',name:'',pass:'',err:''};go('login');return true;}
       api('POST','ads/'+S.id+'/report',{reason:''}).then(function(){toast(t('reported'));}).catch(function(){toast(t('netErr'));});return true;
-    case 'editad':var ea=byId(id);if(!ea)return true;if(!ea._d){toast(t('noEdit'));return true;}
-      S.editId=id;S.draft=Object.assign(newDraft(),JSON.parse(JSON.stringify(ea._d)),{photos:(ea.photos||[]).slice(),voice:ea.voice||''});S.draftRestored=false;S.errs={};go('post');var sc=app.querySelector('.scroll');if(sc)sc.scrollTop=0;return true;
+    case 'editad':var ea=byId(id);if(!ea)return true;var base=ea._d?JSON.parse(JSON.stringify(ea._d)):{title:ea.title||'',cat:ea.cat||'',price:String(ea.price||''),punit:'new',city:ea.city||'Nouakchott',hood:ea.hood||'',near:ea.near||'',desc:ea.desc||'',nego:!!ea.nego,stype:ea.stype||'',
+        sname:(ea.splace&&ea.splace.name)||'',saddr:(ea.splace&&ea.splace.addr)||'',wa:!ea.contacts||!!ea.contacts.wa,call:!ea.contacts||!!ea.contacts.call,msg:!!(ea.contacts&&ea.contacts.msg)};
+      S.editId=id;S.draft=Object.assign(newDraft(),base,{photos:(ea.photos||[]).slice(),voice:ea.voice||''});S.draftRestored=false;S.errs={};go('post');var sc=app.querySelector('.scroll');if(sc)sc.scrollTop=0;return true;
   }
   return false;}
 app.addEventListener('click',function(e){
