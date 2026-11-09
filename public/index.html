@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0B6B3A">
 <!--og--><meta property="og:type" content="website"><meta property="og:site_name" content="Vends-moi"><meta property="og:title" content="Vends-moi (بيعلي) – petites annonces en Mauritanie"><meta property="og:description" content="Achetez et vendez près de chez vous : voitures, immobilier, téléphones, maison, emploi…"><meta property="og:image" content="/icon-512.png"><!--/og-->
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vends-moi">
 <title>Vends-moi · بيعلي</title>
@@ -34,7 +35,10 @@
   --fg:#EAF1EC; --muted:#A3B2A8; --brand:#2E9E62; --brand-fg:#FFFFFF;
   --gold:#F2B632; --gold-fg:#1C2A22; --tint:#1E3327; --warn-bg:#3A2F14; --warn-fg:#F5DFA6;
   --danger:#F08A5D; --wa:#2E9E62; --outer:#0B100D; color-scheme:dark}
-html,body{height:100%}
+html,body{height:100%;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overscroll-behavior:none}
 body{background:var(--outer);color:var(--fg);font-family:var(--font);font-size:15px}
 *{box-sizing:border-box}
 button,input,select,textarea{font-family:inherit;font-size:16px;color:inherit}
@@ -51,7 +55,7 @@ button{cursor:pointer}
 .pill{height:36px;padding:0 12px;border-radius:18px;border:1px solid rgba(255,255,255,.5);background:transparent;color:inherit;font-weight:700;font-size:14px}
 .searchbox{display:flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:14px;background:var(--surface);color:var(--muted)}
 .searchbox input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--fg)}
-.hsel{max-width:150px;height:34px;border-radius:17px;border:none;padding:0 10px;background:rgba(255,255,255,.18);color:var(--brand-fg);font-weight:600;font-size:14px}
+.hsel{max-width:150px;height:34px;border-radius:17px;border:none;padding:0 10px;background:rgba(255,255,255,.18);color:var(--brand-fg);font-weight:600;font-size:16px}
 .hsel option,.hsel optgroup{color:#1C2A22}
 .sec{padding:16px;display:flex;flex-direction:column;gap:12px}
 h1{margin:0;font-size:21px;line-height:1.3;text-wrap:balance}
@@ -232,6 +236,13 @@ textarea.inp{height:auto;padding:12px 14px;resize:none;line-height:1.5}
 .more{display:flex;flex-direction:column;gap:16px}
 @media (max-width:599px){.app{height:var(--vvh,100%)}}
 .app.kbd .tabs,.app.kbd .foot{display:none}
+button.logo{background:none;border:none;padding:0;color:inherit;font:inherit;font-size:22px;font-weight:800;letter-spacing:-.5px;cursor:pointer}
+.tlogo{width:36px;height:36px;border:none;background:none;padding:2px;flex-shrink:0;border-radius:10px;cursor:pointer}
+.tlogo img{width:32px;height:32px;border-radius:9px;display:block}
+.hdr,.topbar,.chead{padding-top:max(10px,env(safe-area-inset-top))}
+.tabs{padding-bottom:max(10px,env(safe-area-inset-bottom))}
+.foot,.chatbar{padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.app{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -891,7 +902,8 @@ function tabs(active){
   function tb(id,ic,lbl){var n=id==='msgs'?unreadCount():0;return '<button class="tab" data-a="go" data-s="'+id+'"'+(active===id?' aria-current="page"':'')+'><span class="tabic">'+svg(ic,24)+(n?'<span class="tabbadge">'+n+'</span>':'')+'</span>'+lbl+'</button>';}
   return '<nav class="tabs" aria-label="'+t('navLbl')+'">'+tb('home',I.home,t('home'))+tb('favs',I.fav,t('favs'))+'<button class="tab post" data-a="post"><span class="fab">'+svg(I.plus,28,2.5)+'</span><span class="postlbl">'+t('post')+'</span></button>'+tb('msgs',I.chat,t('msgs'))+tb('account',I.user,t('account'))+'</nav>';}
 
-function topbar(title,backTo){return '<div class="topbar"><button class="icon" data-a="go" data-s="'+(backTo||'home')+'" aria-label="'+t('back')+'">'+svg(S.lang==='ar'?I.chev:I.back,24)+'</button><h1>'+title+'</h1></div>';}
+function homeLogo(){return '<button class="tlogo" data-a="gohome" aria-label="'+t('home')+'"><img src="/icon-192.png" alt="" width="32" height="32"></button>';}
+function topbar(title,backTo){return '<div class="topbar"><button class="icon" data-a="go" data-s="'+(backTo||'home')+'" aria-label="'+t('back')+'">'+svg(S.lang==='ar'?I.chev:I.back,24)+'</button><h1>'+title+'</h1>'+homeLogo()+'</div>';}
 
 var VKINDS=['car','bus','truck','moto','bike','parts','service'];
 var VBRANDS={bus:['Toyota','Mercedes','Hyundai','Nissan','Isuzu','Mitsubishi','Autre'],truck:['Mercedes','Renault','Volvo','MAN','Scania','DAF','Iveco','Isuzu','Mitsubishi','Autre'],moto:['Yamaha','Honda','Suzuki','TVS','Bajaj','Haojue','KTM','Autre']};
@@ -1720,7 +1732,7 @@ V.home=function(){
   var hoodRow=S.city==='Nouakchott'?'<div class="row" style="gap:6px">'+svg(I.pin,16)+'<label for="hoodsel" style="position:absolute;left:-9999px">'+t('hood')+'</label><select id="hoodsel" class="hsel" style="max-width:none;flex:1">'+
     '<option value="">'+t('allHoods')+'</option>'+hoodOptions(S.hood,true)+'</select></div>':'';
   var band=S.cat?'':'<button class="tabband" data-a="tabaski">'+svg(ICONS.anim,24,1.8)+'<span style="flex:1;min-width:0">'+t('tabBanner')+'</span><span class="tabgo">'+t('tabBannerSub')+'</span></button>';
-  return '<div class="scroll"><header class="hdr"><div class="row between"><div class="logo">'+(S.lang==='ar'?'بيع<span>لي</span>':'Vends-<span>moi</span>')+'</div><div class="row" style="gap:4px;min-width:0">'+svg(I.pin,16)+'<label for="city" style="position:absolute;left:-9999px">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
+  return '<div class="scroll"><header class="hdr"><div class="row between"><button class="logo" data-a="gohome" aria-label="'+t('home')+'">'+(S.lang==='ar'?'بيع<span>لي</span>':'Vends-<span>moi</span>')+'</button><div class="row" style="gap:4px;min-width:0">'+svg(I.pin,16)+'<label for="city" style="position:absolute;left:-9999px">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
    '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" style="position:absolute;left:-9999px">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
    '</header>'+
    '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles">'+cats+'</div></div>'+(S.cat?'<button class="linkbtn" data-a="cat" data-c="" style="color:var(--brand);align-self:flex-end;font-size:13px">'+t('showAll')+'</button>':'')+
@@ -1848,7 +1860,7 @@ function dayLabel(ts){var d=new Date(ts),n=new Date(),y=new Date(Date.now()-8640
   if(d.toDateString()===n.toDateString())return t('today');if(d.toDateString()===y.toDateString())return t('yesterday');
   try{return d.toLocaleDateString(S.lang==='ar'?'ar':'fr-FR',{day:'numeric',month:'long',year:'numeric'});}catch(e){return d.toDateString();}}
 V.msgs=function(){
-  var head='<div class="topbar" style="justify-content:center"><h1 style="text-align:center;flex:1">'+t('msgsTitle')+'</h1></div>';
+  var head='<div class="topbar"><span style="width:32px"></span><h1 style="text-align:center;flex:1">'+t('msgsTitle')+'</h1>'+homeLogo()+'</div>';
   if(!S.user)return head+'<div class="scroll"><div class="empty">'+svg(I.chat,40)+'<div>'+t('noMsgLogin')+'</div><button class="btn primary" data-a="go" data-s="login">'+t('login')+'</button></div></div>'+tabs('msgs');
   var f=S.msgF||'all';
   var all=S.convs.slice().sort(function(x,y){return y.updated-x.updated;});
@@ -1868,7 +1880,7 @@ V.chat=function(){
   var c=convById(S.convId);if(!c){S.screen='msgs';return V.msgs();}
   var a=byId(c.adId),buyer=c.buyer!==false;
   var sub=c.otherSince?t('since').replace('{d}',monthYear(c.otherSince)):'';
-  var head='<div class="chead">'+backBtn('msgs')+'<div class="av" aria-hidden="true">'+esc((c.seller||'?').charAt(0).toUpperCase())+'</div><div style="min-width:0;flex:1"><div class="nm" translate="no">'+esc(c.seller)+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div></div>';
+  var head='<div class="chead">'+backBtn('msgs')+'<div class="av" aria-hidden="true">'+esc((c.seller||'?').charAt(0).toUpperCase())+'</div><div style="min-width:0;flex:1"><div class="nm" translate="no">'+esc(c.seller)+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>'+homeLogo()+'</div>';
   var adrow=a?'<button class="cad" data-a="open" data-id="'+a.id+'"><div class="mth">'+adThumbSmall(a)+'</div><div style="min-width:0;flex:1"><div class="ctitle" translate="no" style="font-weight:800">'+esc(a.title)+'</div><div class="price" style="font-size:16px">'+priceStr(a)+'</div>'+(a.status==='sold'?'<span class="badge">'+t('sold')+'</span>':'')+'</div></button>'
     :'<div class="cad"><div class="mth">'+svg(I.list,26,1.5)+'</div><div><div class="ctitle" translate="no">'+esc(c.title||'')+'</div><div class="meta">'+t('adGone')+'</div></div></div>';
   var about=c.srv?'<div class="about"><b>'+t(buyer?'aboutSeller':'aboutBuyer')+'</b>'+(c.otherCity?'<div>'+svg(I.pin,18)+'<span>'+esc(city(c.otherCity))+'</span></div>':'')+
@@ -2051,6 +2063,8 @@ app.addEventListener('click',function(e){
    case 'recstop':recStop();break;
    case 'msgf':S.msgF=el.getAttribute('data-v');render(true);break;
    case 'more':S.moreOpen=!S.moreOpen;render(true);if(S.moreOpen){var mo=app.querySelector('#more');if(mo)setTimeout(function(){try{mo.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}},30);}break;
+   case 'gohome':S.q='';S.cat='';S.hood='';S.showCats=false;S.sfocus=false;S.fsheet=false;S.sheet=null;S.gf={date:'',seller:'',photo:false,nego:false,voice:false,pmin:'',pmax:''};S.sort='new';
+     if(S.screen==='home'){render();var hs=app.querySelector('.scroll');if(hs)hs.scrollTop=0;}else go('home');break;
    case 'rmvoice':S.draft.voice='';render(true);break;
    case 'cleardraft':S.draft=newDraft();S.draftRestored=false;S.errs={};save('draft',null);render();break;
    case 'showph':S.showPh=id;render(true);break;
