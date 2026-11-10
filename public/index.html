@@ -324,6 +324,13 @@ button.logo{background:none;border:none;padding:0;color:inherit;font:inherit;fon
 .vtip .ic{width:36px;height:36px;border-radius:10px;background:var(--ph);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .vexl{margin:8px 0 0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px}
 .btn[disabled]{opacity:.45}
+.langpick{position:absolute;inset:0;z-index:100;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
+.lpin{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+.lplogo{display:flex;gap:10px;align-items:center;font-size:28px;font-weight:800}.lplogo b{color:var(--gold)}.lpsep{opacity:.6}
+.lptxt{margin:0;font-size:19px;line-height:1.6;font-weight:700}
+.lpbtn{width:100%;height:64px;border-radius:18px;border:none;background:#fff;color:var(--brand);font:inherit;font-size:24px;font-weight:800;cursor:pointer}
+.lpbtn.alt{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.8)}
+.lpnote{color:rgba(255,255,255,.85);margin:6px 0 0;line-height:1.6}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -836,7 +843,7 @@ function applySampleLang(){var ar=S.lang==='ar';function w(v){return ar&&v&&AR_W
 function load(k,d){try{var v=localStorage.getItem('souk_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function save(k,v){try{localStorage.setItem('souk_'+k,JSON.stringify(v));}catch(e){}}
 
-var S={jf:{offer:'',contract:'',time:'',sector:'',func:'',exp:'',edu:'',pmin:'',pmax:''},gf:{date:'',seller:'',photo:false,nego:false,voice:false,pmin:'',pmax:''},fsheet:false,sfocus:false,recentQ:load('recentq',[]),ff:{sub:'',item:'',role:'',offer:'',pmin:'',pmax:''},of:{mode:'',sub:'',pub:'',pmin:'',pmax:''},hf:{mode:'',sub:'',item:'',pmin:'',pmax:''},mf:{mode:'',type:'',brand:'',storageMin:'',pmin:'',pmax:''},convs:load('convs',[]),seen:load('seen',[]),searches:load('searches',[]),convId:null,typing:null,pendingAd:null,profForm:null,screen:'home',prev:'home',q:'',city:'',hood:'',cat:'',sort:'new',af:{species:'',tabaski:false,pmin:'',pmax:''},eco:load('eco',false),showPh:null,proForm:null,shopName:'',shopBack:'home',draftRestored:false,cf:{brand:'',yearMin:'',pmin:'',pmax:''},rf:{mode:'',kind:'',roomsMin:'',pmin:'',pmax:''},pf:{mode:'',brand:'',storageMin:'',cond:'',pmin:'',pmax:''},id:null,lang:load('lang','fr'),user:load('user',null),
+var S={jf:{offer:'',contract:'',time:'',sector:'',func:'',exp:'',edu:'',pmin:'',pmax:''},gf:{date:'',seller:'',photo:false,nego:false,voice:false,pmin:'',pmax:''},fsheet:false,sfocus:false,recentQ:load('recentq',[]),ff:{sub:'',item:'',role:'',offer:'',pmin:'',pmax:''},of:{mode:'',sub:'',pub:'',pmin:'',pmax:''},hf:{mode:'',sub:'',item:'',pmin:'',pmax:''},mf:{mode:'',type:'',brand:'',storageMin:'',pmin:'',pmax:''},convs:load('convs',[]),seen:load('seen',[]),searches:load('searches',[]),convId:null,typing:null,pendingAd:null,profForm:null,screen:'home',prev:'home',q:'',city:'',hood:'',cat:'',sort:'new',af:{species:'',tabaski:false,pmin:'',pmax:''},eco:load('eco',false),showPh:null,proForm:null,shopName:'',shopBack:'home',draftRestored:false,cf:{brand:'',yearMin:'',pmin:'',pmax:''},rf:{mode:'',kind:'',roomsMin:'',pmin:'',pmax:''},pf:{mode:'',brand:'',storageMin:'',cond:'',pmin:'',pmax:''},id:null,lang:load('lang','fr'),langPick:(function(){try{return localStorage.getItem('souk_lang')===null;}catch(e){return false;}})(),user:load('user',null),
   mine:load('mine',[]),favs:load('favs',[]),draft:null,errs:{},login:{step:1,phone:'',code:'',name:'',err:''},accTab:'online',confirm:null,sheet:null,after:null};
 applySampleLang();
 S.mine.forEach(function(x){if(x.cat==='elec'||x.cat==='meub')x.cat='maison';if(x.cat==='tel')x.cat='multi';});
@@ -2260,12 +2267,20 @@ function toast(msg){var old=app.querySelector('.toast');if(old)old.remove();var 
 
 var draftTimer;
 function saveDraftSoon(){clearTimeout(draftTimer);draftTimer=setTimeout(function(){if(S.draft&&!S.editId)save('draft',S.draft);},700);}
+function langPickHTML(){
+  return '<div class="langpick" role="dialog" aria-modal="true" aria-label="Langue / اللغة"><div class="lpin">'+
+    '<img src="/icon-192.png" alt="" width="84" height="84" style="border-radius:22px">'+
+    '<div class="lplogo"><span dir="rtl">بيع<b>لي</b></span><span class="lpsep">·</span><span>Vends-<b>moi</b></span></div>'+
+    '<p class="lptxt"><span dir="rtl" lang="ar">اختر لغتك</span><br><span lang="fr">Choisissez votre langue</span></p>'+
+    '<button class="lpbtn" data-a="picklang" data-v="ar" lang="ar" dir="rtl">العربية</button>'+
+    '<button class="lpbtn alt" data-a="picklang" data-v="fr" lang="fr">Français</button>'+
+    '<p class="meta lpnote"><span dir="rtl" lang="ar">يمكنك تغيير اللغة لاحقاً من الحساب</span><br><span lang="fr">Vous pourrez changer plus tard dans Compte</span></p></div></div>';}
 function render(keepScroll){
   var sc=app.querySelector('.scroll'),top=keepScroll&&sc?sc.scrollTop:0;
   var ci=app.querySelector('#chatin'),cv=ci?ci.value:'',cfoc=!!ci&&document.activeElement===ci;
   var fsb=app.querySelector('.fsbody'),fst=fsb?fsb.scrollTop:0,fsOpen=!!fsb;
   document.documentElement.lang=S.lang;document.documentElement.setAttribute('translate','no');app.dir=S.lang==='ar'?'rtl':'ltr';
-  app.innerHTML=V[S.screen]()+sheetHTML()+(S.screen==='home'?fsheetHTML():'');
+  app.innerHTML=V[S.screen]()+sheetHTML()+(S.screen==='home'?fsheetHTML():'')+(S.langPick?langPickHTML():'');
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
   if(S.screen==='post'){splitPostForm();saveDraftSoon();}
@@ -2376,6 +2391,7 @@ app.addEventListener('click',function(e){
    case 'visual':S.vimg=null;S.vbusy=false;S.vex=false;go('visual');break;
    case 'vex':S.vex=!S.vex;render(true);break;
    case 'vgo':runImgSearch();break;
+   case 'picklang':S.lang=el.getAttribute('data-v')==='ar'?'ar':'fr';save('lang',S.lang);if(typeof applySampleLang==='function')applySampleLang();S.langPick=false;render();break;
    case 'rmvoice':S.draft.voice='';render(true);break;
    case 'cleardraft':S.draft=newDraft();S.draftRestored=false;S.errs={};save('draft',null);render();break;
    case 'showph':S.showPh=id;render(true);break;
