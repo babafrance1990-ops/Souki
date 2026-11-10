@@ -1,3 +1,4 @@
+import { recognise } from './vision.js';
 // Vends-moi API — Cloudflare Pages Function, base de données D1 (binding "DB").
 // Toutes les routes /api/* passent ici.
 
@@ -12,6 +13,7 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS messages_conv ON messages(conv_id, t)`,
   `CREATE TABLE IF NOT EXISTS follows (follower_id TEXT NOT NULL, target_id TEXT NOT NULL, t INTEGER NOT NULL, PRIMARY KEY (follower_id, target_id))`,
   `CREATE TABLE IF NOT EXISTS reviews (target_id TEXT NOT NULL, author_id TEXT NOT NULL, stars INTEGER NOT NULL, txt TEXT, t INTEGER NOT NULL, PRIMARY KEY (target_id, author_id))`,
+  `CREATE TABLE IF NOT EXISTS imgsearch (who TEXT NOT NULL, t INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
 const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`];
@@ -135,6 +137,24 @@ export async function onRequest(ctx) {
 
     if (parts[0] === 'config' && method === 'GET') {
       return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, '') });
+    }
+
+    // ---------- Recherche par photo (ouverte à tous, 10 par jour et par personne) ----------
+    if (parts[0] === 'imgsearch' && method === 'POST') {
+      const viewer = await currentUser(db, req);
+      const who = viewer ? 'u:' + viewer.id : 'ip:' + (req.headers.get('cf-connecting-ip') || 'x');
+      const day = Date.now() - 86400000;
+      const used = await db.prepare('SELECT COUNT(*) AS n FROM imgsearch WHERE who = ? AND t > ?').bind(who, day).first();
+      if (used && used.n >= 10) return fail('img_limit', 429);
+      const b = await readBody(req);
+      const m = /^data:image\/[\w.+-]+;base64,(.+)$/.exec(String(b.img || ''));
+      if (!m) return fail('invalid');
+      const bytes = unb64(m[1]);
+      if (bytes.length > 400000) return fail('too_big', 413);
+      let r;
+      try { r = await recognise(env, bytes); } catch (e) { return fail(e && e.message === 'no_ai' ? 'img_off' : 'img_busy', 503); }
+      await db.batch([db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind(who, Date.now()), db.prepare('DELETE FROM imgsearch WHERE t < ?').bind(day)]);
+      return json(r);
     }
 
     // ---------- Annonces (lecture publique) ----------

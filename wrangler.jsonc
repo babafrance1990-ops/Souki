@@ -7,6 +7,9 @@
     "binding": "ASSETS",
     "run_worker_first": ["/api/*", "/"]
   },
+  "ai": {
+    "binding": "AI"
+  },
   "vars": {
     "ADMIN_PHONES": "37264646",
     "SUPPORT_WHATSAPP": "22237264646"
