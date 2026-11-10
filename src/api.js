@@ -13,6 +13,8 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS messages_conv ON messages(conv_id, t)`,
   `CREATE TABLE IF NOT EXISTS follows (follower_id TEXT NOT NULL, target_id TEXT NOT NULL, t INTEGER NOT NULL, PRIMARY KEY (follower_id, target_id))`,
   `CREATE TABLE IF NOT EXISTS reviews (target_id TEXT NOT NULL, author_id TEXT NOT NULL, stars INTEGER NOT NULL, txt TEXT, t INTEGER NOT NULL, PRIMARY KEY (target_id, author_id))`,
+  `CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, ad_id TEXT, mime TEXT NOT NULL, size INTEGER NOT NULL, n INTEGER NOT NULL, created INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS video_chunks (vid TEXT NOT NULL, idx INTEGER NOT NULL, bytes BLOB NOT NULL, PRIMARY KEY (vid, idx))`,
   `CREATE TABLE IF NOT EXISTS imgsearch (who TEXT NOT NULL, t INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
@@ -78,6 +80,20 @@ async function storeMedia(db, userId, adId, dataUrl, maxBytes) {
   return '/api/media/' + id;
 }
 
+async function claimVideo(db, userId, adId, url) {
+  const m = /^\/api\/videos\/(\w+)$/.exec(url || '');
+  if (!m) return null;
+  const v = await db.prepare('SELECT * FROM videos WHERE id = ? AND user_id = ?').bind(m[1], userId).first();
+  if (!v) return null;
+  const c = await db.prepare('SELECT COUNT(*) AS n FROM video_chunks WHERE vid = ?').bind(v.id).first();
+  if (!c || c.n !== v.n) return null;
+  await db.prepare('UPDATE videos SET ad_id = ? WHERE id = ?').bind(adId, v.id).run();
+  return '/api/videos/' + v.id;
+}
+async function dropVideo(db, url) {
+  const m = /^\/api\/videos\/(\w+)$/.exec(url || '');
+  if (m) await db.batch([db.prepare('DELETE FROM video_chunks WHERE vid = ?').bind(m[1]), db.prepare('DELETE FROM videos WHERE id = ?').bind(m[1])]);
+}
 async function readBody(req) { try { return await req.json(); } catch (e) { return {}; } }
 
 export async function onRequest(ctx) {
@@ -94,6 +110,29 @@ export async function onRequest(ctx) {
       const r = await db.prepare('SELECT mime, bytes FROM media WHERE id = ?').bind(parts[1]).first();
       if (!r) return new Response('Not found', { status: 404 });
       return new Response(new Uint8Array(r.bytes), { headers: { 'content-type': r.mime, 'cache-control': 'public, max-age=31536000, immutable' } });
+    }
+
+    // ---------- Vidéos (lecture publique, par plages pour l'iPhone) ----------
+    if (parts[0] === 'videos' && parts[1] && method === 'GET') {
+      const v = await db.prepare('SELECT * FROM videos WHERE id = ?').bind(parts[1]).first();
+      if (!v) return new Response('Not found', { status: 404 });
+      const CH = 1500000, total = v.size;
+      let start = 0, end = total - 1, partial = false;
+      const rg = /bytes=(\d*)-(\d*)/.exec(req.headers.get('range') || '');
+      if (rg) { partial = true; if (rg[1]) start = +rg[1]; if (rg[2]) end = Math.min(+rg[2], total - 1); if (!rg[1] && rg[2]) { start = Math.max(0, total - +rg[2]); end = total - 1; } }
+      if (start > end || start >= total) return new Response(null, { status: 416, headers: { 'content-range': 'bytes */' + total } });
+      end = Math.min(end, start + 3 * CH - 1);
+      const first = Math.floor(start / CH), last = Math.floor(end / CH);
+      const { results } = await db.prepare('SELECT idx, bytes FROM video_chunks WHERE vid = ? AND idx BETWEEN ? AND ? ORDER BY idx').bind(v.id, first, last).all();
+      const out = new Uint8Array(end - start + 1); let pos = 0;
+      for (const c of results) {
+        const b = new Uint8Array(c.bytes), off = c.idx * CH;
+        const s0 = Math.max(start, off) - off, s1 = Math.min(end + 1, off + b.length) - off;
+        if (s1 > s0) { out.set(b.subarray(s0, s1), pos); pos += s1 - s0; }
+      }
+      const h = { 'content-type': v.mime, 'accept-ranges': 'bytes', 'cache-control': 'public, max-age=31536000, immutable', 'content-length': String(out.length) };
+      if (partial || out.length < total) { h['content-range'] = 'bytes ' + start + '-' + end + '/' + total; return new Response(out, { status: 206, headers: h }); }
+      return new Response(out, { status: 200, headers: h });
     }
 
     // ---------- Comptes ----------
@@ -251,6 +290,8 @@ export async function onRequest(ctx) {
         ad.photos = photos;
         if (ad.voice) ad.voice = await storeMedia(db, me.id, id, ad.voice, 1600000);
         if (!ad.voice) delete ad.voice;
+        ad.video = await claimVideo(db, me.id, id, ad.video);
+        if (!ad.video) delete ad.video;
         delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample; delete ad.photosSaved;
         ad.seller = me.name; ad.phone = fmtPhone(me.phone);
         if (me.shop) ad.shop = JSON.parse(me.shop); else delete ad.shop;
@@ -288,6 +329,10 @@ export async function onRequest(ctx) {
         if (vm) keep.push(vm[1]);
         else if (ad.voice) { ad.voice = await storeMedia(db, me.id, row.id, ad.voice, 1600000); if (ad.voice) keep.push(ad.voice.split('/').pop()); }
         if (!ad.voice) delete ad.voice;
+        const oldVid = JSON.parse(row.data).video;
+        ad.video = await claimVideo(db, me.id, row.id, ad.video);
+        if (!ad.video) delete ad.video;
+        if (oldVid && oldVid !== ad.video) await dropVideo(db, oldVid);
         const { results: old } = await db.prepare('SELECT id FROM media WHERE ad_id = ?').bind(row.id).all();
         const drop = old.filter((o) => !keep.includes(o.id)).map((o) => db.prepare('DELETE FROM media WHERE id = ?').bind(o.id));
         if (drop.length) await db.batch(drop);
@@ -303,6 +348,8 @@ export async function onRequest(ctx) {
         return json({ ok: true });
       }
       if (!parts[2] && method === 'DELETE') {
+        const vd = JSON.parse(row.data).video;
+        if (vd) await dropVideo(db, vd);
         await db.batch([db.prepare('DELETE FROM ads WHERE id = ?').bind(row.id), db.prepare('DELETE FROM media WHERE ad_id = ?').bind(row.id), db.prepare('DELETE FROM reports WHERE ad_id = ?').bind(row.id)]);
         return json({ ok: true });
       }
@@ -374,6 +421,31 @@ export async function onRequest(ctx) {
         return json({ ok: true });
       }
       return fail('not_found', 404);
+    }
+
+    // ---------- Envoi d'une vidéo (morceaux de 1,5 Mo, 8 Mo max) ----------
+    if (parts[0] === 'videos') {
+      if (!parts[1] && method === 'POST') {
+        const b = await readBody(req);
+        const size = +b.size || 0, n = Math.ceil(size / 1500000);
+        if (!size || size > 8000000) return fail('too_big', 413);
+        if (!/^video\/(mp4|webm|quicktime)/.test(String(b.mime || ''))) return fail('invalid');
+        const day = await db.prepare('SELECT COUNT(*) AS n FROM videos WHERE user_id = ? AND created > ?').bind(me.id, Date.now() - 86400000).first();
+        if (day && day.n >= 20) return fail('too_many', 429);
+        const id = uid('v');
+        await db.prepare('INSERT INTO videos (id, user_id, mime, size, n, created) VALUES (?, ?, ?, ?, ?, ?)').bind(id, me.id, String(b.mime).split(';')[0], size, n, Date.now()).run();
+        return json({ id, chunk: 1500000, n });
+      }
+      const v = parts[1] ? await db.prepare('SELECT * FROM videos WHERE id = ?').bind(parts[1]).first() : null;
+      if (!v || v.user_id !== me.id) return fail('not_found', 404);
+      if (parts[2] !== undefined && method === 'PUT') {
+        const idx = +parts[2];
+        if (!(idx >= 0 && idx < v.n)) return fail('invalid');
+        const bytes = new Uint8Array(await req.arrayBuffer());
+        if (!bytes.length || bytes.length > 1500000) return fail('invalid');
+        await db.prepare('INSERT OR REPLACE INTO video_chunks (vid, idx, bytes) VALUES (?, ?, ?)').bind(v.id, idx, bytes.buffer).run();
+        return json({ ok: true });
+      }
     }
 
     // ---------- Messagerie ----------
