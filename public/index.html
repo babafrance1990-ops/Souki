@@ -360,6 +360,7 @@ var CATS=[
  {id:'fam',fr:'Famille',ar:'العائلة',c:'#B4235A'},
  {id:'job',fr:'Emploi',ar:'وظائف',c:'#3D5A80'},
  {id:'anim',fr:'Animaux',ar:'مواشي',c:'#8A5A12'},
+ {id:'covoit',fr:'Covoiturage',ar:'نقل مشترك',c:'#0E7490'},
  {id:'autre',fr:'Autres',ar:'أخرى',c:'#56625A'}];
 var WILAYAS=[
  {id:'nkc',fr:'Nouakchott',ar:'نواكشوط',cities:[['Nouakchott','نواكشوط']]},
@@ -388,6 +389,7 @@ var ICONS={
  job:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>',
  maison:'<path d="M4 11V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M2 11h20v6H2zM5 17v3M19 17v3"/>',
  fam:'<circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 21v-2a5 5 0 0 1 10 0v2M14 21v-1.5a3.5 3.5 0 0 1 7 0V21"/>',
+ covoit:'<circle cx="6" cy="18" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h5.5"/><path d="M18 2.5a2.6 2.6 0 0 1 2.6 2.6c0 1.9-2.6 4.4-2.6 4.4s-2.6-2.5-2.6-4.4A2.6 2.6 0 0 1 18 2.5z"/>',
  anim:'<path d="M6.5 9.5a2.5 2.5 0 0 1 4-2 2.5 2.5 0 0 1 4.5.5 2.5 2.5 0 0 1 1 4.6V13a3 3 0 0 1-3 3H8.5a3 3 0 0 1-3-3v-.6a2.5 2.5 0 0 1 1-2.9z"/><path d="M8 16v4M14 16v4M17 9.5h2a2 2 0 0 1 2 2v.5a1.5 1.5 0 0 1-1.5 1.5H17"/>',
  autre:'<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>'};
 function svg(p,s,w){return '<svg aria-hidden="true" width="'+(s||22)+'" height="'+(s||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+(w||2)+'" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
@@ -461,7 +463,7 @@ var TX={
   hoodPh2:'Ex. : Centre',nearLbl:'Près de… (repère connu)',nearPh:'Ex. : marché Capitale, Carrefour Madrid',nearShow:'Près de',allHoods:'Tous les quartiers',
   animInfo:'Informations sur les animaux',species:'Espèce',sp_mouton:'Mouton',sp_chevre:'Chèvre',sp_chameau:'Chameau',sp_vache:'Vache',sp_volaille:'Volaille',sp_autre:'Autre',
   count:'Nombre de têtes',heads:'têtes',head:'tête',sex:'Sexe',sx_m:'Mâle',sx_f:'Femelle',sx_mix:'Mâles et femelles',age:'Âge',ag_0:'Moins d’1 an',ag_1:'1 à 2 ans',ag_2:'2 à 4 ans',ag_4:'Plus de 4 ans',
-  breed:'Race',breedPh:'Ex. : Touabire, Ladoum',tabaskiOk:'Idéal pour la Tabaski',delivery:'Livraison possible',errSpecies:'Choisissez l’espèce.',errCount:'Indiquez le nombre de têtes.',
+  breed:'Race',tripInfo:'Le trajet',ctype:'Vous êtes',ct_offer:'Conducteur : je propose des places',ct_demand:'Passager : je cherche un trajet',cfrom:'Départ',cto:'Arrivée',cdate:'Date',ctime:'Heure de départ',cseats:'Places',cseatsD:'Places voulues',ccar:'Véhicule',ccarPh:'Ex. : Toyota Hilux blanche',cstops:'Étapes',cstopsPh:'Ex. : Boutilimit, Aleg',cbags:'Bagages',bg_s:'Petit sac',bg_m:'Valise',bg_l:'Gros bagages',cclim:'Climatisation',cwomen:'Réservé aux femmes',errCtype:'Choisissez conducteur ou passager.',errCfrom:'Choisissez la ville de départ.',errCto:'Choisissez une ville d’arrivée différente du départ.',errCdate:'Choisissez une date à venir.',errCtime:'Indiquez l’heure.',errCseats:'Indiquez le nombre de places (1 à 8).',pricePlace:'Prix par place',budgetPlace:'Budget par place',perPlace:' / place',placesLeft:'{n} places',placeLeft:'1 place',allCities:'Toutes les villes',anyDate:'Toutes les dates',seatsMin:'Places minimum',tripType:'Annonces',tt_offer:'Trajets proposés',tt_demand:'Demandes de passagers',tripPast:'Ce trajet est passé.',tripDemand:'Demande de trajet',swapCities:'Inverser départ et arrivée',breedPh:'Ex. : Touabire, Ladoum',tabaskiOk:'Idéal pour la Tabaski',delivery:'Livraison possible',errSpecies:'Choisissez l’espèce.',errCount:'Indiquez le nombre de têtes.',
   allSpecies:'Toutes les espèces',tabBanner:'Spécial Tabaski : moutons à vendre',tabBannerSub:'Voir',
   voiceLbl:'Annonce vocale',voiceRec:'Enregistrer un message vocal',voiceHelp:'Décrivez votre article en 30 secondes, en hassaniya, en arabe ou en français.',voiceDel:'Supprimer le vocal',voiceTooBig:'Message trop long : 1 minute maximum.',voiceBad:'Choisissez un fichier audio.',voiceListen:'Écouter le vendeur',voiceTag:'Vocal',
   eco:'Économie de données',ecoOn:'activée',ecoOff:'désactivée',ecoShow:'Voir la photo',ecoToastOn:'Économie de données activée : les photos se chargent seulement quand vous les ouvrez.',ecoToastOff:'Économie de données désactivée',
@@ -592,7 +594,7 @@ var TX={
   hoodPh2:'مثال: وسط المدينة',nearLbl:'قرب… (معلم معروف)',nearPh:'مثال: سوق العاصمة، كارفور مدريد',nearShow:'قرب',allHoods:'كل المقاطعات',
   animInfo:'معلومات المواشي',species:'النوع',sp_mouton:'خروف',sp_chevre:'ماعز',sp_chameau:'جمل',sp_vache:'بقرة',sp_volaille:'دواجن',sp_autre:'أخرى',
   count:'عدد الرؤوس',heads:'رؤوس',head:'رأس',sex:'الجنس',sx_m:'ذكر',sx_f:'أنثى',sx_mix:'ذكور وإناث',age:'العمر',ag_0:'أقل من سنة',ag_1:'من سنة إلى سنتين',ag_2:'من سنتين إلى 4 سنوات',ag_4:'أكثر من 4 سنوات',
-  breed:'السلالة',breedPh:'مثال: لادوم',tabaskiOk:'مناسب لعيد الأضحى',delivery:'التوصيل ممكن',errSpecies:'اختر النوع.',errCount:'اكتب عدد الرؤوس.',
+  breed:'السلالة',tripInfo:'الرحلة',ctype:'أنت',ct_offer:'سائق: أعرض مقاعد',ct_demand:'راكب: أبحث عن رحلة',cfrom:'الانطلاق',cto:'الوصول',cdate:'التاريخ',ctime:'ساعة الانطلاق',cseats:'المقاعد',cseatsD:'المقاعد المطلوبة',ccar:'السيارة',ccarPh:'مثال: تويوتا هايلكس بيضاء',cstops:'محطات التوقف',cstopsPh:'مثال: بوتلميت، ألاك',cbags:'الأمتعة',bg_s:'حقيبة صغيرة',bg_m:'حقيبة سفر',bg_l:'أمتعة كبيرة',cclim:'مكيّف',cwomen:'للنساء فقط',errCtype:'اختر سائق أو راكب.',errCfrom:'اختر مدينة الانطلاق.',errCto:'اختر مدينة وصول مختلفة عن الانطلاق.',errCdate:'اختر تاريخاً قادماً.',errCtime:'حدّد الساعة.',errCseats:'حدّد عدد المقاعد (من 1 إلى 8).',pricePlace:'السعر للمقعد',budgetPlace:'الميزانية للمقعد',perPlace:' / للمقعد',placesLeft:'{n} مقاعد',placeLeft:'مقعد واحد',allCities:'كل المدن',anyDate:'كل التواريخ',seatsMin:'أقل عدد من المقاعد',tripType:'الإعلانات',tt_offer:'رحلات معروضة',tt_demand:'طلبات ركاب',tripPast:'انتهى موعد هذه الرحلة.',tripDemand:'طلب رحلة',swapCities:'تبديل الانطلاق والوصول',breedPh:'مثال: لادوم',tabaskiOk:'مناسب لعيد الأضحى',delivery:'التوصيل ممكن',errSpecies:'اختر النوع.',errCount:'اكتب عدد الرؤوس.',
   allSpecies:'كل الأنواع',tabBanner:'عيد الأضحى: خراف للبيع',tabBannerSub:'عرض',
   voiceLbl:'إعلان صوتي',voiceRec:'سجّل رسالة صوتية',voiceHelp:'صف سلعتك في 30 ثانية بالحسانية أو العربية أو الفرنسية.',voiceDel:'حذف الرسالة الصوتية',voiceTooBig:'الرسالة طويلة جداً: دقيقة واحدة كحد أقصى.',voiceBad:'اختر ملفاً صوتياً.',voiceListen:'استمع إلى البائع',voiceTag:'صوتي',
   eco:'توفير الإنترنت',ecoOn:'مفعّل',ecoOff:'غير مفعّل',ecoShow:'عرض الصورة',ecoToastOn:'تم تفعيل توفير الإنترنت: لا تُحمّل الصور إلا عند فتحها.',ecoToastOff:'تم إيقاف توفير الإنترنت',
@@ -699,7 +701,7 @@ function noComm(e){return !!e&&(e.pub==='owner'||(e.pub==='agent'&&e.comm==='non
 function hasRooms(k){return k==='apt'||k==='house';}
 function normE(e){if(!e||e.deal)return e;var n={};for(var k in e)n[k]=e[k];n.deal=e.type==='rent'?'rent':'sale';n.kind=e.type==='land'?'land':'house';return n;}
 function kindDeal(e){return t('k2_'+e.kind)+' '+(S.lang==='fr'?t(e.deal==='rent'?'dealRent':'dealSale').toLowerCase():t(e.deal==='rent'?'dealRent':'dealSale'));}
-function priceStr(a){var e=normE(a.estate);return (a.punit==='old'?num(a.priceOld||a.price*10)+' '+t('oldUnit'):fmt(a.price))+((e&&e.deal==='rent')||a.job?t('perMonth'):'');}
+function priceStr(a){var e=normE(a.estate);return (a.punit==='old'?num(a.priceOld||a.price*10)+' '+t('oldUnit'):fmt(a.price))+((e&&e.deal==='rent')||a.job?t('perMonth'):'')+(a.trip?t('perPlace'):'');}
 function estMeta(a){var e=normE(a.estate);if(!e)return '';var p=[kindDeal(e)];if(hasRooms(e.kind)&&e.rooms)p.push(S.lang==='ar'?arCount(e.rooms,'room'):e.rooms+' '+t('rooms').toLowerCase());if(e.surface)p.push(e.surface+' '+U('m2'));return p.join(' · ');}
 var VTYPES=['berline','suv','pickup','citadine','utilitaire','monospace'];
 var COLORS=['blanc','noir','gris','argent','bleu','rouge','vert','beige','marron','autre'];
@@ -854,7 +856,7 @@ function applySampleLang(){var ar=S.lang==='ar';function w(v){return ar&&v&&AR_W
 function load(k,d){try{var v=localStorage.getItem('souk_'+k);return v?JSON.parse(v):d;}catch(e){return d;}}
 function save(k,v){try{localStorage.setItem('souk_'+k,JSON.stringify(v));}catch(e){}}
 
-var S={jf:{offer:'',contract:'',time:'',sector:'',func:'',exp:'',edu:'',pmin:'',pmax:''},gf:{date:'',seller:'',photo:false,nego:false,voice:false,pmin:'',pmax:''},fsheet:false,sfocus:false,recentQ:load('recentq',[]),ff:{sub:'',item:'',role:'',offer:'',pmin:'',pmax:''},of:{mode:'',sub:'',pub:'',pmin:'',pmax:''},hf:{mode:'',sub:'',item:'',pmin:'',pmax:''},mf:{mode:'',type:'',brand:'',storageMin:'',pmin:'',pmax:''},convs:load('convs',[]),seen:load('seen',[]),searches:load('searches',[]),convId:null,typing:null,pendingAd:null,profForm:null,screen:'home',prev:'home',q:'',city:'',hood:'',cat:'',sort:'new',af:{species:'',tabaski:false,pmin:'',pmax:''},eco:load('eco',false),showPh:null,proForm:null,shopName:'',shopBack:'home',draftRestored:false,cf:{brand:'',yearMin:'',pmin:'',pmax:''},rf:{mode:'',kind:'',roomsMin:'',pmin:'',pmax:''},pf:{mode:'',brand:'',storageMin:'',cond:'',pmin:'',pmax:''},id:null,lang:load('lang','fr'),langPick:(function(){try{return localStorage.getItem('souk_lang')===null;}catch(e){return false;}})(),user:load('user',null),
+var S={vf:{type:'',from:'',to:'',date:'',seats:'',women:false},jf:{offer:'',contract:'',time:'',sector:'',func:'',exp:'',edu:'',pmin:'',pmax:''},gf:{date:'',seller:'',photo:false,nego:false,voice:false,pmin:'',pmax:''},fsheet:false,sfocus:false,recentQ:load('recentq',[]),ff:{sub:'',item:'',role:'',offer:'',pmin:'',pmax:''},of:{mode:'',sub:'',pub:'',pmin:'',pmax:''},hf:{mode:'',sub:'',item:'',pmin:'',pmax:''},mf:{mode:'',type:'',brand:'',storageMin:'',pmin:'',pmax:''},convs:load('convs',[]),seen:load('seen',[]),searches:load('searches',[]),convId:null,typing:null,pendingAd:null,profForm:null,screen:'home',prev:'home',q:'',city:'',hood:'',cat:'',sort:'new',af:{species:'',tabaski:false,pmin:'',pmax:''},eco:load('eco',false),showPh:null,proForm:null,shopName:'',shopBack:'home',draftRestored:false,cf:{brand:'',yearMin:'',pmin:'',pmax:''},rf:{mode:'',kind:'',roomsMin:'',pmin:'',pmax:''},pf:{mode:'',brand:'',storageMin:'',cond:'',pmin:'',pmax:''},id:null,lang:load('lang','fr'),langPick:(function(){try{return localStorage.getItem('souk_lang')===null;}catch(e){return false;}})(),user:load('user',null),
   mine:load('mine',[]),favs:load('favs',[]),draft:null,errs:{},login:{step:1,phone:'',code:'',name:'',err:''},accTab:'online',confirm:null,sheet:null,after:null};
 applySampleLang();
 S.mine.forEach(function(x){if(x.cat==='elec'||x.cat==='meub')x.cat='maison';if(x.cat==='tel')x.cat='multi';});
@@ -872,7 +874,7 @@ function fmt(n){return num(n)+' '+U('MRU');}
 function ago(ts){var m=Math.round((Date.now()-ts)/60000),a=t('ago');
   var ar=S.lang==='ar';
   if(m<1)return a.now;if(m<60)return ar?'منذ '+arCount(m,'min'):a.m.replace('{n}',m);var h=Math.round(m/60);if(h<24)return ar?'منذ '+arCount(h,'hour'):a.h.replace('{n}',h);var dd=Math.round(h/24);return ar?'منذ '+arCount(dd,'day'):a.d.replace('{n}',dd);}
-var AR_PL={min:['دقيقة','دقيقتين','دقائق','دقيقة','دقيقة'],hour:['ساعة','ساعتين','ساعات','ساعة','ساعة'],day:['يوم','يومين','أيام','يوماً','يوم'],
+var AR_PL={seat:['مقعد واحد','مقعدان','مقاعد','مقعداً','مقعد'],min:['دقيقة','دقيقتين','دقائق','دقيقة','دقيقة'],hour:['ساعة','ساعتين','ساعات','ساعة','ساعة'],day:['يوم','يومين','أيام','يوماً','يوم'],
   ad:['إعلان واحد','إعلانان','إعلانات','إعلاناً','إعلان'],result:['نتيجة واحدة','نتيجتان','نتائج','نتيجة','نتيجة'],report:['بلاغ واحد','بلاغان','بلاغات','بلاغاً','بلاغ'],
   month:['شهر واحد','شهران','أشهر','شهراً','شهر'],head:['رأس واحد','رأسان','رؤوس','رأساً','رأس'],room:['غرفة واحدة','غرفتان','غرف','غرفة','غرفة'],follower:['متابِع واحد','متابِعان','متابِعين','متابِعاً','متابِع']};
 function arCount(n,k){var w=AR_PL[k];n=+n;if(n===1)return w[0];if(n===2)return w[1];var r=n%100;return num(n)+' '+(n===0||(r>=3&&r<=10)?w[2]:(r>=11&&r<=99)?w[3]:w[4]);}
@@ -979,6 +981,16 @@ function filtered(){
       if(mf.type&&(!mm||mm.type!==mf.type))return false;
       if(mf.brand&&(!mm||mm.brand!==mf.brand))return false;
     }
+    if(a.trip&&tripPast(a.trip))return false;
+    if(S.cat==='covoit'){
+      var vf=S.vf,tr=a.trip||{};
+      if(vf.type&&tr.type!==vf.type)return false;
+      if(vf.from&&tr.from!==vf.from)return false;
+      if(vf.to&&tr.to!==vf.to)return false;
+      if(vf.date&&tr.date!==vf.date)return false;
+      if(vf.seats&&(+tr.seats||0)<+vf.seats)return false;
+      if(vf.women&&!tr.women)return false;
+    }
     if(S.cat==='anim'){
       var af=S.af,x=a.anim;
       if(af.pmin&&a.price<+af.pmin)return false;
@@ -987,7 +999,7 @@ function filtered(){
       if(af.tabaski&&(!x||!x.tabaski))return false;
     }
     return true;});
-  r.sort(function(x,y){return S.sort==='low'?x.price-y.price:S.sort==='high'?y.price-x.price:y.t-x.t;});
+  r.sort(function(x,y){if(S.cat==='covoit'&&S.sort==='new'&&x.trip&&y.trip){var kx=x.trip.date+(x.trip.time||''),ky=y.trip.date+(y.trip.time||'');return kx<ky?-1:kx>ky?1:0;}return S.sort==='low'?x.price-y.price:S.sort==='high'?y.price-x.price:y.t-x.t;});
   return r;}
 
 function catScores(){
@@ -1005,7 +1017,7 @@ function sectionsHTML(r){
     return '<section class="hsec"><button class="hsech" data-a="cat" data-c="'+k+'"><span><span class="hst">'+c[S.lang]+'</span>'+svg(S.lang==='ar'?I.back:I.chev,22,2.2)+'</span>'+
       '<span class="meta">'+t(sc[k]?'fromActivity':'latestIn')+'</span></button>'+
       '<div class="hrow">'+list.slice(0,10).map(card).join('')+(more?'<button class="card hmore" data-a="cat" data-c="'+k+'"><span>'+t('seeAllN').replace('{n}',num(list.length))+'</span>'+svg(S.lang==='ar'?I.back:I.chev,22)+'</button>':'')+'</div></section>';}).join('');}
-var CAT_STORE={auto:'cf',immo:'rf',tel:'pf',multi:'mf',maison:'hf',mode:'of',fam:'ff',job:'jf',anim:'af'};
+var CAT_STORE={covoit:'vf',auto:'cf',immo:'rf',tel:'pf',multi:'mf',maison:'hf',mode:'of',fam:'ff',job:'jf',anim:'af'};
 function catFilterCount(){var o=S[CAT_STORE[S.cat]];if(!o)return 0;return Object.keys(o).filter(function(k){var v=o[k];return v!==''&&v!=null&&v!==false&&!(Array.isArray(v)&&!v.length);}).length;}
 function refineBtn(){if(!CAT_STORE[S.cat])return '';var n=catFilterCount();
   return '<button class="refbtn" data-a="refine" aria-expanded="'+!!S.refOpen+'">'+svg(I.list,20)+'<span style="flex:1">'+t('refineT').replace('{c}',cname(S.cat))+(n?'<span class="meta" style="display:block">'+t('refineN').replace('{n}',n)+'</span>':'')+'</span>'+svg(S.refOpen?I.close:(S.lang==='ar'?I.back:I.chev),20)+'</button>';}
@@ -1281,6 +1293,47 @@ function phoneSpecs(p){
   return '<h2>'+t('specs')+'</h2><div class="specs">'+h+(n%2?'<div></div>':'')+'</div>'+(inc?'<h2>'+t('incl')+'</h2><div class="badges">'+inc+'</div>':'')+
    (p.imei?'<div class="row meta" style="font-size:14px;color:var(--brand);font-weight:700">'+svg(I.shield,18)+t('imeiOk')+'</div>':'');}
 
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function tripPast(x){return !!(x&&x.date&&x.date<todayStr());}
+function tripDate(v,long){if(!v)return '';try{var p=v.split('-'),d=new Date(+p[0],+p[1]-1,+p[2]);return d.toLocaleDateString(S.lang==='ar'?'ar':'fr-FR',long?{weekday:'long',day:'numeric',month:'long'}:{weekday:'short',day:'numeric',month:'short'});}catch(e){return v;}}
+function seatsTxt(n){n=+n||1;return S.lang==='ar'?arCount(n,'seat'):(n>1?t('placesLeft').replace('{n}',n):t('placeLeft'));}
+function tripMeta(a){var x=a.trip;return (x.type==='demand'?t('tripDemand')+' · ':'')+tripDate(x.date)+(x.time?' · '+x.time:'')+' · '+seatsTxt(x.seats);}
+function covoitFilters(){
+  var vf=S.vf;
+  var any=vf.type||vf.from||vf.to||vf.date||vf.seats||vf.women;
+  return '<div class="filters" role="group" aria-label="'+cname('covoit')+'">'+
+   fcards('vf','type',t('tripType'),['offer','demand'],function(x){return t('tt_'+x);},t('all'))+
+   '<div class="field"><label for="vffrom">'+t('cfrom')+'</label><select id="vffrom" class="inp" data-vf="from"><option value="">'+t('allCities')+'</option>'+cityOptions(vf.from)+'</select></div>'+
+   '<div class="field"><label for="vfto">'+t('cto')+'</label><select id="vfto" class="inp" data-vf="to"><option value="">'+t('allCities')+'</option>'+cityOptions(vf.to)+'</select></div>'+
+   ((vf.from||vf.to)?'<button type="button" class="linkbtn" data-a="vfswap" style="grid-column:1/-1;justify-self:start">⇅ '+t('swapCities')+'</button>':'')+
+   '<div class="field"><label for="vfdate">'+t('cdate')+'</label><input id="vfdate" type="date" class="inp" data-vf="date" min="'+todayStr()+'" value="'+esc(vf.date)+'"></div>'+
+   '<div class="field"><label for="vfseats">'+t('seatsMin')+'</label><select id="vfseats" class="inp" data-vf="seats"><option value="">—</option>'+['1','2','3','4'].map(function(n){return '<option value="'+n+'"'+(vf.seats===n?' selected':'')+'>'+n+'</option>';}).join('')+'</select></div>'+
+   '<label class="check" style="grid-column:1/-1"><input type="checkbox" data-vf="women"'+(vf.women?' checked':'')+'> '+t('cwomen')+'</label>'+
+   (any?'<button class="linkbtn" data-a="resetvf" style="color:var(--brand);grid-column:1/-1">'+t('reset')+'</button>':'')+'</div>';}
+function covoitFields(d,e){
+  function err(k,m){return e[k]?'<div class="err">'+t(m)+'</div>':'';}
+  function inv(k){return e[k]?' aria-invalid="true"':'';}
+  var O=' <span style="font-weight:400;color:var(--muted);font-size:13px">'+t('optional')+'</span>';
+  var h='<div class="carbox"><div class="legend">'+t('tripInfo')+'</div>'+
+   '<div data-ck="1">'+dcards('ctype',t('ctype'),['offer','demand'],function(x){return t('ct_'+x);},d.ctype,'errCtype')+'</div>';
+  if(!d.ctype)return h+'</div>';
+  h+='<div class="two" data-ck="1"><div class="field"><label for="fcfrom">'+t('cfrom')+'</label><select id="fcfrom" class="inp" data-f="cfrom"'+inv('cfrom')+'><option value="">'+t('choose')+'</option>'+cityOptions(d.cfrom)+'</select>'+err('cfrom','errCfrom')+'</div>'+
+   '<div class="field"><label for="fcto">'+t('cto')+'</label><select id="fcto" class="inp" data-f="cto"'+inv('cto')+'><option value="">'+t('choose')+'</option>'+cityOptions(d.cto)+'</select>'+err('cto','errCto')+'</div></div>'+
+   '<div class="two" data-ck="1"><div class="field"><label for="fcdate">'+t('cdate')+'</label><input id="fcdate" type="date" class="inp" data-f="cdate" min="'+todayStr()+'" value="'+esc(d.cdate)+'"'+inv('cdate')+'>'+err('cdate','errCdate')+'</div>'+
+   '<div class="field"><label for="fctime">'+t('ctime')+(d.ctype==='demand'?O:'')+'</label><input id="fctime" type="time" class="inp" data-f="ctime" value="'+esc(d.ctime)+'"'+inv('ctime')+'>'+err('ctime','errCtime')+'</div></div>'+
+   '<div data-ck="1">'+dcards('cseats',t(d.ctype==='demand'?'cseatsD':'cseats'),['1','2','3','4','5','6','7','8'],function(x){return x;},d.cseats,'errCseats')+'</div>'+
+   (d.ctype==='offer'?'<div class="field"><label for="fccar">'+t('ccar')+O+'</label><input id="fccar" class="inp" data-f="ccar" maxlength="40" value="'+esc(d.ccar)+'" placeholder="'+t('ccarPh')+'"></div>':'')+
+   '<div class="field"><label for="fcstops">'+t('cstops')+O+'</label><input id="fcstops" class="inp" data-f="cstops" maxlength="60" value="'+esc(d.cstops)+'" placeholder="'+t('cstopsPh')+'"></div>'+
+   dcards('cbags',t('cbags'),['s','m','l'],function(x){return t('bg_'+x);},d.cbags)+
+   (d.ctype==='offer'?'<label class="check"><input type="checkbox" data-f="cclim"'+(d.cclim?' checked':'')+'> '+t('cclim')+'</label>':'')+
+   '<label class="check"><input type="checkbox" data-f="cwomen"'+(d.cwomen?' checked':'')+'> '+t('cwomen')+'</label>';
+  return h+'</div>';}
+function tripSpecs(x){
+  var n=0;function it(l,v){n++;return '<div><span>'+l+'</span><b>'+v+'</b></div>';}
+  var h=it(t('cfrom'),esc(city(x.from)))+it(t('cto'),esc(city(x.to)))+it(t('cdate'),tripDate(x.date,true))+(x.time?it(t('ctime'),esc(x.time)):'')+
+   it(t(x.type==='demand'?'cseatsD':'cseats'),x.seats)+(x.car?it(t('ccar'),esc(x.car)):'')+(x.stops?it(t('cstops'),esc(x.stops)):'')+(x.bags?it(t('cbags'),t('bg_'+x.bags)):'');
+  var b=(x.type==='demand'?'<span class="badge">'+t('tripDemand')+'</span>':'')+(x.clim?'<span class="badge">'+t('cclim')+'</span>':'')+(x.women?'<span class="badge">'+t('cwomen')+'</span>':'');
+  return (tripPast(x)?'<div class="tip"><p style="margin:0">'+t('tripPast')+'</p></div>':'')+'<h2>'+t('specs')+'</h2><div class="specs">'+h+(n%2?'<div></div>':'')+'</div>'+(b?'<div class="badges">'+b+'</div>':'');}
 function animFilters(){
   var af=S.af;
   function o(v,l,cur){return '<option value="'+v+'"'+(cur===v?' selected':'')+'>'+l+'</option>';}
@@ -1611,7 +1664,7 @@ function tidySpecs(){
 }
 function cleanMeta(x){return String(x||'').split(' · ').map(function(p){return p.trim();}).filter(function(p){return p&&!/undefined|NaN|null/.test(p)&&!/^(km|كم|MRU)$/.test(p);}).join(' · ');}
 function specLine(a){return cleanMeta(rawSpec(a));}
-function rawSpec(a){return a.car?carMeta(a):a.veh?vehMeta(a):a.estate?estMeta(a):a.dev?phMeta(a):a.mm?mmMeta(a):a.home?homeMeta(a):a.mo?moMeta(a):a.fam?famMeta(a):a.job?jobMeta(a):a.anim?animMeta(a):'';}
+function rawSpec(a){return a.car?carMeta(a):a.veh?vehMeta(a):a.estate?estMeta(a):a.dev?phMeta(a):a.mm?mmMeta(a):a.home?homeMeta(a):a.mo?moMeta(a):a.fam?famMeta(a):a.job?jobMeta(a):a.anim?animMeta(a):a.trip?tripMeta(a):'';}
 function hay(a){var o=a.car||a.veh||a.dev||a.mm||a.home||a.mo||{},c=cat(a.cat);
   return norm([a.title,a.desc,a.hood,hoodName(a.hood||''),a.near,a.city,city(a.city),c.fr,c.ar,a.seller,a.shop?a.shop.name:'',a.splace?a.splace.name+' '+(a.splace.addr||''):'',o.brand,o.model,BRAND_AR[o.brand]||'',specLine(a)].join(' '));}
 var BRAND_AR={Toyota:'تويوتا',Hyundai:'هيونداي',Mercedes:'مرسيدس',Nissan:'نيسان',Kia:'كيا',Peugeot:'بيجو',Renault:'رينو',Mitsubishi:'ميتسوبيشي',Ford:'فورد',Suzuki:'سوزوكي','Land Rover':'لاند روفر',Volkswagen:'فولكس فاجن',Honda:'هوندا',Isuzu:'ايسوزو',Samsung:'سامسونج',Apple:'ابل ايفون',Tecno:'تكنو',Infinix:'انفينكس',Itel:'ايتل',Xiaomi:'شاومي',Huawei:'هواوي',Oppo:'اوبو',LG:'ال جي',Sony:'سوني بلايستيشن',HP:'اتش بي',Dell:'ديل',Lenovo:'لينوفو',Yamaha:'ياماها',Midea:'ميديا'};
@@ -1873,7 +1926,7 @@ V.home=function(){
    '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" style="position:absolute;left:-9999px">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"><button type="button" class="camq" data-a="visual" aria-label="'+t('imgSearch')+'" title="'+t('imgSearch')+'">'+svg(I.cam,22)+'</button></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
    '</header>'+
    '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles">'+cats+'</div></div>'+(S.cat?'<button class="linkbtn" data-a="cat" data-c="" style="color:var(--brand);align-self:flex-end;font-size:13px">'+t('showAll')+'</button>':'')+
-   (S.cat?refineBtn():'')+(S.cat&&S.refOpen?(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+(S.cat==='tel'?phoneFilters():'')+(S.cat==='multi'?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
+   (S.cat?refineBtn():'')+(S.cat&&S.refOpen?(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+(S.cat==='tel'?phoneFilters():'')+(S.cat==='multi'?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
    '</div><div class="sec" id="list" style="padding-top:12px">'+listHTML()+'</div><div style="height:16px"></div></div>'+tabs('home');};
 
 V.detail=function(){
@@ -1900,7 +1953,7 @@ V.detail=function(){
    '<div class="badges"><span class="badge">'+cname(a.cat)+'</span>'+(a.nego?'<span class="badge" style="color:var(--brand)">'+t('negoB')+'</span>':'')+(a.status==='sold'?'<span class="badge" style="color:var(--danger)">'+t('sold')+'</span>':'')+'</div>'+
    '<a class="btn wide sharewa" href="'+esc(wa)+'" target="_blank" rel="noopener">'+svg(I.share,20)+t('shareWa')+'</a>'+
    (a.voice?'<div class="box" style="flex-direction:column;align-items:stretch;gap:8px"><div class="row" style="font-weight:700">'+svg(I.mic,18)+t('voiceListen')+'</div><audio controls preload="none" src="'+a.voice+'" style="width:100%"></audio></div>':'')+
-   (a.car?specsHTML(a.car):'')+(a.veh?vehSpecs(a.veh):'')+(a.estate?estateSpecs(a.estate,a.hood?hoodName(a.hood):''):'')+(a.dev?phoneSpecs(a.dev):'')+(a.mm?multiSpecs(a.mm):'')+(a.home?homeSpecs(a.home):'')+(a.mo?modeSpecs(a.mo):'')+(a.fam?famSpecs(a.fam):'')+(a.job?jobSpecs(a.job):'')+(a.anim?animSpecs(a.anim):'')+
+   (a.car?specsHTML(a.car):'')+(a.veh?vehSpecs(a.veh):'')+(a.estate?estateSpecs(a.estate,a.hood?hoodName(a.hood):''):'')+(a.dev?phoneSpecs(a.dev):'')+(a.mm?multiSpecs(a.mm):'')+(a.home?homeSpecs(a.home):'')+(a.mo?modeSpecs(a.mo):'')+(a.fam?famSpecs(a.fam):'')+(a.job?jobSpecs(a.job):'')+(a.trip?tripSpecs(a.trip):'')+(a.anim?animSpecs(a.anim):'')+
    (a.desc?'<h2>'+t('desc')+'</h2><p style="margin:0;line-height:1.6;white-space:pre-line">'+esc(a.desc)+'</p>':'')+
    seller+'<div class="tip">'+svg(I.shield,22)+'<p>'+t('safety')+'</p></div>'+(mineAd?'':'<button class="linkbtn" data-a="report">'+t('report')+'</button>')+'</div></div>'+
    (mineAd?'<div class="bar"><button class="btn primary" data-a="editad" data-id="'+a.id+'">'+svg(I.edit,20)+t('edit')+'</button></div>':'<div class="bar"><button class="btn wa" data-a="contact" data-k="wa">'+svg(I.msg,20)+'WhatsApp</button><button class="btn" data-a="contact" data-k="call">'+svg(I.phone,20)+t('call')+'</button><button class="btn" data-a="chat">'+svg(I.msg,20)+t('message')+'</button></div>');};
@@ -1932,13 +1985,13 @@ V.post=function(){
   return topbar(t(S.editId?'editAd':'post'),S.editId?'myads':'home')+'<form id="pf" class="scroll" novalidate><div class="sec" style="gap:16px">'+prog+
    (S.draftRestored&&!S.editId&&st===1?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
    step(1,'<div class="field"><div class="cattiles" role="group" aria-label="'+t('cat')+'">'+CATS.map(function(c){var on=d.cat===c.id;return '<button type="button" class="ctile" data-a="postcat" data-v="'+c.id+'" aria-pressed="'+on+'"><span class="ic"'+(on?'':' style="color:'+c.c+'"')+'>'+svg(ICONS[c.id],21,1.8)+'</span><span>'+c[S.lang]+'</span></button>';}).join('')+'</div>'+(e.cat?'<div class="err">'+t('errCat')+'</div>':'')+'</div>'+
-     '<div id="catf">'+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>')+
+     '<div id="catf">'+(d.cat==='covoit'?covoitFields(d,e):'')+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>')+
    step(2,'<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+t('titlePh')+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
      '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>'+videoField(d))+
    step(3,'<div id="more" class="more"><div id="catmore"></div>'+
      '<div class="field"><label for="fdesc">'+t('desc')+O+'</label><textarea id="fdesc" class="inp" rows="4" data-f="desc" maxlength="1000" placeholder="'+t('descPh')+'">'+esc(d.desc)+'</textarea></div>'+
      '<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div></div>')+
-   step(4,'<div class="field"><label for="fprice">'+(d.cat==='immo'&&d.deal==='rent'?t('rent'):d.cat==='auto'&&d.vkind==='service'?t('priceFrom'):d.cat==='fam'&&isFamService(d.fsub)?t('salary'):d.cat==='job'?t(d.joffer==='demand'?'salaryW':'salaryM'):t('price'))+'</label>'+units+
+   step(4,'<div class="field"><label for="fprice">'+(d.cat==='immo'&&d.deal==='rent'?t('rent'):d.cat==='auto'&&d.vkind==='service'?t('priceFrom'):d.cat==='fam'&&isFamService(d.fsub)?t('salary'):d.cat==='job'?t(d.joffer==='demand'?'salaryW':'salaryM'):d.cat==='covoit'?t(d.ctype==='demand'?'budgetPlace':'pricePlace'):t('price'))+'</label>'+units+
      '<input id="fprice" class="inp" data-f="price" inputmode="numeric" value="'+esc(d.price)+'" placeholder="'+(unit==='old'?'135000':'13500')+'"'+(e.price?' aria-invalid="true"':'')+'>'+(e.price?'<div class="err">'+t('errPrice')+'</div>':'')+
      '<div class="meta" id="phint" style="font-weight:700;color:var(--brand)">'+esc(priceHint(d))+'</div>'+chk('nego',t('nego'))+'</div>')+
    step(5,(S.prefilled&&!S.editId?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><span>'+svg(I.check,18,2.5)+'</span><p style="flex:1;margin:0">'+t('prefilled')+'</p></div>':'')+'<div class="two"><div class="field"><label for="fcity">'+t('city')+'</label><select id="fcity" class="inp" data-f="city">'+cityOpts+'</select></div>'+
@@ -2318,7 +2371,7 @@ function render(keepScroll){
 }
 function go(s){var from=S.screen;if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.confirm=null;render();
   if(!S.popping&&s!==from){try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}}}
-var MAIN_PICK={auto:'[data-a="vkind"]',immo:'[data-a="redeal"],[data-a="rekind"]',multi:'[data-a="mmtype"]',tel:'[data-k="pdtype"],[data-a="pdtype"]',maison:'[data-a="hsub"]',mode:'[data-a="mosub"]',fam:'[data-k="fsub"],[data-a="fsub"]',job:'[data-k="joffer"]',anim:'[data-a="species"],[data-k="species"]'};
+var MAIN_PICK={covoit:'[data-ck]',auto:'[data-a="vkind"]',immo:'[data-a="redeal"],[data-a="rekind"]',multi:'[data-a="mmtype"]',tel:'[data-k="pdtype"],[data-a="pdtype"]',maison:'[data-a="hsub"]',mode:'[data-a="mosub"]',fam:'[data-k="fsub"],[data-a="fsub"]',job:'[data-k="joffer"]',anim:'[data-a="species"],[data-k="species"]'};
 function splitPostForm(){
   var cf=app.querySelector('#catf'),cm=app.querySelector('#catmore');if(!cf||!cm||!S.draft)return;
   var keep=MAIN_PICK[S.draft.cat]||'__none__',moved=[],legend='';
@@ -2339,6 +2392,7 @@ function splitPostForm(){
 }
 function newDraft(){return {photos:[],title:'',cat:S.cat||'',price:'',city:S.city||(S.user&&S.user.city)||'Nouakchott',desc:'',wa:true,call:true,msg:false,brand:'',model:'',year:'',km:'',fuel:'',gear:'',cond:'',seats:'',doors:'',vtype:'',color:'',deal:'',kind:'',surface:'',hood:'',rooms:'',salons:'',baths:'',furnished:'',papers:'',floor:'',levels:'',place:'',eq:[],
   pdtype:'',pbrand:'',pmodel:'',pstorage:'',pram:'',pcond:'',pcolor:'',pbatt:'',pdual:'',punlock:'',pincl:[],pimei:'',
+  ctype:'',cfrom:'',cto:'',cdate:'',ctime:'',cseats:'',ccar:'',cstops:'',cbags:'',cclim:false,cwomen:false,
   species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'new',nego:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'part',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
 function bumpWait(a){var last=a.bumpedAt||a.t;return Math.max(0,Math.ceil((last+7*864e5-Date.now())/864e5));}
 function bumpBtn(a){var w=bumpWait(a);return w?'<button class="btn small" data-a="bumpinfo" data-v="'+w+'" style="opacity:.6">'+svg(I.clock,14)+t('bumpIn').replace('{n}',w)+'</button>'
@@ -2398,6 +2452,8 @@ app.addEventListener('click',function(e){
    case 'report':toast(t('reported'));break;
    case 'tabaski':S.cat='anim';S.af={species:'mouton',tabaski:true,pmin:'',pmax:''};render();break;
    case 'aftab':S.af.tabaski=!S.af.tabaski;render(true);break;
+   case 'resetvf':S.vf={type:'',from:'',to:'',date:'',seats:'',women:false};render(true);break;
+   case 'vfswap':var vtmp=S.vf.from;S.vf.from=S.vf.to;S.vf.to=vtmp;render(true);break;
    case 'resetaf':S.af={species:'',tabaski:false,pmin:'',pmax:''};render(true);break;
    case 'species':S.draft.species=el.getAttribute('data-v');delete S.errs.species;render(true);break;
    case 'punit':S.draft.punit=el.getAttribute('data-v');render(true);break;
@@ -2535,6 +2591,7 @@ app.addEventListener('change',function(e){
   var cfk=el.getAttribute('data-cf');if(cfk&&el.tagName==='SELECT'){S.cf[cfk]=el.value;if(cfk==='brand')S.cf.model='';if(cfk==='kind'){S.cf.brand='';S.cf.model='';S.cf.yearMin='';}render(true);return;}
   var rfk=el.getAttribute('data-rf');if(rfk&&el.tagName==='SELECT'){S.rf[rfk]=el.value;if(rfk==='kind'&&el.value&&!hasRooms(el.value))S.rf.roomsMin='';render(true);return;}
   var pfk=el.getAttribute('data-pf');if(pfk&&el.tagName==='SELECT'){S.pf[pfk]=el.value;render(true);return;}
+  var vfk=el.getAttribute('data-vf');if(vfk){S.vf[vfk]=el.type==='checkbox'?el.checked:el.value;render(true);return;}
   var afk=el.getAttribute('data-af');if(afk&&el.tagName==='SELECT'){S.af[afk]=el.value;render(true);return;}
   var mfk=el.getAttribute('data-mf');if(mfk&&el.tagName==='SELECT'){S.mf[mfk]=el.value;if(mfk==='type')S.mf.brand='';render(true);return;}
   var jfk=el.getAttribute('data-jf');if(jfk&&el.tagName==='SELECT'){S.jf[jfk]=el.value;render(true);return;}
@@ -2545,7 +2602,9 @@ app.addEventListener('change',function(e){
   var flk=el.getAttribute('data-flang');if(flk&&S.draft){var fl=S.draft.flangs||(S.draft.flangs=[]),fl2=fl.indexOf(flk);if(el.checked&&fl2<0)fl.push(flk);if(!el.checked&&fl2>-1)fl.splice(fl2,1);saveDraftSoon();return;}
   var ink=el.getAttribute('data-incl');if(ink&&S.draft){var ia=S.draft.pincl||(S.draft.pincl=[]),ii=ia.indexOf(ink);if(el.checked&&ii<0)ia.push(ink);if(!el.checked&&ii>-1)ia.splice(ii,1);saveDraftSoon();return;}
   var eqk=el.getAttribute('data-eq');if(eqk&&S.draft){var arr=S.draft.eq||(S.draft.eq=[]),ix=arr.indexOf(eqk);if(el.checked&&ix<0)arr.push(eqk);if(!el.checked&&ix>-1)arr.splice(ix,1);saveDraftSoon();return;}
-  var f=el.getAttribute('data-f');if(f&&S.draft){S.draft[f]=el.type==='checkbox'?el.checked:el.value;if(f==='cat'||f==='city'||f==='brand'){if(f==='city')S.draft.hood='';if(f==='brand'){S.draft.model='';S.draft.modelOther=false;}delete S.errs[f];render(true);}saveDraftSoon();}
+  var f=el.getAttribute('data-f');if(f&&S.draft){S.draft[f]=el.type==='checkbox'?el.checked:el.value;if((f==='cfrom'||f==='cto')&&S.draft.cfrom&&S.draft.cto){var at=city(S.draft.cfrom)+' → '+city(S.draft.cto);if(!S.draft.title||S.draft.title===S.draft._autoT){S.draft.title=at;S.draft._autoT=at;}}
+  if(f==='cfrom'||f==='cto'||f==='cdate'||f==='ctime'){delete S.errs[f];render(true);}
+  if(f==='cat'||f==='city'||f==='brand'){if(f==='city')S.draft.hood='';if(f==='brand'){S.draft.model='';S.draft.modelOther=false;}delete S.errs[f];render(true);}saveDraftSoon();}
 });
 app.addEventListener('keydown',function(e){if(e.target.id==='q'&&e.key==='Enter'){pushRecent(S.q);S.showCats=false;S.sfocus=false;e.target.blur();render(true);}});
 app.addEventListener('focusin',function(e){if(e.target.id==='q'){S.sfocus=true;var cw=app.querySelector('#catwrap');if(cw)cw.hidden=true;updateSugg();}});
@@ -2661,6 +2720,7 @@ function addVoice(f){
 
 function publish(dry){
   var d=S.draft,e={};
+  if(d.cat==='covoit'&&d.cfrom&&d.cto&&!(d.title||'').trim()){d.title=d._autoT=city(d.cfrom)+' → '+city(d.cto);}
   if((d.title||'').trim().length<4)e.title=1;
   if(!d.cat)e.cat=1;
   var p=String(d.price).replace(/\s/g,'');var pm=d.punit==='old'?Math.round(+p/10):+p;if(!/^\d+$/.test(p)||pm<=0)e.price=1;
@@ -2699,6 +2759,18 @@ function publish(dry){
       estate.pub=d.pub;if(d.pub==='agent')estate.comm=d.comm;
       if(rent){estate.avance=d.avance;estate.caution=d.caution;estate.dur=d.dur;}
       if(k==='land'){estate.ilot=(d.ilot||'').trim();estate.lot=(d.lot||'').trim();if(+d.dimL>0&&+d.dimW>0){estate.dimL=+d.dimL;estate.dimW=+d.dimW;}estate.built=d.built;estate.servic=d.servic;}
+    }
+  }
+  var trip=null;
+  if(d.cat==='covoit'){
+    if(!d.ctype)e.ctype=1;
+    else{
+      if(!d.cfrom)e.cfrom=1;
+      if(!d.cto||d.cto===d.cfrom)e.cto=1;
+      if(!d.cdate||d.cdate<todayStr())e.cdate=1;
+      if(d.ctype==='offer'&&!d.ctime)e.ctime=1;
+      var cs=+d.cseats;if(!(cs>=1&&cs<=8))e.cseats=1;
+      trip={type:d.ctype,from:d.cfrom,to:d.cto,date:d.cdate,time:d.ctime||'',seats:cs||1,car:d.ctype==='offer'?(d.ccar||'').trim():'',stops:(d.cstops||'').trim(),bags:d.cbags||'',clim:d.ctype==='offer'&&!!d.cclim,women:!!d.cwomen};
     }
   }
   var anim=null;
@@ -2791,6 +2863,7 @@ function publish(dry){
   ad.stype=d.cat==='immo'?(estate&&estate.pub==='agent'?'pro':'part'):d.stype;
   if(ad.stype==='pro'&&d.cat!=='immo')ad.splace={name:(d.sname||'').trim(),addr:(d.saddr||'').trim()};
   if(anim)ad.anim=anim;
+  if(trip)ad.trip=trip;
   if(d.voice)ad.voice=d.voice;
   if(S.user.shop)ad.shop=S.user.shop;
   var dd=JSON.parse(JSON.stringify(d));delete dd.photos;delete dd.voice;ad._d=dd;
