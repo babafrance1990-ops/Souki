@@ -338,6 +338,10 @@ button.logo{background:none;border:none;padding:0;color:inherit;font:inherit;fon
 .vbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.vbar span{display:block;height:100%;background:var(--brand);transition:width .2s}
 .vprevid{width:100%;max-height:260px;border-radius:14px;background:#000}
 .vidbox{display:flex;flex-direction:column;gap:6px}.vidbox video{width:100%;max-height:320px;border-radius:14px;background:#000}
+.swunder{z-index:1;overflow:hidden;background:var(--bg);pointer-events:none}
+.swunder .swin{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.swunder .swdim{position:absolute;inset:0;background:#000;opacity:.35}
+#app{z-index:1}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -1886,7 +1890,7 @@ V.detail=function(){
   if(S.justPub===a.id)pubBox='<div class="pubok"><div class="pubic">'+svg(I.check,26,3)+'</div><b style="font-size:19px">'+t('pubOkT')+'</b><p style="margin:0">'+t('pubOkS')+'</p><a class="btn wa wide" style="text-decoration:none;height:54px;font-size:17px" target="_blank" rel="noopener" href="'+wa+'" data-a="pubshared">'+svg(I.share,20)+t('shareGroups')+'</a></div>';
   var seller='<div class="box'+(a.owner?' sellerlink" data-a="openuser" data-id="'+esc(a.owner)+'" role="button" tabindex="0':'')+'"><div class="avatar" aria-hidden="true">'+esc((a.seller||'?').charAt(0).toUpperCase())+'</div><div style="flex:1;min-width:0"><div style="font-weight:700">'+esc(a.seller)+'</div>'+
    '<div class="meta" style="font-weight:700;color:var(--fg)">'+t('sts_'+stypeOf(a))+(a.splace&&a.splace.name?' · '+esc(a.splace.name):'')+'</div>'+(a.splace&&a.splace.addr?'<div class="meta">'+svg(I.pin,13)+' '+esc(a.splace.addr)+'</div>':'')+
-   (a.shop?'<div class="meta vbadge">'+svg(I.check,14,2.5)+t('shopVerified')+(a.shop.market?' · '+esc(a.shop.market):'')+'</div>':'<div class="meta">'+t('verified')+'</div>')+'</div>'+
+   (a.shop?'<div class="meta vbadge">'+svg(I.check,14,2.5)+t('shopVerified')+(a.shop.market?' · '+esc(a.shop.market):'')+'</div>':'')+'</div>'+
    (a.owner?'<span class="btn small" aria-hidden="true">'+t('seeProfile')+'</span>':a.shop?'<button class="btn small" data-a="shop" data-v="'+esc(a.shop.name)+'">'+t('seeShop')+'</button>':'')+'</div>';
   return '<div class="scroll"><div class="hero">'+photos+'<div class="tl" style="display:flex;gap:8px"><button class="icon solid" data-a="go" data-s="'+S.prev+'" aria-label="'+t('back')+'">'+svg(S.lang==='ar'?I.chev:I.back,22)+'</button>'+homeLogo()+'</div>'+
    '<div class="tr"><button class="icon solid" data-a="fav" data-id="'+a.id+'" aria-pressed="'+isFav(a.id)+'" aria-label="'+t('favs')+'"><span style="color:'+(isFav(a.id)?'var(--brand)':'inherit')+'">'+svg(I.fav.replace('<path','<path fill="'+(isFav(a.id)?'currentColor':'none')+'"'),22)+'</span></button></div>'+
@@ -2891,9 +2895,9 @@ if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventLi
 
 /* ---------- Retour : bouton du téléphone, geste de balayage depuis le bord ---------- */
 try{history.replaceState({souki:1,d:0},'');}catch(e){}
-function backButton(){return app.querySelector('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"]');}
+function backButton(){return app.querySelector('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"], .hero .tl button.icon[data-a="go"]');}
 app.addEventListener('click',function(e){
-  var bb=e.target.closest('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"]');
+  var bb=e.target.closest('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"], .hero .tl button.icon[data-a="go"]');
   if(bb&&S.screen==='post'&&(S.pstep||1)>1){e.preventDefault();e.stopImmediatePropagation();S.errs={};S.pstep--;render(true);var pf0=app.querySelector('#pf');if(pf0)pf0.scrollTop=0;return;}
   if(!bb||S.popping||!history.state||!(history.state.d>0))return;
   e.preventDefault();e.stopImmediatePropagation();history.back();},true);
@@ -2904,28 +2908,45 @@ window.addEventListener('popstate',function(){
     if(S.sheet){S.sheet=null;render(true);}else if(S.fsheet){S.fsheet=false;render(true);}
     else{var b=backButton();if(b)b.click();else if(S.screen!=='home')go('home');}}finally{S.popping=false;}});
 (function(){
+  // Retour par glissement vers la droite, n'importe où sur l'écran (comme l'application Claude).
+  // La page suit le doigt et laisse voir la page précédente en dessous.
   var iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
-  if(iosBrowser)return; // Safari sur iPhone a déjà ce geste : il passe par l'historique ci-dessus
-  var sx=0,sy=0,dx=0,dy=0,on=false,moved=false;
-  function reset(anim){app.style.transition=anim?'transform .2s ease-out':'none';app.style.transform='';}
+  var SAFE={home:1,favs:1,msgs:1,account:1,myads:1,user:1,detail:1,searches:1};
+  var sx=0,sy=0,dx=0,dy=0,t0=0,state=0,under=null,w=0,rtl=false; // state: 0 rien, 1 en attente, 2 glissement, -1 annulé
+  function scrollsX(el){for(var n=el;n&&n!==app;n=n.parentElement){
+      if(n.matches&&n.matches('input,textarea,select,video,audio,.hrow,.mchips,.photos,.cattiles,.vbar'))return true;
+      var cs=getComputedStyle(n);if((cs.overflowX==='auto'||cs.overflowX==='scroll')&&n.scrollWidth>n.clientWidth+2)return true;}return false;}
+  function makeUnder(){
+    var b=backButton();if(!b)return;var target=b.getAttribute('data-s')||'home',html='';
+    if(SAFE[target]&&V[target]&&target!==S.screen){var keep=S.screen;try{S.screen=target;html=V[target]();}catch(e){html='';}S.screen=keep;}
+    var r=app.getBoundingClientRect();under=document.createElement('div');under.className='swunder';under.dir=app.dir;
+    under.style.cssText='position:fixed;left:'+r.left+'px;top:'+r.top+'px;width:'+r.width+'px;height:'+r.height+'px;';
+    under.innerHTML='<div class="swin">'+html+'</div><div class="swdim"></div>';document.body.appendChild(under);}
+  function clear(){if(under){under.remove();under=null;}app.style.transition='';app.style.transform='';app.style.boxShadow='';app.style.zIndex='';}
+  function paint(d){var p=Math.min(1,d/w);app.style.transform='translateX('+(rtl?-d:d)+'px)';
+    if(under){under.firstChild.style.transform='translateX('+(rtl?1:-1)*(1-p)*w*0.3+'px)';under.lastChild.style.opacity=String(0.35*(1-p));}}
   app.addEventListener('touchstart',function(e){
-    if(e.touches.length!==1||S.sheet||S.fsheet||!backButton())return;
-    var x=e.touches[0].clientX,r=app.getBoundingClientRect(),edge=S.lang==='ar'?r.right-x:x-r.left;
-    if(edge>20)return;on=true;moved=false;dx=0;dy=0;sx=x;sy=e.touches[0].clientY;},{passive:true});
+    state=0;if(e.touches.length!==1||S.sheet||S.fsheet||S.viewImg||S.langPick||!backButton())return;
+    var x=e.touches[0].clientX,r=app.getBoundingClientRect();rtl=S.lang==='ar';w=r.width;
+    if(iosBrowser&&(rtl?r.right-x:x-r.left)<24)return; // bord gauche de Safari : laissé au geste de Safari
+    if(scrollsX(e.target))return;
+    sx=x;sy=e.touches[0].clientY;dx=dy=0;t0=Date.now();state=1;},{passive:true});
   app.addEventListener('touchmove',function(e){
-    if(!on)return;var x=e.touches[0].clientX,y=e.touches[0].clientY;dx=S.lang==='ar'?sx-x:x-sx;dy=Math.abs(y-sy);
-    if(!moved){
-      // un mouvement vertical, même léger, annule le geste : c'est un défilement, pas un retour
-      if(dy>8||dx<-4){on=false;return;}
-      if(dx>18&&dx>dy*3)moved=true;else return;}
-    else if(dy>dx*0.6+20){on=false;reset(true);setTimeout(function(){app.style.boxShadow='';},200);return;}
-    if(moved){var d=Math.max(0,dx);app.style.transition='none';app.style.transform='translateX('+(S.lang==='ar'?-d:d)+'px)';app.style.boxShadow='-8px 0 24px rgba(0,0,0,.15)';}},{passive:true});
+    if(state<1)return;var x=e.touches[0].clientX,y=e.touches[0].clientY;dx=rtl?sx-x:x-sx;dy=y-sy;
+    if(state===1){
+      if(Math.abs(dy)>10&&Math.abs(dy)>=Math.abs(dx)*0.8){state=-1;return;}   // défilement vertical
+      if(dx<-10){state=-1;return;}                                         // glissement dans l'autre sens
+      if(dx>14&&dx>Math.abs(dy)*1.6){state=2;makeUnder();app.style.zIndex='2';app.style.transition='none';app.style.boxShadow='-10px 0 30px rgba(0,0,0,.18)';}
+      else return;}
+    if(state===2){if(e.cancelable)e.preventDefault();paint(Math.max(0,dx));}},{passive:false});
   function end(){
-    if(!on)return;on=false;var w=app.clientWidth;
-    if(moved&&dx>Math.max(120,w*0.35)&&dy<dx*0.5){app.style.transition='transform .16s ease-out';app.style.transform='translateX('+(S.lang==='ar'?-w:w)+'px)';
-      setTimeout(function(){reset(false);app.style.boxShadow='';var b=backButton();if(b)b.click();},160);}
-    else{reset(true);setTimeout(function(){app.style.boxShadow='';},200);}}
-  app.addEventListener('touchend',end);app.addEventListener('touchcancel',function(){on=false;reset(true);});
+    if(state!==2){state=0;return;}state=0;var v=dx/Math.max(1,Date.now()-t0);
+    if(dx>w*0.33||(v>0.55&&dx>40)){app.style.transition='transform .18s ease-out';paint(w);
+      if(under){under.firstChild.style.transition='transform .18s ease-out';under.lastChild.style.transition='opacity .18s';}
+      setTimeout(function(){var b=backButton();app.style.transition='none';app.style.transform='';app.style.boxShadow='';if(b)b.click();setTimeout(clear,30);},180);}
+    else{app.style.transition='transform .2s ease-out';paint(0);if(under){under.firstChild.style.transition='transform .2s ease-out';under.lastChild.style.transition='opacity .2s';}setTimeout(clear,210);}}
+  app.addEventListener('touchend',end);
+  app.addEventListener('touchcancel',function(){if(state===2){app.style.transition='transform .2s';paint(0);setTimeout(clear,210);}state=0;});
 })();
 
 /* ---------- Clavier : l'écran se réduit au-dessus du clavier et le champ reste visible ---------- */
