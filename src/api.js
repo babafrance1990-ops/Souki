@@ -14,7 +14,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS reviews (target_id TEXT NOT NULL, author_id TEXT NOT NULL, stars INTEGER NOT NULL, txt TEXT, t INTEGER NOT NULL, PRIMARY KEY (target_id, author_id))`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -353,7 +353,7 @@ export async function onRequest(ctx) {
         const { results: ms } = await db.prepare(`SELECT * FROM messages WHERE conv_id IN (${ids.map(() => '?').join(',')}) ORDER BY t`).bind(...ids).all();
         return json({ convs: cs.map((c) => {
           const buyer = c.buyer_id === me.id, read = buyer ? c.buyer_read : c.seller_read;
-          const msgs = ms.filter((m) => m.conv_id === c.id).map((m) => ({ me: m.sender_id === me.id, txt: m.txt, t: m.t }));
+          const msgs = ms.filter((m) => m.conv_id === c.id).map((m) => ({ me: m.sender_id === me.id, txt: m.txt, t: m.t, img: m.img || '' }));
           return { id: c.id, adId: c.ad_id, title: c.title, seller: buyer ? c.seller_name : c.buyer_name, otherSince: buyer ? c.seller_created : c.buyer_created, otherCity: (buyer ? c.seller_city : c.buyer_city) || '', otherRead: buyer ? c.seller_read : c.buyer_read, otherId: buyer ? c.seller_id : c.buyer_id, otherAvatar: (buyer ? c.seller_avatar : c.buyer_avatar) || '', buyer, updated: c.updated, msgs, unread: msgs.filter((m) => !m.me && m.t > read).length };
         }) });
       }
@@ -375,13 +375,15 @@ export async function onRequest(ctx) {
       if (parts[2] === 'messages' && method === 'POST') {
         const b = await readBody(req);
         const txt = String(b.txt || '').trim().slice(0, 500);
-        if (!txt) return fail('empty');
+        let img = null;
+        if (b.img) img = await storeMedia(db, me.id, null, b.img, 1500000);
+        if (!txt && !img) return fail('empty');
         const t = Date.now();
         await db.batch([
-          db.prepare('INSERT INTO messages (conv_id, sender_id, txt, t) VALUES (?, ?, ?, ?)').bind(c.id, me.id, txt, t),
+          db.prepare('INSERT INTO messages (conv_id, sender_id, txt, t, img) VALUES (?, ?, ?, ?, ?)').bind(c.id, me.id, txt, t, img),
           db.prepare(`UPDATE convs SET updated = ?, ${col} = ? WHERE id = ?`).bind(t, t, c.id),
         ]);
-        return json({ ok: true, t });
+        return json({ ok: true, t, img });
       }
       if (parts[2] === 'read' && method === 'POST') {
         await db.prepare(`UPDATE convs SET ${col} = ? WHERE id = ?`).bind(Date.now(), c.id).run();
