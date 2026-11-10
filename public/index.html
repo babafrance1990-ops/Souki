@@ -2906,19 +2906,23 @@ window.addEventListener('popstate',function(){
 (function(){
   var iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
   if(iosBrowser)return; // Safari sur iPhone a déjà ce geste : il passe par l'historique ci-dessus
-  var sx=0,sy=0,dx=0,on=false,moved=false;
+  var sx=0,sy=0,dx=0,dy=0,on=false,moved=false;
   function reset(anim){app.style.transition=anim?'transform .2s ease-out':'none';app.style.transform='';}
   app.addEventListener('touchstart',function(e){
     if(e.touches.length!==1||S.sheet||S.fsheet||!backButton())return;
     var x=e.touches[0].clientX,r=app.getBoundingClientRect(),edge=S.lang==='ar'?r.right-x:x-r.left;
-    if(edge>32)return;on=true;moved=false;dx=0;sx=x;sy=e.touches[0].clientY;},{passive:true});
+    if(edge>20)return;on=true;moved=false;dx=0;dy=0;sx=x;sy=e.touches[0].clientY;},{passive:true});
   app.addEventListener('touchmove',function(e){
-    if(!on)return;var x=e.touches[0].clientX,y=e.touches[0].clientY;dx=S.lang==='ar'?sx-x:x-sx;
-    if(!moved){if(Math.abs(y-sy)>12&&Math.abs(y-sy)>Math.abs(dx)){on=false;return;}if(dx>10)moved=true;}
+    if(!on)return;var x=e.touches[0].clientX,y=e.touches[0].clientY;dx=S.lang==='ar'?sx-x:x-sx;dy=Math.abs(y-sy);
+    if(!moved){
+      // un mouvement vertical, même léger, annule le geste : c'est un défilement, pas un retour
+      if(dy>8||dx<-4){on=false;return;}
+      if(dx>18&&dx>dy*3)moved=true;else return;}
+    else if(dy>dx*0.6+20){on=false;reset(true);setTimeout(function(){app.style.boxShadow='';},200);return;}
     if(moved){var d=Math.max(0,dx);app.style.transition='none';app.style.transform='translateX('+(S.lang==='ar'?-d:d)+'px)';app.style.boxShadow='-8px 0 24px rgba(0,0,0,.15)';}},{passive:true});
   function end(){
     if(!on)return;on=false;var w=app.clientWidth;
-    if(moved&&dx>Math.min(110,w*0.3)){app.style.transition='transform .16s ease-out';app.style.transform='translateX('+(S.lang==='ar'?-w:w)+'px)';
+    if(moved&&dx>Math.max(120,w*0.35)&&dy<dx*0.5){app.style.transition='transform .16s ease-out';app.style.transform='translateX('+(S.lang==='ar'?-w:w)+'px)';
       setTimeout(function(){reset(false);app.style.boxShadow='';var b=backButton();if(b)b.click();},160);}
     else{reset(true);setTimeout(function(){app.style.boxShadow='';},200);}}
   app.addEventListener('touchend',end);app.addEventListener('touchcancel',function(){on=false;reset(true);});
