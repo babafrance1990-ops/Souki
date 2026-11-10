@@ -14,7 +14,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS reviews (target_id TEXT NOT NULL, author_id TEXT NOT NULL, stars INTEGER NOT NULL, txt TEXT, t INTEGER NOT NULL, PRIMARY KEY (target_id, author_id))`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -44,7 +44,7 @@ function isAdmin(env, u) {
   return !!u && list.includes(u.phone);
 }
 function publicUser(u, env) {
-  return { admin: isAdmin(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]') };
+  return { admin: isAdmin(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]') };
 }
 async function newSession(db, userId) {
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -174,6 +174,11 @@ export async function onRequest(ctx) {
     const me = await currentUser(db, req);
     if (!me) return fail('auth', 401);
 
+    if (parts[0] === 'me' && parts[1] === 'following' && method === 'GET') {
+      const { results } = await db.prepare(`SELECT u.id, u.name, u.city, u.avatar, u.shop, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id AND a.status = 'online') AS ads
+        FROM follows f JOIN users u ON u.id = f.target_id WHERE f.follower_id = ? AND COALESCE(u.blocked, 0) = 0 ORDER BY f.t DESC LIMIT 200`).bind(me.id).all();
+      return json({ users: results.map((u) => ({ id: u.id, name: u.name, city: u.city || '', avatar: u.avatar || '', shop: u.shop ? JSON.parse(u.shop).name : '', ads: u.ads })) });
+    }
     if (parts[0] === 'me') {
       if (method === 'GET') return json({ user: publicUser(me, env) });
       if (method === 'PUT') {
@@ -183,6 +188,11 @@ export async function onRequest(ctx) {
         const city = b.city !== undefined ? String(b.city).slice(0, 60) : me.city;
         const shop = b.shop !== undefined ? (b.shop ? JSON.stringify({ name: String(b.shop.name || '').slice(0, 60), market: String(b.shop.market || '').slice(0, 100) }) : null) : me.shop;
         const favs = Array.isArray(b.favs) ? JSON.stringify(b.favs.map(String).slice(0, 500)) : me.favs;
+        if (Array.isArray(b.searches)) {
+          const clean = b.searches.slice(0, 50).map((x) => ({ q: String(x.q || '').slice(0, 80), cat: String(x.cat || '').slice(0, 20), city: String(x.city || '').slice(0, 60), hood: String(x.hood || '').slice(0, 60),
+            t: +x.t || Date.now(), seen: +x.seen || Date.now(), alert: x.alert !== false }));
+          await db.prepare('UPDATE users SET searches = ? WHERE id = ?').bind(JSON.stringify(clean), me.id).run();
+        }
         if (b.avatar !== undefined) {
           let av = '';
           if (b.avatar) av = (await storeMedia(db, me.id, null, b.avatar, 600000)) || '';
