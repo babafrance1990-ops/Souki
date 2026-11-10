@@ -243,6 +243,14 @@ button.logo{background:none;border:none;padding:0;color:inherit;font:inherit;fon
 .tabs{padding-bottom:max(10px,env(safe-area-inset-bottom))}
 .foot,.chatbar{padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .app{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+.pprog{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.pseg{height:22px;border:none;background:none;padding:8px 0;cursor:pointer}.pseg:disabled{cursor:default}
+.pseg span{display:block;height:6px;border-radius:3px;background:var(--line)}
+.pseg.done span{background:var(--brand)}.pseg.cur span{background:var(--gold)}
+.sthead h2{margin:0 0 2px;font-size:22px}.sthead p{margin:0}
+.pstep{display:flex;flex-direction:column;gap:16px}.pstep[hidden]{display:none!important}
+.pview{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--surface)}
+.pvth{width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--ph);display:flex;align-items:center;justify-content:center;flex-shrink:0}.pvth img{width:100%;height:100%;object-fit:cover}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -326,7 +334,7 @@ var TX={
   photos:'Photos',upTo:'(jusqu’à 4)',add:'Ajouter',compress:'Les photos sont réduites pour économiser vos données.',title:'Titre',cat:'Catégorie',choose:'Choisir…',price:'Prix',city:'Ville',
   descPh:'État, accessoires, raison de la vente…',contact:'Comment vous contacter ?',publish:'Publier l’annonce',published:'Annonce publiée',
   errTitle:'Indiquez un titre (au moins 4 caractères).',errCat:'Choisissez une catégorie.',errPrice:'Indiquez un prix en chiffres.',
-  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',moreT:'Ajouter des détails',moreSub:'Facultatif · les annonces détaillées se vendent plus vite',moreHide:'Masquer les détails',typeL:'Type',msgsTitle:'Mes messages',f_all:'Tout',f_unread:'Non lus',f_buy:'Achats',f_sell:'Ventes',noMsgF:'Aucune discussion ici.',aboutSeller:'À propos de ce vendeur',aboutBuyer:'À propos de cet acheteur',today:'Aujourd’hui',yesterday:'Hier',tipsT:'Nos conseils pour acheter en toute confiance',tip1:'Rencontrez le vendeur dans un lieu public, de jour.',tip2:'Vérifiez l’article (et les papiers pour un véhicule) avant de payer.',tip3:'Ne payez jamais à l’avance, même par Bankily, Masrvi ou Sedad.',tipsSellT:'Nos conseils pour vendre en toute confiance',tipS1:'Donnez rendez-vous dans un lieu public.',tipS2:'Ne remettez l’article qu’après avoir reçu le paiement.',tipS3:'Méfiez-vous des faux reçus et captures de paiement.',adGone:'Annonce supprimée',readL:'Lu',sentL:'Envoyé',forgot:'Mot de passe oublié ?',forgotTxt:'Écrivez à l’équipe Vends-moi sur WhatsApp depuis votre numéro : nous vous donnerons un nouveau mot de passe.',forgotNo:'Contactez l’administrateur de Vends-moi pour recevoir un nouveau mot de passe.',forgotMsg:'Bonjour, j’ai oublié mon mot de passe Vends-moi. Mon numéro : ',e_blocked:'Ce compte a été bloqué. Contactez l’équipe Vends-moi.',editAd:'Modifier l’annonce',saveChanges:'Enregistrer les modifications',edit:'Modifier',updated:'Annonce modifiée',noEdit:'Cette annonce ne peut pas être modifiée. Supprimez-la et publiez-en une nouvelle.',admin:'Administration',admUsers:'Utilisateurs',admUsersTotal:'utilisateurs',admNew24:'nouveaux (24 h)',admOnline:'annonces en ligne',admAds24:'annonces (24 h)',admMsgs24:'messages (24 h)',admReports:'Annonces signalées',admNoRep:'Aucun signalement.',admRepN:'{n} signalement(s)',admDelAd:'Supprimer l’annonce',admIgnore:'Ignorer',admSearch:'Rechercher un numéro',admNewPw:'Nouveau mot de passe',admBlock:'Bloquer',admUnblock:'Débloquer',admBlocked:'Bloqué',admPwOk:'Mot de passe changé. Transmettez-le à l’utilisateur.',admDone:'C’est fait.',admAdsN:'{n} annonce(s)',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
+  login:'Connexion / Inscription',loginIntro:'Votre numéro de téléphone mauritanien sert d’identifiant. Les acheteurs pourront vous appeler sur ce numéro.',tabLogin:'J’ai un compte',st1:'Que vendez-vous ?',st2:'Titre et photos',st3:'Détails',st4:'Prix',st5:'Lieu et contact',stepOf:'Étape {n} sur 5',next:'Suivant',prev:'Retour',st1sub:'Choisissez la catégorie, puis le type.',st2sub:'Ajoutez de vraies photos : elles attirent plus d’acheteurs.',st3sub:'Facultatif : plus de détails, vente plus rapide. Vous pouvez passer cette étape.',st4sub:'Indiquez le prix en nouvelle ou en ancienne ouguiya.',st5sub:'Vérifiez votre annonce avant de la publier.',preview:'Aperçu de votre annonce',skip:'Passer',moreT:'Ajouter des détails',moreSub:'Facultatif · les annonces détaillées se vendent plus vite',moreHide:'Masquer les détails',typeL:'Type',msgsTitle:'Mes messages',f_all:'Tout',f_unread:'Non lus',f_buy:'Achats',f_sell:'Ventes',noMsgF:'Aucune discussion ici.',aboutSeller:'À propos de ce vendeur',aboutBuyer:'À propos de cet acheteur',today:'Aujourd’hui',yesterday:'Hier',tipsT:'Nos conseils pour acheter en toute confiance',tip1:'Rencontrez le vendeur dans un lieu public, de jour.',tip2:'Vérifiez l’article (et les papiers pour un véhicule) avant de payer.',tip3:'Ne payez jamais à l’avance, même par Bankily, Masrvi ou Sedad.',tipsSellT:'Nos conseils pour vendre en toute confiance',tipS1:'Donnez rendez-vous dans un lieu public.',tipS2:'Ne remettez l’article qu’après avoir reçu le paiement.',tipS3:'Méfiez-vous des faux reçus et captures de paiement.',adGone:'Annonce supprimée',readL:'Lu',sentL:'Envoyé',forgot:'Mot de passe oublié ?',forgotTxt:'Écrivez à l’équipe Vends-moi sur WhatsApp depuis votre numéro : nous vous donnerons un nouveau mot de passe.',forgotNo:'Contactez l’administrateur de Vends-moi pour recevoir un nouveau mot de passe.',forgotMsg:'Bonjour, j’ai oublié mon mot de passe Vends-moi. Mon numéro : ',e_blocked:'Ce compte a été bloqué. Contactez l’équipe Vends-moi.',editAd:'Modifier l’annonce',saveChanges:'Enregistrer les modifications',edit:'Modifier',updated:'Annonce modifiée',noEdit:'Cette annonce ne peut pas être modifiée. Supprimez-la et publiez-en une nouvelle.',admin:'Administration',admUsers:'Utilisateurs',admUsersTotal:'utilisateurs',admNew24:'nouveaux (24 h)',admOnline:'annonces en ligne',admAds24:'annonces (24 h)',admMsgs24:'messages (24 h)',admReports:'Annonces signalées',admNoRep:'Aucun signalement.',admRepN:'{n} signalement(s)',admDelAd:'Supprimer l’annonce',admIgnore:'Ignorer',admSearch:'Rechercher un numéro',admNewPw:'Nouveau mot de passe',admBlock:'Bloquer',admUnblock:'Débloquer',admBlocked:'Bloqué',admPwOk:'Mot de passe changé. Transmettez-le à l’utilisateur.',admDone:'C’est fait.',admAdsN:'{n} annonce(s)',noAdsYet:'Aucune annonce pour le moment. Soyez le premier à publier !',tabRegister:'Créer un compte',passLbl:'Mot de passe',passHelp:'Au moins 6 caractères.',doLogin:'Se connecter',doRegister:'Créer mon compte',errPass:'Le mot de passe doit contenir au moins 6 caractères.',e_exists:'Ce numéro a déjà un compte. Choisissez « J’ai un compte ».',e_nouser:'Aucun compte avec ce numéro. Choisissez « Créer un compte ».',e_badpass:'Mot de passe incorrect.',e_locked:'Trop d’essais. Réessayez dans 15 minutes.',netErr:'Connexion impossible. Vérifiez votre réseau et réessayez.',sending:'Envoi en cours…',e_too_big:'Photo ou message vocal trop lourd.',e_too_many:'Limite de 30 annonces par jour atteinte.',showPass:'Afficher',phoneLbl:'Numéro de téléphone',getCode:'Recevoir le code',
   errPhone:'Le numéro doit contenir 8 chiffres.',codeLbl:'Code reçu',demoCode:'Démo : le code est 1234',verify:'Valider',errCode:'Code incorrect. En démo, tapez 1234.',nameLbl:'Votre nom (affiché sur vos annonces)',
   online:'En ligne',soldTab:'Vendues',noMine:'Vous n’avez pas encore d’annonce.',markSold:'Marquer vendu',del:'Supprimer',confirmDel:'Supprimer définitivement ?',yes:'Oui, supprimer',no:'Annuler',
   logout:'Se déconnecter',lang:'Langue',pro:'Passer en compte commerçant (boutique)',help:'Aide et sécurité',noFav:'Touchez le marque-page d’une annonce pour la retrouver ici.',
@@ -457,7 +465,7 @@ var TX={
   photos:'الصور',upTo:'(حتى 4)',add:'إضافة',compress:'يتم تصغير الصور لتوفير الإنترنت.',title:'العنوان',cat:'الفئة',choose:'اختر…',price:'السعر',city:'المدينة',
   descPh:'الحالة، الملحقات، سبب البيع…',contact:'كيف يتواصلون معك؟',publish:'نشر الإعلان',published:'تم نشر الإعلان',
   errTitle:'اكتب عنواناً (4 أحرف على الأقل).',errCat:'اختر فئة.',errPrice:'اكتب السعر بالأرقام.',
-  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',moreT:'إضافة تفاصيل',moreSub:'اختياري · الإعلانات المفصّلة تُباع أسرع',moreHide:'إخفاء التفاصيل',typeL:'النوع',msgsTitle:'رسائلي',f_all:'الكل',f_unread:'غير مقروءة',f_buy:'مشترياتي',f_sell:'مبيعاتي',noMsgF:'لا توجد محادثات هنا.',aboutSeller:'عن هذا البائع',aboutBuyer:'عن هذا المشتري',today:'اليوم',yesterday:'أمس',tipsT:'نصائحنا للشراء بأمان',tip1:'قابل البائع في مكان عام وفي النهار.',tip2:'افحص السلعة (ووثائق المركبة) قبل الدفع.',tip3:'لا تدفع مسبقاً أبداً، ولو عبر بنكيلي أو مصرفي أو سداد.',tipsSellT:'نصائحنا للبيع بأمان',tipS1:'حدّد موعد اللقاء في مكان عام.',tipS2:'لا تسلّم السلعة إلا بعد استلام المبلغ.',tipS3:'احذر من الإيصالات وصور الدفع المزيفة.',adGone:'إعلان محذوف',readL:'مقروءة',sentL:'أُرسلت',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق «بيعلي» على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول «بيعلي» للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور «بيعلي». رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق «بيعلي».',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{N}',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{N}',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
+  login:'الدخول / التسجيل',loginIntro:'رقم هاتفك الموريتاني هو معرّفك، ويمكن للمشترين الاتصال بك عليه.',tabLogin:'لدي حساب',st1:'ماذا تبيع؟',st2:'العنوان والصور',st3:'التفاصيل',st4:'السعر',st5:'المكان والتواصل',stepOf:'الخطوة {n} من 5',next:'التالي',prev:'رجوع',st1sub:'اختر الفئة ثم النوع.',st2sub:'أضف صوراً حقيقية: تجذب مشترين أكثر.',st3sub:'اختياري: تفاصيل أكثر، بيع أسرع. يمكنك تخطي هذه الخطوة.',st4sub:'حدد السعر بالأوقية الجديدة أو القديمة.',st5sub:'راجع إعلانك قبل نشره.',preview:'معاينة إعلانك',skip:'تخطَّ',moreT:'إضافة تفاصيل',moreSub:'اختياري · الإعلانات المفصّلة تُباع أسرع',moreHide:'إخفاء التفاصيل',typeL:'النوع',msgsTitle:'رسائلي',f_all:'الكل',f_unread:'غير مقروءة',f_buy:'مشترياتي',f_sell:'مبيعاتي',noMsgF:'لا توجد محادثات هنا.',aboutSeller:'عن هذا البائع',aboutBuyer:'عن هذا المشتري',today:'اليوم',yesterday:'أمس',tipsT:'نصائحنا للشراء بأمان',tip1:'قابل البائع في مكان عام وفي النهار.',tip2:'افحص السلعة (ووثائق المركبة) قبل الدفع.',tip3:'لا تدفع مسبقاً أبداً، ولو عبر بنكيلي أو مصرفي أو سداد.',tipsSellT:'نصائحنا للبيع بأمان',tipS1:'حدّد موعد اللقاء في مكان عام.',tipS2:'لا تسلّم السلعة إلا بعد استلام المبلغ.',tipS3:'احذر من الإيصالات وصور الدفع المزيفة.',adGone:'إعلان محذوف',readL:'مقروءة',sentL:'أُرسلت',forgot:'نسيت كلمة المرور؟',forgotTxt:'راسل فريق «بيعلي» على واتساب من رقمك وسنعطيك كلمة مرور جديدة.',forgotNo:'اتصل بمسؤول «بيعلي» للحصول على كلمة مرور جديدة.',forgotMsg:'السلام عليكم، نسيت كلمة مرور «بيعلي». رقمي: ',e_blocked:'تم حظر هذا الحساب. اتصل بفريق «بيعلي».',editAd:'تعديل الإعلان',saveChanges:'حفظ التعديلات',edit:'تعديل',updated:'تم تعديل الإعلان',noEdit:'لا يمكن تعديل هذا الإعلان. احذفه وانشر إعلاناً جديداً.',admin:'الإدارة',admUsers:'المستخدمون',admUsersTotal:'مستخدم',admNew24:'جدد (24 س)',admOnline:'إعلانات منشورة',admAds24:'إعلانات (24 س)',admMsgs24:'رسائل (24 س)',admReports:'الإعلانات المُبلّغ عنها',admNoRep:'لا توجد بلاغات.',admRepN:'{N}',admDelAd:'حذف الإعلان',admIgnore:'تجاهل',admSearch:'ابحث عن رقم',admNewPw:'كلمة مرور جديدة',admBlock:'حظر',admUnblock:'إلغاء الحظر',admBlocked:'محظور',admPwOk:'تم تغيير كلمة المرور. أرسلها إلى المستخدم.',admDone:'تم.',admAdsN:'{N}',noAdsYet:'لا توجد إعلانات حالياً. كن أول من ينشر!',tabRegister:'إنشاء حساب',passLbl:'كلمة المرور',passHelp:'6 أحرف على الأقل.',doLogin:'دخول',doRegister:'إنشاء حسابي',errPass:'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.',e_exists:'هذا الرقم لديه حساب بالفعل. اختر «لدي حساب».',e_nouser:'لا يوجد حساب بهذا الرقم. اختر «إنشاء حساب».',e_badpass:'كلمة المرور غير صحيحة.',e_locked:'محاولات كثيرة. أعد المحاولة بعد 15 دقيقة.',netErr:'تعذّر الاتصال. تحقق من الشبكة وأعد المحاولة.',sending:'جارٍ الإرسال…',e_too_big:'الصورة أو الرسالة الصوتية كبيرة جداً.',e_too_many:'بلغت حد 30 إعلاناً في اليوم.',showPass:'إظهار',phoneLbl:'رقم الهاتف',getCode:'استلام الرمز',
   errPhone:'يجب أن يتكون الرقم من 8 أرقام.',codeLbl:'الرمز المستلم',demoCode:'تجربة: الرمز هو 1234',verify:'تأكيد',errCode:'رمز خاطئ. في التجربة اكتب 1234.',nameLbl:'اسمك (يظهر على إعلاناتك)',
   online:'منشورة',soldTab:'مُباعة',noMine:'ليس لديك إعلانات بعد.',markSold:'تم البيع',del:'حذف',confirmDel:'حذف نهائياً؟',yes:'نعم، احذف',no:'إلغاء',
   logout:'تسجيل الخروج',lang:'اللغة',pro:'حساب تاجر (متجر)',help:'المساعدة والأمان',noFav:'اضغط على علامة الحفظ في أي إعلان ليظهر هنا.',
@@ -1782,25 +1790,35 @@ V.post=function(){
   var voice=d.voice?'<audio controls src="'+d.voice+'" style="width:100%"></audio><button type="button" class="linkbtn" data-a="rmvoice">'+t('voiceDel')+'</button>'
     :S.rec?'<button type="button" class="btn wide danger" data-a="recstop" style="gap:10px"><span class="recdot"></span>'+t('recStop')+' <span id="rectime" dir="ltr">0:00</span></button><div class="meta" role="status">'+t('recOn')+'</div>'
     :'<button type="button" class="btn wide" data-a="recstart" style="border-style:dashed">'+svg(I.mic,20)+t('voiceRec')+'</button><label class="linkbtn" for="vfile" style="color:var(--brand);cursor:pointer;align-self:center">'+t('recFile')+'</label><input id="vfile" type="file" accept="audio/*" hidden>';
-  return topbar(t(S.editId?'editAd':'post'),S.editId?'myads':'home')+'<form id="pf" class="scroll" novalidate><div class="sec" style="gap:16px">'+
-   (S.draftRestored&&!S.editId?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
-   '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>'+
-   '<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+t('titlePh')+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
-   '<div class="field"><div class="legend">'+t('cat')+'</div><div class="cattiles" role="group" aria-label="'+t('cat')+'">'+CATS.map(function(c){var on=d.cat===c.id;return '<button type="button" class="ctile" data-a="postcat" data-v="'+c.id+'" aria-pressed="'+on+'"><span class="ic"'+(on?'':' style="color:'+c.c+'"')+'>'+svg(ICONS[c.id],21,1.8)+'</span><span>'+c[S.lang]+'</span></button>';}).join('')+'</div>'+(e.cat?'<div class="err">'+t('errCat')+'</div>':'')+'</div>'+
-   '<div id="catf">'+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>'+
-   '<div class="field"><label for="fprice">'+(d.cat==='immo'&&d.deal==='rent'?t('rent'):d.cat==='auto'&&d.vkind==='service'?t('priceFrom'):d.cat==='fam'&&isFamService(d.fsub)?t('salary'):d.cat==='job'?t(d.joffer==='demand'?'salaryW':'salaryM'):t('price'))+'</label>'+units+
-    '<input id="fprice" class="inp" data-f="price" inputmode="numeric" value="'+esc(d.price)+'" placeholder="'+(unit==='old'?'135000':'13500')+'"'+(e.price?' aria-invalid="true"':'')+'>'+(e.price?'<div class="err">'+t('errPrice')+'</div>':'')+
-    '<div class="meta" id="phint" style="font-weight:700;color:var(--brand)">'+esc(priceHint(d))+'</div>'+chk('nego',t('nego'))+'</div>'+
-   '<div class="two"><div class="field"><label for="fcity">'+t('city')+'</label><select id="fcity" class="inp" data-f="city">'+cityOpts+'</select></div>'+
-    '<div class="field"><label for="fhood">'+t('hood')+O+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div></div>'+
-   (d.cat&&d.cat!=='immo'?sellerBlock(d,e):'')+
-   '<button type="button" class="morebtn" data-a="more" aria-expanded="'+!!S.moreOpen+'" aria-controls="more"><span class="mplus">'+(S.moreOpen?'−':'+')+'</span><span style="flex:1;text-align:start"><b>'+t(S.moreOpen?'moreHide':'moreT')+'</b><span class="meta" style="display:block">'+t('moreSub')+'</span></span></button>'+
-   '<div id="more" class="more"'+(S.moreOpen?'':' hidden')+'><div id="catmore"></div>'+
-   '<div class="field"><label for="fdesc">'+t('desc')+O+'</label><textarea id="fdesc" class="inp" rows="4" data-f="desc" maxlength="1000" placeholder="'+t('descPh')+'">'+esc(d.desc)+'</textarea></div>'+
-   '<div class="field"><label for="fnear">'+t('nearLbl')+O+'</label><input id="fnear" class="inp" data-f="near" maxlength="50" value="'+esc(d.near)+'" placeholder="'+t('nearPh')+'"></div>'+
-   '<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div>'+
-   '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="legend" style="margin-bottom:4px">'+t('contact')+'</legend>'+chk('wa','WhatsApp')+chk('call',t('call'))+chk('msg',t('message'))+'</fieldset>'+
-   '</div></div></form><div class="foot"><button class="btn primary wide" data-a="publish" style="height:54px;font-size:17px">'+t(S.editId?'saveChanges':'publish')+'</button></div>';};
+  var st=S.pstep||1;S.moreOpen=true;
+  function step(n,body){return '<div class="pstep" data-step="'+n+'"'+(st===n?'':' hidden')+'><div class="sthead"><h2>'+t('st'+n)+'</h2><p class="meta">'+t('st'+n+'sub')+'</p></div>'+body+'</div>';}
+  var prog='<div class="pprog" role="list" aria-label="'+t('stepOf').replace('{n}',st)+'">'+[1,2,3,4,5].map(function(n){var ok=n<=(S.maxStep||1);
+    return '<button type="button" role="listitem" class="pseg'+(n<st?' done':n===st?' cur':'')+'" data-a="pgo" data-v="'+n+'"'+(ok?'':' disabled')+' aria-label="'+t('st'+n)+'"><span></span></button>';}).join('')+'</div>'+
+    '<div class="meta" style="font-weight:700">'+t('stepOf').replace('{n}',st)+' · '+t('st'+st)+'</div>';
+  var unitTxt=unit==='old'?t('oldUnit'):U('MRU');
+  var pv='<div class="pview"><div class="pvth">'+(d.photos[0]?'<img alt="" src="'+d.photos[0]+'">':svg(ICONS[d.cat||'autre']||I.list,30,1.5))+'</div><div style="min-width:0;flex:1"><div class="ctitle" translate="no">'+esc(d.title||'…')+'</div>'+
+    '<div class="price">'+(d.price?num(+String(d.price).replace(/\D/g,''))+' '+unitTxt:'—')+'</div><div class="meta">'+esc([(d.hood||'').trim(),d.city?city(d.city):''].filter(Boolean).join(S.lang==='ar'?'، ':', '))+'</div></div></div>';
+  return topbar(t(S.editId?'editAd':'post'),S.editId?'myads':'home')+'<form id="pf" class="scroll" novalidate><div class="sec" style="gap:16px">'+prog+
+   (S.draftRestored&&!S.editId&&st===1?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
+   step(1,'<div class="field"><div class="cattiles" role="group" aria-label="'+t('cat')+'">'+CATS.map(function(c){var on=d.cat===c.id;return '<button type="button" class="ctile" data-a="postcat" data-v="'+c.id+'" aria-pressed="'+on+'"><span class="ic"'+(on?'':' style="color:'+c.c+'"')+'>'+svg(ICONS[c.id],21,1.8)+'</span><span>'+c[S.lang]+'</span></button>';}).join('')+'</div>'+(e.cat?'<div class="err">'+t('errCat')+'</div>':'')+'</div>'+
+     '<div id="catf">'+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>')+
+   step(2,'<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+t('titlePh')+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
+     '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>')+
+   step(3,'<div id="more" class="more"><div id="catmore"></div>'+
+     '<div class="field"><label for="fdesc">'+t('desc')+O+'</label><textarea id="fdesc" class="inp" rows="4" data-f="desc" maxlength="1000" placeholder="'+t('descPh')+'">'+esc(d.desc)+'</textarea></div>'+
+     '<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div></div>')+
+   step(4,'<div class="field"><label for="fprice">'+(d.cat==='immo'&&d.deal==='rent'?t('rent'):d.cat==='auto'&&d.vkind==='service'?t('priceFrom'):d.cat==='fam'&&isFamService(d.fsub)?t('salary'):d.cat==='job'?t(d.joffer==='demand'?'salaryW':'salaryM'):t('price'))+'</label>'+units+
+     '<input id="fprice" class="inp" data-f="price" inputmode="numeric" value="'+esc(d.price)+'" placeholder="'+(unit==='old'?'135000':'13500')+'"'+(e.price?' aria-invalid="true"':'')+'>'+(e.price?'<div class="err">'+t('errPrice')+'</div>':'')+
+     '<div class="meta" id="phint" style="font-weight:700;color:var(--brand)">'+esc(priceHint(d))+'</div>'+chk('nego',t('nego'))+'</div>')+
+   step(5,'<div class="two"><div class="field"><label for="fcity">'+t('city')+'</label><select id="fcity" class="inp" data-f="city">'+cityOpts+'</select></div>'+
+     '<div class="field"><label for="fhood">'+t('hood')+O+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div></div>'+
+     '<div class="field"><label for="fnear">'+t('nearLbl')+O+'</label><input id="fnear" class="inp" data-f="near" maxlength="50" value="'+esc(d.near)+'" placeholder="'+t('nearPh')+'"></div>'+
+     (d.cat&&d.cat!=='immo'?sellerBlock(d,e):'')+
+     '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="legend" style="margin-bottom:4px">'+t('contact')+'</legend>'+chk('wa','WhatsApp')+chk('call',t('call'))+chk('msg',t('message'))+'</fieldset>'+
+     '<div class="field"><div class="legend">'+t('preview')+'</div>'+pv+'</div>')+
+   '</div></form><div class="foot"><div class="row" style="gap:10px">'+(st>1?'<button type="button" class="btn" data-a="pprev" style="height:54px;flex:0 0 auto;padding:0 18px">'+t('prev')+'</button>':'')+
+   (st<5?'<button type="button" class="btn primary wide" data-a="pnext" style="height:54px;font-size:17px;flex:1">'+t(st===3?'next':'next')+'</button>'
+        :'<button class="btn primary wide" data-a="publish" style="height:54px;font-size:17px;flex:1">'+t(S.editId?'saveChanges':'publish')+'</button>')+'</div></div>';};
 
 V.login=function(){
   var L=S.login,reg=L.mode==='register';
@@ -2022,7 +2040,7 @@ function splitPostForm(){
 function newDraft(){return {photos:[],title:'',cat:S.cat||'',price:'',city:S.city||(S.user&&S.user.city)||'Nouakchott',desc:'',wa:true,call:true,msg:false,brand:'',model:'',year:'',km:'',fuel:'',gear:'',cond:'',seats:'',doors:'',vtype:'',color:'',deal:'',kind:'',surface:'',hood:'',rooms:'',salons:'',baths:'',furnished:'',papers:'',floor:'',levels:'',place:'',eq:[],
   pdtype:'',pbrand:'',pmodel:'',pstorage:'',pram:'',pcond:'',pcolor:'',pbatt:'',pdual:'',punlock:'',pincl:[],pimei:'',
   species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'new',nego:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'part',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
-function startPost(){S.moreOpen=false;if(S.editId){S.editId=null;S.draft=load('draft',null);if(S.draft)S.draft=Object.assign(newDraft(),S.draft);}if(!S.user){S.after='post';S.login={step:1,phone:'',code:'',name:'',err:''};go('login');return;}if(!S.draft){S.draft=newDraft();S.draftRestored=false;}S.errs={};go('post');}
+function startPost(){S.moreOpen=false;S.pstep=1;S.maxStep=1;S.errs={};if(S.editId){S.editId=null;S.draft=load('draft',null);if(S.draft)S.draft=Object.assign(newDraft(),S.draft);}if(!S.user){S.after='post';S.login={step:1,phone:'',code:'',name:'',err:''};go('login');return;}if(!S.draft){S.draft=newDraft();S.draftRestored=false;}S.errs={};go('post');}
 
 app.addEventListener('click',function(e){
   var el=e.target.closest('[data-a]');if(!el)return;
@@ -2065,6 +2083,13 @@ app.addEventListener('click',function(e){
    case 'more':S.moreOpen=!S.moreOpen;render(true);if(S.moreOpen){var mo=app.querySelector('#more');if(mo)setTimeout(function(){try{mo.scrollIntoView({behavior:'smooth',block:'start'});}catch(e){}},30);}break;
    case 'gohome':S.q='';S.cat='';S.hood='';S.showCats=false;S.sfocus=false;S.fsheet=false;S.sheet=null;S.gf={date:'',seller:'',photo:false,nego:false,voice:false,pmin:'',pmax:''};S.sort='new';
      if(S.screen==='home'){render();var hs=app.querySelector('.scroll');if(hs)hs.scrollTop=0;}else go('home');break;
+   case 'pnext':var se=publish(true)||{};S.errs=se;render(true);
+     var bad=app.querySelector('.pstep[data-step="'+(S.pstep||1)+'"] .err, .pstep[data-step="'+(S.pstep||1)+'"] [aria-invalid="true"]');
+     if(bad){setTimeout(guideErr,40);break;}
+     S.errs={};S.pstep=Math.min(5,(S.pstep||1)+1);S.maxStep=Math.max(S.maxStep||1,S.pstep);render(true);var ps1=app.querySelector('#pf');if(ps1)ps1.scrollTop=0;
+     if(S.pstep===2){var ft=app.querySelector('#ftitle');if(ft&&!ft.value)setTimeout(function(){ft.focus();},250);}break;
+   case 'pprev':S.errs={};S.pstep=Math.max(1,(S.pstep||1)-1);render(true);var ps2=app.querySelector('#pf');if(ps2)ps2.scrollTop=0;break;
+   case 'pgo':var gv=+el.getAttribute('data-v');if(gv<=(S.maxStep||1)){S.errs={};S.pstep=gv;render(true);var ps3=app.querySelector('#pf');if(ps3)ps3.scrollTop=0;}break;
    case 'rmvoice':S.draft.voice='';render(true);break;
    case 'cleardraft':S.draft=newDraft();S.draftRestored=false;S.errs={};save('draft',null);render();break;
    case 'showph':S.showPh=id;render(true);break;
@@ -2222,7 +2247,7 @@ function addVoice(f){
   var r=new FileReader();r.onload=function(){S.draft.voice=r.result;render(true);};r.readAsDataURL(f);
 }
 
-function publish(){
+function publish(dry){
   var d=S.draft,e={};
   if((d.title||'').trim().length<4)e.title=1;
   if(!d.cat)e.cat=1;
@@ -2338,8 +2363,9 @@ function publish(){
   }
   if(d.cat&&d.cat!=='immo'){if(!d.stype)e.stype=1;else if(d.stype==='pro'&&!(d.sname||'').trim())e.sname=1;}
   S.errs=e;
-  if(Object.keys(e).length){var mainErr={title:1,cat:1,price:1,stype:1,sname:1,vkind:1,deal:1,kind:1,mtype:1,pdtype:1,hsub:1,mosub:1,fsub:1,joffer:1,species:1};
-    if(Object.keys(e).some(function(k){return !mainErr[k];}))S.moreOpen=true;render(true);setTimeout(guideErr,40);return;}
+  if(dry)return e;
+  if(Object.keys(e).length){render(true);var fe=app.querySelector('#pf .err,#pf [aria-invalid="true"]'),ps=fe&&fe.closest('.pstep');
+    if(ps&&+ps.getAttribute('data-step')!==S.pstep){S.pstep=+ps.getAttribute('data-step');render(true);}setTimeout(guideErr,40);return;}
   var ad={id:'m'+Date.now(),punit:d.punit==='old'?'old':'new',priceOld:d.punit==='old'?+p:undefined,title:d.title.trim(),cat:d.cat,price:pm,city:d.city,hood:(d.hood||'').trim(),near:(d.near||'').trim(),nego:!!d.nego,t:Date.now(),desc:d.desc.trim(),seller:S.user.name,phone:S.user.phone,photos:d.photos.slice(),contacts:{wa:d.wa,call:d.call,msg:d.msg}};
   if(car)ad.car=car;
   if(veh)ad.veh=veh;
@@ -2365,14 +2391,14 @@ function publish(){
 }
 
 /* ---------- Guidage du formulaire : aller au champ suivant ---------- */
-var FLOW_SKIP={publish:1,rmph:1,cleardraft:1,rmvoice:1,go:1};
+var FLOW_SKIP={pnext:1,pprev:1,pgo:1,publish:1,rmph:1,cleardraft:1,rmvoice:1,go:1};
 function flowItems(){
   var f=app.querySelector('#pf');if(!f)return [];
   var out=[],seen=[];
   Array.prototype.forEach.call(f.querySelectorAll('input.inp, select.inp, textarea.inp, button[data-a]'),function(x){
-    if(x.tagName==='BUTTON'){if(FLOW_SKIP[x.getAttribute('data-a')]||x.getAttribute('data-a')==='more'||x.closest('#more[hidden]'))return;var g=x.parentNode;if(seen.indexOf(g)>-1)return;seen.push(g);
+    if(x.tagName==='BUTTON'){if(FLOW_SKIP[x.getAttribute('data-a')]||/^(more|pnext|pprev|pgo)$/.test(x.getAttribute('data-a'))||x.closest('.pstep[hidden]'))return;var g=x.parentNode;if(seen.indexOf(g)>-1)return;seen.push(g);
       var done=!!g.querySelector('[aria-pressed="true"],[aria-checked="true"],[aria-selected="true"]');out.push({el:g,done:done,kind:'group'});}
-    else if(x.offsetParent!==null&&!x.closest('#more[hidden]'))out.push({el:x,done:!!String(x.value||'').trim(),kind:x.tagName==='INPUT'||x.tagName==='TEXTAREA'?'text':'select'});});
+    else if(x.offsetParent!==null&&!x.closest('.pstep[hidden]'))out.push({el:x,done:!!String(x.value||'').trim(),kind:x.tagName==='INPUT'||x.tagName==='TEXTAREA'?'text':'select'});});
   return out;}
 function absTop(el){var sc=app.querySelector('.scroll');return el.getBoundingClientRect().top+(sc?sc.scrollTop:0);}
 function flash(el){el.classList.remove('flowhi');void el.offsetWidth;el.classList.add('flowhi');setTimeout(function(){el.classList.remove('flowhi');},1600);}
@@ -2384,7 +2410,7 @@ function guideTo(item){
 function guideAfter(y){
   var it=flowItems();for(var i=0;i<it.length;i++){var tp=absTop(it[i].el);if(tp>y+8&&!it[i].done){guideTo(it[i]);return;}}}
 function guideErr(){
-  var el=app.querySelector('#pf [aria-invalid="true"], #pf .err');if(!el)return;
+  var el=app.querySelector('#pf .pstep:not([hidden]) [aria-invalid="true"], #pf .pstep:not([hidden]) .err')||app.querySelector('#pf [aria-invalid="true"], #pf .err');if(!el)return;
   var tgt=el.classList.contains('err')?(el.parentNode.querySelector('input.inp,select.inp,textarea.inp')||el.parentNode):el;
   guideTo({el:tgt,kind:tgt.matches&&tgt.matches('input,textarea')?'text':'group'});}
 app.addEventListener('keydown',function(e){
@@ -2441,7 +2467,7 @@ function adminClick(a,el,id){
       api('POST','ads/'+S.id+'/report',{reason:''}).then(function(){toast(t('reported'));}).catch(function(){toast(t('netErr'));});return true;
     case 'editad':var ea=byId(id);if(!ea)return true;var base=ea._d?JSON.parse(JSON.stringify(ea._d)):{title:ea.title||'',cat:ea.cat||'',price:String(ea.punit==='old'?(ea.priceOld||(ea.price||0)*10):(ea.price||'')),punit:ea.punit==='old'?'old':'new',city:ea.city||'Nouakchott',hood:ea.hood||'',near:ea.near||'',desc:ea.desc||'',nego:!!ea.nego,stype:ea.stype||'',
         sname:(ea.splace&&ea.splace.name)||'',saddr:(ea.splace&&ea.splace.addr)||'',wa:!ea.contacts||!!ea.contacts.wa,call:!ea.contacts||!!ea.contacts.call,msg:!!(ea.contacts&&ea.contacts.msg)};
-      S.editId=id;S.draft=Object.assign(newDraft(),base,{photos:(ea.photos||[]).slice(),voice:ea.voice||''});S.draftRestored=false;S.errs={};go('post');var sc=app.querySelector('.scroll');if(sc)sc.scrollTop=0;return true;
+      S.editId=id;S.pstep=1;S.maxStep=5;S.draft=Object.assign(newDraft(),base,{photos:(ea.photos||[]).slice(),voice:ea.voice||''});S.draftRestored=false;S.errs={};go('post');var sc=app.querySelector('.scroll');if(sc)sc.scrollTop=0;return true;
   }
   return false;}
 app.addEventListener('click',function(e){
@@ -2458,11 +2484,13 @@ try{history.replaceState({souki:1,d:0},'');}catch(e){}
 function backButton(){return app.querySelector('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"]');}
 app.addEventListener('click',function(e){
   var bb=e.target.closest('.topbar button.icon[data-a="go"], .chead button.icon[data-a="go"]');
+  if(bb&&S.screen==='post'&&(S.pstep||1)>1){e.preventDefault();e.stopImmediatePropagation();S.errs={};S.pstep--;render(true);var pf0=app.querySelector('#pf');if(pf0)pf0.scrollTop=0;return;}
   if(!bb||S.popping||!history.state||!(history.state.d>0))return;
   e.preventDefault();e.stopImmediatePropagation();history.back();},true);
 window.addEventListener('popstate',function(){
   S.popping=true;
-  try{if(S.sheet){S.sheet=null;render(true);}else if(S.fsheet){S.fsheet=false;render(true);}
+  try{if(S.screen==='post'&&(S.pstep||1)>1){S.errs={};S.pstep--;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
+    if(S.sheet){S.sheet=null;render(true);}else if(S.fsheet){S.fsheet=false;render(true);}
     else{var b=backButton();if(b)b.click();else if(S.screen!=='home')go('home');}}finally{S.popping=false;}});
 (function(){
   var iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(navigator.standalone||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches));
