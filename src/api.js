@@ -10,9 +10,11 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS convs (id TEXT PRIMARY KEY, ad_id TEXT NOT NULL, buyer_id TEXT NOT NULL, seller_id TEXT NOT NULL, title TEXT, updated INTEGER NOT NULL, buyer_read INTEGER DEFAULT 0, seller_read INTEGER DEFAULT 0, UNIQUE(ad_id, buyer_id))`,
   `CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, conv_id TEXT NOT NULL, sender_id TEXT NOT NULL, txt TEXT NOT NULL, t INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS messages_conv ON messages(conv_id, t)`,
+  `CREATE TABLE IF NOT EXISTS follows (follower_id TEXT NOT NULL, target_id TEXT NOT NULL, t INTEGER NOT NULL, PRIMARY KEY (follower_id, target_id))`,
+  `CREATE TABLE IF NOT EXISTS reviews (target_id TEXT NOT NULL, author_id TEXT NOT NULL, stars INTEGER NOT NULL, txt TEXT, t INTEGER NOT NULL, PRIMARY KEY (target_id, author_id))`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -42,7 +44,7 @@ function isAdmin(env, u) {
   return !!u && list.includes(u.phone);
 }
 function publicUser(u, env) {
-  return { admin: isAdmin(env || {}, u), id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]') };
+  return { admin: isAdmin(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]') };
 }
 async function newSession(db, userId) {
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -53,7 +55,9 @@ async function currentUser(db, req) {
   const h = req.headers.get('authorization') || '';
   const token = h.startsWith('Bearer ') ? h.slice(7) : '';
   if (!token) return null;
-  return db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND COALESCE(u.blocked, 0) = 0').bind(token).first();
+  const u = await db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND COALESCE(u.blocked, 0) = 0').bind(token).first();
+  if (u && Date.now() - (u.last_seen || 0) > 300000) { try { await db.prepare('UPDATE users SET last_seen = ? WHERE id = ?').bind(Date.now(), u.id).run(); } catch (e) { /* ignore */ } }
+  return u;
 }
 function adOut(row) {
   const a = JSON.parse(row.data);
@@ -139,6 +143,33 @@ export async function onRequest(ctx) {
       return json({ ads: results.map(adOut) });
     }
 
+    // ---------- Profil public ----------
+    if (parts[0] === 'users' && parts[1] && method === 'GET') {
+      const viewer = await currentUser(db, req);
+      const u = await db.prepare('SELECT * FROM users WHERE id = ? AND COALESCE(blocked, 0) = 0').bind(parts[1]).first();
+      if (!u) return fail('not_found', 404);
+      if (parts[2] === 'reviews') {
+        const { results } = await db.prepare('SELECT r.stars, r.txt, r.t, a.name FROM reviews r JOIN users a ON a.id = r.author_id WHERE r.target_id = ? ORDER BY r.t DESC LIMIT 200').bind(u.id).all();
+        return json({ reviews: results.map((r) => ({ stars: r.stars, txt: r.txt || '', t: r.t, name: r.name })) });
+      }
+      const agg = await db.prepare(`SELECT (SELECT COUNT(*) FROM follows WHERE target_id = ?) AS followers,
+          (SELECT COUNT(*) FROM reviews WHERE target_id = ?) AS nrev, (SELECT AVG(stars) FROM reviews WHERE target_id = ?) AS avg,
+          (SELECT COUNT(*) FROM convs c WHERE c.seller_id = ? AND EXISTS (SELECT 1 FROM messages m WHERE m.conv_id = c.id AND m.sender_id = c.buyer_id)) AS asked,
+          (SELECT COUNT(*) FROM convs c WHERE c.seller_id = ? AND EXISTS (SELECT 1 FROM messages m WHERE m.conv_id = c.id AND m.sender_id = c.seller_id)) AS answered`)
+        .bind(u.id, u.id, u.id, u.id, u.id).first();
+      const out = { id: u.id, name: u.name, city: u.city || '', since: u.created, lastSeen: u.last_seen || 0, avatar: u.avatar || '',
+        shop: u.shop ? JSON.parse(u.shop) : null, followers: agg.followers || 0, rating: { n: agg.nrev || 0, avg: agg.avg ? Math.round(agg.avg * 10) / 10 : 0 },
+        reactive: (agg.asked || 0) >= 3 && (agg.answered || 0) / agg.asked >= 0.8, following: false, canReview: false, myReview: null };
+      if (viewer && viewer.id !== u.id) {
+        out.following = !!(await db.prepare('SELECT 1 AS x FROM follows WHERE follower_id = ? AND target_id = ?').bind(viewer.id, u.id).first());
+        out.canReview = !!(await db.prepare(`SELECT 1 AS x FROM convs c WHERE ((c.buyer_id = ? AND c.seller_id = ?) OR (c.buyer_id = ? AND c.seller_id = ?))
+          AND EXISTS (SELECT 1 FROM messages m WHERE m.conv_id = c.id AND m.sender_id = ?)`).bind(viewer.id, u.id, u.id, viewer.id, u.id).first());
+        const mr = await db.prepare('SELECT stars, txt FROM reviews WHERE target_id = ? AND author_id = ?').bind(u.id, viewer.id).first();
+        if (mr) out.myReview = { stars: mr.stars, txt: mr.txt || '' };
+      }
+      return json({ user: out });
+    }
+
     // ---------- Tout le reste demande d'être connecté ----------
     const me = await currentUser(db, req);
     if (!me) return fail('auth', 401);
@@ -152,6 +183,13 @@ export async function onRequest(ctx) {
         const city = b.city !== undefined ? String(b.city).slice(0, 60) : me.city;
         const shop = b.shop !== undefined ? (b.shop ? JSON.stringify({ name: String(b.shop.name || '').slice(0, 60), market: String(b.shop.market || '').slice(0, 100) }) : null) : me.shop;
         const favs = Array.isArray(b.favs) ? JSON.stringify(b.favs.map(String).slice(0, 500)) : me.favs;
+        if (b.avatar !== undefined) {
+          let av = '';
+          if (b.avatar) av = (await storeMedia(db, me.id, null, b.avatar, 600000)) || '';
+          const old = /^\/api\/media\/(\w+)$/.exec(me.avatar || '');
+          if (old) await db.prepare('DELETE FROM media WHERE id = ?').bind(old[1]).run();
+          await db.prepare('UPDATE users SET avatar = ? WHERE id = ?').bind(av, me.id).run();
+        }
         await db.prepare('UPDATE users SET name = ?, city = ?, shop = ?, favs = ? WHERE id = ?').bind(name, city, shop, favs, me.id).run();
         if (name !== me.name || shop !== me.shop) {
           const { results } = await db.prepare('SELECT id, data FROM ads WHERE user_id = ?').bind(me.id).all();
@@ -236,6 +274,27 @@ export async function onRequest(ctx) {
       }
     }
 
+    if (parts[0] === 'users' && parts[1] && method === 'POST') {
+      const u = await db.prepare('SELECT id FROM users WHERE id = ?').bind(parts[1]).first();
+      if (!u) return fail('not_found', 404);
+      if (u.id === me.id) return fail('self');
+      const b = await readBody(req);
+      if (parts[2] === 'follow') {
+        if (b.on) await db.prepare('INSERT OR IGNORE INTO follows (follower_id, target_id, t) VALUES (?, ?, ?)').bind(me.id, u.id, Date.now()).run();
+        else await db.prepare('DELETE FROM follows WHERE follower_id = ? AND target_id = ?').bind(me.id, u.id).run();
+        return json({ ok: true });
+      }
+      if (parts[2] === 'reviews') {
+        const stars = Math.round(+b.stars);
+        if (!(stars >= 1 && stars <= 5)) return fail('stars');
+        const ok = await db.prepare(`SELECT 1 AS x FROM convs c WHERE ((c.buyer_id = ? AND c.seller_id = ?) OR (c.buyer_id = ? AND c.seller_id = ?))
+          AND EXISTS (SELECT 1 FROM messages m WHERE m.conv_id = c.id AND m.sender_id = ?)`).bind(me.id, u.id, u.id, me.id, u.id).first();
+        if (!ok) return fail('no_contact', 403);
+        await db.prepare('INSERT OR REPLACE INTO reviews (target_id, author_id, stars, txt, t) VALUES (?, ?, ?, ?, ?)').bind(u.id, me.id, stars, String(b.txt || '').trim().slice(0, 500), Date.now()).run();
+        return json({ ok: true });
+      }
+    }
+
     // ---------- Administration ----------
     if (parts[0] === 'admin') {
       if (!isAdmin(env, me)) return fail('forbidden', 403);
@@ -287,7 +346,7 @@ export async function onRequest(ctx) {
     if (parts[0] === 'convs') {
       if (!parts[1] && method === 'GET') {
         const { results: cs } = await db.prepare(
-          `SELECT c.*, ub.name AS buyer_name, us.name AS seller_name, ub.created AS buyer_created, us.created AS seller_created, ub.city AS buyer_city, us.city AS seller_city FROM convs c JOIN users ub ON ub.id = c.buyer_id JOIN users us ON us.id = c.seller_id
+          `SELECT c.*, ub.name AS buyer_name, us.name AS seller_name, ub.created AS buyer_created, us.created AS seller_created, ub.city AS buyer_city, us.city AS seller_city, ub.avatar AS buyer_avatar, us.avatar AS seller_avatar, ub.id AS bid, us.id AS sid FROM convs c JOIN users ub ON ub.id = c.buyer_id JOIN users us ON us.id = c.seller_id
            WHERE c.buyer_id = ? OR c.seller_id = ? ORDER BY c.updated DESC LIMIT 200`).bind(me.id, me.id).all();
         if (!cs.length) return json({ convs: [] });
         const ids = cs.map((c) => c.id);
@@ -295,7 +354,7 @@ export async function onRequest(ctx) {
         return json({ convs: cs.map((c) => {
           const buyer = c.buyer_id === me.id, read = buyer ? c.buyer_read : c.seller_read;
           const msgs = ms.filter((m) => m.conv_id === c.id).map((m) => ({ me: m.sender_id === me.id, txt: m.txt, t: m.t }));
-          return { id: c.id, adId: c.ad_id, title: c.title, seller: buyer ? c.seller_name : c.buyer_name, otherSince: buyer ? c.seller_created : c.buyer_created, otherCity: (buyer ? c.seller_city : c.buyer_city) || '', otherRead: buyer ? c.seller_read : c.buyer_read, buyer, updated: c.updated, msgs, unread: msgs.filter((m) => !m.me && m.t > read).length };
+          return { id: c.id, adId: c.ad_id, title: c.title, seller: buyer ? c.seller_name : c.buyer_name, otherSince: buyer ? c.seller_created : c.buyer_created, otherCity: (buyer ? c.seller_city : c.buyer_city) || '', otherRead: buyer ? c.seller_read : c.buyer_read, otherId: buyer ? c.seller_id : c.buyer_id, otherAvatar: (buyer ? c.seller_avatar : c.buyer_avatar) || '', buyer, updated: c.updated, msgs, unread: msgs.filter((m) => !m.me && m.t > read).length };
         }) });
       }
       if (!parts[1] && method === 'POST') {
