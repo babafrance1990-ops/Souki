@@ -190,6 +190,7 @@ export async function onRequest(ctx) {
         const favs = Array.isArray(b.favs) ? JSON.stringify(b.favs.map(String).slice(0, 500)) : me.favs;
         if (Array.isArray(b.searches)) {
           const clean = b.searches.slice(0, 50).map((x) => ({ q: String(x.q || '').slice(0, 80), cat: String(x.cat || '').slice(0, 20), city: String(x.city || '').slice(0, 60), hood: String(x.hood || '').slice(0, 60),
+            pmin: String(x.pmin || '').replace(/\D/g, '').slice(0, 12), pmax: String(x.pmax || '').replace(/\D/g, '').slice(0, 12), seller: x.seller === 'part' || x.seller === 'pro' ? x.seller : '', tonly: !!x.tonly,
             t: +x.t || Date.now(), seen: +x.seen || Date.now(), alert: x.alert !== false }));
           await db.prepare('UPDATE users SET searches = ? WHERE id = ?').bind(JSON.stringify(clean), me.id).run();
         }
