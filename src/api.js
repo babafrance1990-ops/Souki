@@ -159,8 +159,11 @@ export async function onRequest(ctx) {
 
     // ---------- Annonces (lecture publique) ----------
     if (parts[0] === 'ads' && !parts[1] && method === 'GET') {
-      const { results } = await db.prepare('SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE COALESCE(u.blocked, 0) = 0 ORDER BY a.created DESC LIMIT 1000').all();
-      return json({ ads: results.map(adOut) });
+      const limit = Math.max(1, Math.min(300, +url.searchParams.get('limit') || 300));
+      const before = +url.searchParams.get('before') || 9e15;
+      const { results } = await db.prepare('SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE COALESCE(u.blocked, 0) = 0 AND a.created < ? ORDER BY a.created DESC LIMIT ?').bind(before, limit + 1).all();
+      const more = results.length > limit;
+      return json({ ads: results.slice(0, limit).map(adOut), more });
     }
 
     // ---------- Profil public ----------
