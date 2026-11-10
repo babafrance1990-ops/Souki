@@ -343,6 +343,15 @@ export async function onRequest(ctx) {
         await db.prepare('UPDATE ads SET data = ? WHERE id = ?').bind(JSON.stringify(ad), row.id).run();
         return json({ ad: adOut({ ...row, data: JSON.stringify(ad) }) });
       }
+      if (parts[2] === 'bump' && method === 'POST' && row.user_id === me.id) {
+        const a = JSON.parse(row.data), last = a.bumpedAt || row.created, wait = 7 * 86400000;
+        if (row.status === 'sold') return fail('sold');
+        if (Date.now() - last < wait) return json({ error: 'too_soon', next: last + wait }, 429);
+        const now = Date.now();
+        a.bumpedAt = now; if (!a.firstAt) a.firstAt = row.created;
+        await db.prepare('UPDATE ads SET created = ?, data = ? WHERE id = ?').bind(now, JSON.stringify(a), row.id).run();
+        return json({ ad: adOut({ ...row, created: now, data: JSON.stringify(a) }) });
+      }
       if (parts[2] === 'sold' && method === 'POST') {
         await db.prepare("UPDATE ads SET status = 'sold' WHERE id = ?").bind(row.id).run();
         return json({ ok: true });
