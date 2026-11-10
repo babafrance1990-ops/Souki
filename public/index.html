@@ -38,7 +38,7 @@
 html,body{height:100%;margin:0;padding:0}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{overscroll-behavior:none}
+
 body{background:var(--outer);color:var(--fg);font-family:var(--font);font-size:15px}
 *{box-sizing:border-box}
 button,input,select,textarea{font-family:inherit;font-size:16px;color:inherit}
@@ -2938,7 +2938,7 @@ window.addEventListener('popstate',function(){
       if(dx<-10){state=-1;return;}                                         // glissement dans l'autre sens
       if(dx>14&&dx>Math.abs(dy)*1.6){state=2;makeUnder();app.style.zIndex='2';app.style.transition='none';app.style.boxShadow='-10px 0 30px rgba(0,0,0,.18)';}
       else return;}
-    if(state===2){if(e.cancelable)e.preventDefault();paint(Math.max(0,dx));}},{passive:false});
+    if(state===2)paint(Math.max(0,dx));},{passive:true});
   function end(){
     if(state!==2){state=0;return;}state=0;var v=dx/Math.max(1,Date.now()-t0);
     if(dx>w*0.33||(v>0.55&&dx>40)){app.style.transition='transform .18s ease-out';paint(w);
