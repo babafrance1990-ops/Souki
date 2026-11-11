@@ -16,7 +16,7 @@ async function withAdPreview(request, env, url, id) {
     const place = [a.hood, a.city].filter(Boolean).join(', ');
     const desc = (place ? place + ' · ' : '') + String(a.desc || '').slice(0, 140);
     const tags = '<meta property="og:type" content="website"><meta property="og:site_name" content="Vends-moi">' +
-      '<meta property="og:title" content="' + esc(a.title + ' – ' + price) + '">' +
+      '<meta property="og:title" content="' + esc((a.trip && /[\u0600-\u06FF]/.test(a.title || '') ? String(a.title).replace(/→/g, '←') : a.title) + ' – ' + price) + '">' +
       '<meta property="og:description" content="' + esc(desc) + '">' +
       '<meta property="og:image" content="' + esc(img) + '">' +
       '<meta property="og:url" content="' + esc(url.href) + '">' +
