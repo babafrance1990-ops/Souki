@@ -3147,7 +3147,7 @@ window.addEventListener('popstate',function(){
   app.addEventListener('touchstart',function(e){
     state=0;if(e.touches.length!==1||S.sheet||S.fsheet||S.viewImg||S.langPick||!backButton())return;
     var x=e.touches[0].clientX,r=app.getBoundingClientRect();rtl=S.lang==='ar';w=r.width;
-    if(iosBrowser&&(rtl?r.right-x:x-r.left)<24)return; // bord gauche de Safari : laissé au geste de Safari
+    if(iosBrowser&&!rtl&&x-r.left<24)return; // bord gauche de Safari (français) : laissé au geste de Safari
     if(scrollsX(e.target))return;
     sx=x;sy=e.touches[0].clientY;dx=dy=0;t0=Date.now();state=1;},{passive:true});
   app.addEventListener('touchmove',function(e){
