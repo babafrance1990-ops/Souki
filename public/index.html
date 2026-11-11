@@ -343,6 +343,10 @@ button.logo{background:none;border:none;padding:0;color:inherit;font:inherit;fon
 .swunder .swin{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
 .swunder .swdim{position:absolute;inset:0;background:#000;opacity:.35}
 #app{z-index:1}
+.subgrid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;flex-wrap:nowrap}
+.chip.subt{height:auto;min-height:92px;flex-direction:column;justify-content:center;padding:10px 6px;border-radius:16px;gap:6px;text-align:center;white-space:normal;line-height:1.2;font-size:13px}
+.chip.subt svg{color:var(--subc);flex:none}
+.chip.subt[aria-pressed="true"] svg{color:inherit}
 .flowhi{outline:3px solid var(--gold);outline-offset:3px;border-radius:12px;transition:outline-color .3s}
 </style>
 </head>
@@ -2362,6 +2366,86 @@ function langPickHTML(){
     '<button class="lpbtn" data-a="picklang" data-v="ar" lang="ar" dir="rtl">العربية</button>'+
     '<button class="lpbtn alt" data-a="picklang" data-v="fr" lang="fr">Français</button>'+
     '<p class="meta lpnote"><span dir="rtl" lang="ar">يمكنك تغيير اللغة لاحقاً من الحساب</span><br><span lang="fr">Vous pourrez changer plus tard dans Compte</span></p></div></div>';}
+
+var SUBI={
+ /* véhicules */
+ car:'<path d="M4 16v-3.5l2-5h12l2 5V16"/><path d="M3 16h18v2H3z"/><circle cx="7.5" cy="18" r="1.8"/><circle cx="16.5" cy="18" r="1.8"/><path d="M6.5 12.5h11"/>',
+ bus:'<rect x="4" y="3" width="16" height="15" rx="2.5"/><path d="M4 11h16M8 21v-3M16 21v-3"/><circle cx="8" cy="14.5" r="1"/><circle cx="16" cy="14.5" r="1"/>',
+ truck:'<path d="M2 6h11v10H2zM13 9h4.5l3.5 3.5V16h-8"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
+ moto:'<circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5l4-6h5l4 6M14.5 10.5l-1.5-4h3M9.5 10.5l-1-2H6"/>',
+ bike:'<circle cx="5.5" cy="16.5" r="3.5"/><circle cx="18.5" cy="16.5" r="3.5"/><path d="M5.5 16.5 9 9h7l2.5 7.5M12 16.5 9 9M16 9l-1-3h2.5"/>',
+ parts:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+ service:'<path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L3.5 17.5l3 3 5.7-5.7a4 4 0 0 0 5.3-5.3l-2.4 2.4-2.6-.4-.4-2.6z"/>',
+ /* immobilier */
+ sale:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/>',
+ rent:'<circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2"/>',
+ apt:'<rect x="5" y="2.5" width="14" height="19" rx="1"/><path d="M9 6.5h1.5M13.5 6.5H15M9 10.5h1.5M13.5 10.5H15M9 14.5h1.5M13.5 14.5H15M10.5 21.5v-3h3v3"/>',
+ house:'<path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9.5 21v-5.5h5V21"/>',
+ shop:'<path d="M3 9.5 4.5 4h15L21 9.5a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0z"/><path d="M4.5 12v9h15v-9M10 21v-5h4v5"/>',
+ land:'<path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/>',
+ /* téléphones & électronique */
+ smart:'<rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18.5h2"/>',
+ basic:'<rect x="7" y="2" width="10" height="20" rx="2"/><rect x="9" y="4.5" width="6" height="5" rx=".5"/><path d="M9.5 13h0M12 13h0M14.5 13h0M9.5 16h0M12 16h0M14.5 16h0M9.5 19h0M12 19h0M14.5 19h0" stroke-width="2.4"/>',
+ tab:'<rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+ tv:'<rect x="2" y="4" width="20" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/>',
+ console:'<path d="M7 7h10a5 5 0 0 1 4.8 6.4l-1 3.4a2.5 2.5 0 0 1-4.3.9L14.5 15h-5l-2 2.7a2.5 2.5 0 0 1-4.3-.9l-1-3.4A5 5 0 0 1 7 7z"/><path d="M7.5 10v3M6 11.5h3M15.5 11h0M17.5 12.5h0" stroke-width="2"/>',
+ laptop:'<rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20l-2-4H4z"/>',
+ desktop:'<rect x="2" y="3.5" width="14" height="11" rx="1.5"/><path d="M6 19h6M9 14.5V19"/><rect x="18" y="3.5" width="4" height="15.5" rx="1"/><path d="M19.5 7h1"/>',
+ acctel:'<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2.5" y="14" width="4.5" height="7" rx="1.5"/><rect x="17" y="14" width="4.5" height="7" rx="1.5"/>',
+ accpc:'<rect x="7" y="3" width="10" height="18" rx="5"/><path d="M12 3v6M7 9h10"/>',
+ other:'<circle cx="6" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>',
+ /* maison */
+ salon:'<path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"/><path d="M2 12a2 2 0 0 1 4 0v2h12v-2a2 2 0 0 1 4 0v5H2zM5 17v3M19 17v3"/>',
+ ameub:'<rect x="4" y="2.5" width="16" height="17" rx="1"/><path d="M12 2.5v17M10 10v2M14 10v2M6 19.5v2M18 19.5v2"/>',
+ table:'<path d="M2 8h20M4 8v12M20 8v12M4 13h16"/>',
+ tapis:'<rect x="5" y="3" width="14" height="18" rx="1"/><path d="M5 6.5h14M5 17.5h14M12 9l3 3-3 3-3-3z"/><path d="M7 1.5V3M10 1.5V3M14 1.5V3M17 1.5V3M7 21v1.5M10 21v1.5M14 21v1.5M17 21v1.5"/>',
+ electro:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 9h14M8 5v1.5M8 12v3"/>',
+ deco:'<path d="M8 3h8l3 8H5z"/><path d="M12 11v8M8 21h8"/>',
+ cuisine:'<path d="M4 10h16v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M2 10h20M9 6.5c0-1.5 1-1.5 1-3M14 6.5c0-1.5 1-1.5 1-3"/>',
+ /* mode */
+ trad:'<path d="M9 2.5h6l1 4 4 15H4l4-15z"/><path d="M8 6.5h8M10 2.5 12 6l2-3.5"/>',
+ clothes:'<path d="M8 3 4 6l2 4 2-1v12h8V9l2 1 2-4-4-3a4 4 0 0 1-8 0z"/>',
+ shoes:'<path d="M3 17V8.5h5l2 3 6.5 1.5a4 4 0 0 1 3.5 4V17z"/><path d="M3 17h17v2.5H3z"/>',
+ jewelry:'<path d="M6 3h12l3.5 5L12 21 2.5 8z"/><path d="M2.5 8h19M9 3l3 5 3-5M12 8v13"/>',
+ watches:'<circle cx="12" cy="12" r="6"/><path d="M12 9v3l2 1.5M9 6.5 9.5 2h5l.5 4.5M9 17.5l.5 4.5h5l.5-4.5"/>',
+ bags:'<path d="M5 8h14l-1 13H6z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/>',
+ /* famille */
+ bebeEquip:'<path d="M5 11h14a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5zM5 11V6a6 6 0 0 1 6 0v5M19 11l1.5-5H22"/><circle cx="8" cy="19" r="1.8"/><circle cx="16" cy="19" r="1.8"/>',
+ mobEnfant:'<path d="M3 5v15M21 5v15M3 16h18M3 9h18M7 9v7M11 9v7M15 9v7M19 9v7"/>',
+ vetBebe:'<path d="M8 3h8l4 4-2.5 2.5L16 8v7l-2 5h-4l-2-5V8L6.5 9.5 4 7z"/><path d="M10 3a2 2 0 0 0 4 0"/>',
+ vetEnfant:'<path d="M8 3 4 6l2 4 2-1v12h8V9l2 1 2-4-4-3a4 4 0 0 1-8 0z"/><path d="M10 14h4"/>',
+ vetMat:'<path d="M9 2.5h6L14 7l1.5 2c3 3 3.5 8 3.5 12.5H5c0-4.5.5-9.5 3.5-12.5L10 7z"/>',
+ chausEnfant:'<path d="M4 16V9h4l1.5 2.5 5.5 1.5a3.5 3.5 0 0 1 3 3.5V16z"/><path d="M4 16h14v2.5H4zM9 11.5l1.5-1.5M11 12.5l1.5-1.5"/>',
+ bijouxEnfant:'<circle cx="12" cy="13" r="6.5"/><path d="M10 4.5 12 2l2 2.5M12 6.5v0"/>',
+ accEnfant:'<path d="M9 8h6v11a3 3 0 0 1-6 0zM10 8V5.5a2 2 0 0 1 4 0V8M9 12h6M9 15h3"/>',
+ jouets:'<circle cx="7" cy="6" r="2.5"/><circle cx="17" cy="6" r="2.5"/><circle cx="12" cy="13" r="7"/><path d="M10 12h0M14 12h0" stroke-width="2.4"/><path d="M10 15.5a2.8 2.8 0 0 0 4 0"/>',
+ babysit:'<circle cx="9" cy="5" r="2.5"/><path d="M5 21v-7a4 4 0 0 1 8 0v7"/><circle cx="17.5" cy="11.5" r="2"/><path d="M15 21v-3.5a2.5 2.5 0 0 1 5 0V21M13 15h2.5"/>',
+ aideDom:'<path d="M15 3 9.5 13.5M6 13.5h8l2 7.5H4z"/><path d="M8 17v4M12 17v4"/>',
+ /* emploi */
+ offer:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12.5h18"/>',
+ demand:'<circle cx="10" cy="8" r="4"/><path d="M3 20v-1a6 6 0 0 1 9.5-4.9"/><circle cx="17" cy="17" r="3"/><path d="M19.2 19.2 21.5 21.5"/>',
+ /* animaux */
+ mouton:'<path d="M7 9.5a2.5 2.5 0 0 1 4-1.8 2.5 2.5 0 0 1 4 0 2.5 2.5 0 0 1 3.5 2.8 2.5 2.5 0 0 1-1.5 4.3 2.5 2.5 0 0 1-3.5 1 2.5 2.5 0 0 1-4 0 2.5 2.5 0 0 1-3.2-2.3"/><path d="M7.5 10.5H4.5a2 2 0 0 1 0-4h1.5a2 2 0 0 1 1.5 1.5zM9 16.5V20M15 16.5V20"/>',
+ chevre:'<path d="M17 8l1-4.5M19 8.5l2.5-3.5M16.5 8.5h3.5v3.5l-2.5 1h-1M16.5 8.5 15 10H6.5a2.5 2.5 0 0 0-2.5 2.5v.5a2 2 0 0 0 2 2h9.5l1.5-2"/><path d="M6.5 15v5M14.5 15v5M18.5 13v2.5"/>',
+ chameau:'<path d="M3 20v-5.5a3 3 0 0 1 3-3 3.5 3.5 0 0 1 3.5-4 3 3 0 0 1 3 2.5 3 3 0 0 1 3-1.5 3 3 0 0 1 2.5 2.5V6.5l1.5-2.5h1.5v3l-1.5 1"/><path d="M6 14.5h12M8 14.5V20M15.5 14.5V20"/>',
+ vache:'<path d="M6 6.5 4 4M18 6.5 20 4M6 7h12v6a6 6 0 0 1-12 0z"/><path d="M8.5 15.5h7v1.5a3.5 3.5 0 0 1-7 0z"/><path d="M10.5 10h0M13.5 10h0" stroke-width="2.4"/><path d="M3 9h3M18 9h3"/>',
+ volaille:'<path d="M14.5 5a3 3 0 0 1 3 3v1.5l2.5 1-2.5 1A7 7 0 0 1 5.5 15L3 7l4.5 3h4V8a3 3 0 0 1 3-3z"/><path d="M15 3.5l1-1.5 1 1.5M10 17.5V21M14 17.5V21"/>',
+ /* covoiturage */
+ cvoffer:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M3.5 10.5l6.2 1M14.3 11.5l6.2-1M12 14.5V21"/>',
+ cvdemand:'<circle cx="9" cy="6" r="2.5"/><path d="M6 21v-6.5L4.5 13V10.5A2.5 2.5 0 0 1 7 8h4a2.5 2.5 0 0 1 2.5 2.5v3M12 21v-6.5"/><path d="M15.5 13.5V10a1.2 1.2 0 0 1 2.4 0v1.5h1.3a1.8 1.8 0 0 1 1.8 2V16a3 3 0 0 1-3 3h-.5a3 3 0 0 1-2.4-1.2l-1.6-2.1"/>'
+};
+var SUB_ACTS=['vkind','redeal','rekind','mmtype','hsub','mosub','species'],SUB_KEYS=['fsub','joffer','ctype'];
+function subIcons(){
+  var pf=app.querySelector('#catf');if(!pf||!S.draft)return;
+  var col=(CATS.filter(function(c){return c.id===S.draft.cat;})[0]||{}).c||'#0B6B3A';
+  var bs=app.querySelectorAll('#pf button.chip[data-v]');
+  for(var i=0;i<bs.length;i++){var b=bs[i],a=b.getAttribute('data-a'),k=b.getAttribute('data-k'),v=b.getAttribute('data-v');
+    if(b.classList.contains('subt'))continue;
+    var ok=SUB_ACTS.indexOf(a)>-1||(a==='dpick'&&SUB_KEYS.indexOf(k)>-1);if(!ok)continue;
+    var key=k==='ctype'?'cv'+v:(a==='species'&&v==='autre'?'other':v),p=SUBI[key];if(!p)continue;
+    b.classList.add('subt');b.style.setProperty('--subc',col);b.insertAdjacentHTML('afterbegin',svg(p,30,1.7));
+    var box=b.parentNode;if(box&&!box.classList.contains('subgrid'))box.classList.add('subgrid');}
+}
 function render(keepScroll){
   var sc=app.querySelector('.scroll'),top=keepScroll&&sc?sc.scrollTop:0;
   var ci=app.querySelector('#chatin'),cv=ci?ci.value:'',cfoc=!!ci&&document.activeElement===ci;
@@ -2370,7 +2454,7 @@ function render(keepScroll){
   app.innerHTML=V[S.screen]()+sheetHTML()+(S.screen==='home'?fsheetHTML():'')+(S.langPick?langPickHTML():'');
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
-  if(S.screen==='post'){splitPostForm();saveDraftSoon();}
+  if(S.screen==='post'){splitPostForm();subIcons();saveDraftSoon();}
   if(S.screen==='detail'||S.screen==='shop')tidySpecs();
   var ms=app.querySelector('#moresent');if(ms&&'IntersectionObserver' in window){var io=new IntersectionObserver(function(en){if(en[0].isIntersecting){io.disconnect();S.shown=(S.shown||20)+20;render(true);}},{rootMargin:'300px'});io.observe(ms);}
   var ns=app.querySelector('.scroll');if(ns)ns.scrollTop=S.screen==='chat'?ns.scrollHeight:top;
