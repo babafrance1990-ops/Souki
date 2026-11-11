@@ -263,6 +263,8 @@ button.logo{background:none;border:none;padding:0;color:inherit;font:inherit;fon
 .detmore > *+*{margin-top:12px}
 .pubnudge{background:var(--warn-bg,#FFF4D6);color:var(--warn-fg,#6B4E00);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;text-align:start;width:100%}
 .pubnudge .btn{background:var(--surface);color:var(--fg);border:1.5px solid var(--line)}
+.srh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+html,body{overflow-x:hidden;max-width:100%}
 .pview{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--surface)}
 .pvth{width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--ph);display:flex;align-items:center;justify-content:center;flex-shrink:0}.pvth img{width:100%;height:100%;object-fit:cover}
 .uhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -1053,7 +1055,7 @@ function listHTML(){
   return listHTMLcore(r);}
 function listHTMLcore(r){
   if(!S.q&&!S.cat&&!gfCount()&&r.length)return sectionsHTML(r);
-  var head='<div class="row between"><h2>'+(S.q||S.cat||S.city?(S.lang==='ar'?arCount(r.length,'result'):r.length+' '+t(r.length===1?'result1':'results')):t('recent'))+'</h2><label for="sort" style="position:absolute;left:-9999px">'+t('sortLbl')+'</label><select id="sort" class="sel"><option value="new"'+(S.sort==='new'?' selected':'')+'>'+t('sortNew')+'</option><option value="low"'+(S.sort==='low'?' selected':'')+'>'+t('sortLow')+'</option><option value="high"'+(S.sort==='high'?' selected':'')+'>'+t('sortHigh')+'</option></select></div>'+
+  var head='<div class="row between"><h2>'+(S.q||S.cat||S.city?(S.lang==='ar'?arCount(r.length,'result'):r.length+' '+t(r.length===1?'result1':'results')):t('recent'))+'</h2><label for="sort" class="srh">'+t('sortLbl')+'</label><select id="sort" class="sel"><option value="new"'+(S.sort==='new'?' selected':'')+'>'+t('sortNew')+'</option><option value="low"'+(S.sort==='low'?' selected':'')+'>'+t('sortLow')+'</option><option value="high"'+(S.sort==='high'?' selected':'')+'>'+t('sortHigh')+'</option></select></div>'+
    (S.q||S.cat||S.city?'<button class="linkbtn" data-a="savesearch" style="color:var(--brand);text-decoration:none;display:flex;align-items:center;gap:6px;font-weight:800">'+svg(I.fav,16)+t('saveSearch')+'</button>':'');
   if(!S.remote.filter(function(a){return a.status!=='sold';}).length)return '<div class="empty">'+svg(I.list,40)+'<div style="font-weight:800;color:var(--fg)">'+t('noAdsYet')+'</div><button class="btn primary" data-a="post">'+t('post')+'</button></div>';
   if(!r.length)return head+'<div class="empty">'+svg(I.search,40)+'<div>'+t('noRes')+'</div></div>';
@@ -1809,7 +1811,7 @@ function fsheetHTML(){
    '<div class="fsbody">'+
    '<div class="field"><div class="legend">'+t('cat')+'</div>'+chips('cat',[['',t('all')]].concat(CATS.map(function(c){return [c.id,c[S.lang].replace(/­/g,'')];})),S.cat)+'</div>'+
    '<div class="field"><label class="legend" for="fszone">'+t('zoneL')+'</label><select id="fszone" class="inp" data-fs="city"><option value="">'+t('allCities')+'</option>'+cityOptions(S.city,true)+'</select>'+
-    (S.city==='Nouakchott'?'<label for="fshood" style="position:absolute;left:-9999px">'+t('hood')+'</label><select id="fshood" class="inp" data-fs="hood" style="margin-top:8px"><option value="">'+t('allHoods')+'</option>'+hoodOptions(S.hood,true)+'</select>':'')+'</div>'+
+    (S.city==='Nouakchott'?'<label for="fshood" class="srh">'+t('hood')+'</label><select id="fshood" class="inp" data-fs="hood" style="margin-top:8px"><option value="">'+t('allHoods')+'</option>'+hoodOptions(S.hood,true)+'</select>':'')+'</div>'+
    '<div class="field"><div class="legend">'+t('sortBy')+'</div>'+chips('sort',[['new',t('sortNew')],['low',t('sortLow')],['high',t('sortHigh')]],S.sort)+'</div>'+
    '<div class="field"><div class="legend">'+t('dateL')+'</div>'+chips('date',[['',t('dt_all')],['today',t('dt_today')],['7d',t('dt_7d')],['30d',t('dt_30d')]],g.date)+'</div>'+
    '<div class="field"><div class="legend">'+t('sellerL')+'</div>'+chips('seller',[['',t('se_all')],['part',t('se_part')],['pro',t('se_pro')]],g.seller)+'</div>'+
@@ -1944,11 +1946,11 @@ var V={};
 V.home=function(){
   var cats=CATS.map(function(c){var on=S.cat===c.id;return '<button class="ctile" data-a="cat" data-c="'+(on?'':c.id)+'" aria-pressed="'+on+'"><span class="ic"'+(on?'':' style="color:'+c.c+'"')+'>'+svg(ICONS[c.id],21,1.8)+'</span><span>'+c[S.lang]+'</span></button>';}).join('');
   var opts='<option value="">'+t('allCities')+'</option>'+cityOptions(S.city,true);
-  var hoodRow=S.city==='Nouakchott'?'<div class="row" style="gap:6px">'+svg(I.pin,16)+'<label for="hoodsel" style="position:absolute;left:-9999px">'+t('hood')+'</label><select id="hoodsel" class="hsel" style="max-width:none;flex:1">'+
+  var hoodRow=S.city==='Nouakchott'?'<div class="row" style="gap:6px">'+svg(I.pin,16)+'<label for="hoodsel" class="srh">'+t('hood')+'</label><select id="hoodsel" class="hsel" style="max-width:none;flex:1">'+
     '<option value="">'+t('allHoods')+'</option>'+hoodOptions(S.hood,true)+'</select></div>':'';
   var band=S.cat?'':'<button class="tabband" data-a="tabaski">'+svg(ICONS.anim,24,1.8)+'<span style="flex:1;min-width:0">'+t('tabBanner')+'</span><span class="tabgo">'+t('tabBannerSub')+'</span></button>';
-  return '<div class="scroll"><header class="hdr"><div class="row between"><button class="logo" data-a="gohome" aria-label="'+t('home')+'">'+(S.lang==='ar'?'بيع<span>لي</span>':'Vends-<span>moi</span>')+'</button><div class="row" style="gap:4px;min-width:0">'+svg(I.pin,16)+'<label for="city" style="position:absolute;left:-9999px">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
-   '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" style="position:absolute;left:-9999px">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"><button type="button" class="camq" data-a="visual" aria-label="'+t('imgSearch')+'" title="'+t('imgSearch')+'">'+svg(I.cam,22)+'</button></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
+  return '<div class="scroll"><header class="hdr"><div class="row between"><button class="logo" data-a="gohome" aria-label="'+t('home')+'">'+(S.lang==='ar'?'بيع<span>لي</span>':'Vends-<span>moi</span>')+'</button><div class="row" style="gap:4px;min-width:0">'+svg(I.pin,16)+'<label for="city" class="srh">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
+   '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" class="srh">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"><button type="button" class="camq" data-a="visual" aria-label="'+t('imgSearch')+'" title="'+t('imgSearch')+'">'+svg(I.cam,22)+'</button></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
    '</header>'+
    '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles">'+cats+'</div></div>'+(S.cat?'<button class="linkbtn" data-a="cat" data-c="" style="color:var(--brand);align-self:flex-end;font-size:13px">'+t('showAll')+'</button>':'')+
    (S.cat?refineBtn():'')+(S.cat&&S.refOpen?(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+(S.cat==='tel'?phoneFilters():'')+(S.cat==='multi'?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
@@ -2222,7 +2224,7 @@ V.chat=function(){
    (S.viewImg?'<div class="imgview" data-a="closeimg" role="dialog" aria-label="'+t('photoMsg')+'"><img alt="" src="'+esc(S.viewImg)+'"><button type="button" class="icon solid" data-a="closeimg" aria-label="'+t('close')+'">'+svg(I.close,22)+'</button></div>':'')+
    '<form id="chatform" class="chatbar">'+quick+(S.chatMenu?'<div class="cmenu" role="menu"><label role="menuitem" for="chatcam">'+svg(I.cam,20)+t('takePhoto')+'</label><label role="menuitem" for="chatgal">'+svg(I.list,20)+t('gallery')+'</label></div>':'')+
    '<input id="chatcam" type="file" accept="image/*" capture="environment" hidden><input id="chatgal" type="file" accept="image/*" multiple hidden>'+
-   '<div class="row" style="gap:8px"><button type="button" class="cplus" data-a="chatplus" aria-expanded="'+!!S.chatMenu+'" aria-label="'+t('addToMsg')+'">'+svg(S.chatMenu?I.close:I.plus,24)+'</button><label for="chatin" style="position:absolute;left:-9999px">'+t('chatPh')+'</label><input id="chatin" class="inp" autocomplete="off" placeholder="'+t('chatPh')+'" maxlength="500" translate="no" dir="auto"><button class="fabsend" type="submit" aria-label="'+t('send')+'">'+svg(I.send,22)+'</button></div></form>';};
+   '<div class="row" style="gap:8px"><button type="button" class="cplus" data-a="chatplus" aria-expanded="'+!!S.chatMenu+'" aria-label="'+t('addToMsg')+'">'+svg(S.chatMenu?I.close:I.plus,24)+'</button><label for="chatin" class="srh">'+t('chatPh')+'</label><input id="chatin" class="inp" autocomplete="off" placeholder="'+t('chatPh')+'" maxlength="500" translate="no" dir="auto"><button class="fabsend" type="submit" aria-label="'+t('send')+'">'+svg(I.send,22)+'</button></div></form>';};
 
 V.account=function(){
   var chev=svg(S.lang==='ar'?I.back:I.chev,18);
@@ -2355,7 +2357,7 @@ V.user=function(){
   var tabsH='<div class="utabs" role="tablist"><button role="tab" data-a="utab" data-v="ads" aria-selected="'+(S.utab!=='reviews')+'">'+t('adsTab').replace('{n}',num(ads.length))+'</button><button role="tab" data-a="utab" data-v="reviews" aria-selected="'+(S.utab==='reviews')+'">'+t('revTab').replace('{n}',num(U.rating.n))+'</button></div>';
   var body;
   if(S.utab!=='reviews'){
-    body='<div class="field"><label for="uq" style="position:absolute;left:-9999px">'+t('searchHis')+'</label><div class="row" style="gap:8px"><input id="uq" class="inp" data-uq="1" value="'+esc(S.uq||'')+'" placeholder="'+t('searchHis')+'" style="border-radius:24px"></div></div>'+
+    body='<div class="field"><label for="uq" class="srh">'+t('searchHis')+'</label><div class="row" style="gap:8px"><input id="uq" class="inp" data-uq="1" value="'+esc(S.uq||'')+'" placeholder="'+t('searchHis')+'" style="border-radius:24px"></div></div>'+
       '<div class="row" style="gap:6px;flex-wrap:wrap">'+['new','pasc','pdesc'].map(function(k){var on=(S.usort||'new')===k;return '<button class="chip" data-a="usort" data-v="'+k+'" aria-pressed="'+on+'">'+(on?svg(I.check,14,3)+' ':'')+t({new:'sortNew',pasc:'sortPA',pdesc:'sortPD'}[k])+'</button>';}).join('')+'</div>'+
       (list.length?'<div class="grid">'+list.map(card).join('')+'</div>':'<div class="empty" style="padding:24px 0">'+svg(I.list,36)+'<div>'+t(ads.length?'noRes':'noUserAds')+'</div></div>');
   }else{
@@ -3084,7 +3086,7 @@ V.admin=function(){
      '<div class="row" style="flex-wrap:wrap"><button class="btn small danger" data-a="admdel" data-id="'+esc(r.adId)+'">'+t('admDelAd')+'</button><button class="btn small" data-a="admok" data-id="'+esc(r.adId)+'">'+t('admIgnore')+'</button></div></div>';}).join('')
     :'<p class="meta" style="margin:0">'+t('admNoRep')+'</p>';
   var users=A.users.map(function(u){
-    var pw=S.admPw===u.id?'<div class="row" style="gap:6px;width:100%"><label for="admpw" style="position:absolute;left:-9999px">'+t('admNewPw')+'</label><input id="admpw" class="inp" data-adm="admPwVal" value="'+esc(S.admPwVal)+'" placeholder="'+t('passHelp')+'" style="flex:1" autocomplete="off"><button class="btn small primary" data-a="admpwok" data-id="'+u.id+'">'+t('verify')+'</button></div>':'';
+    var pw=S.admPw===u.id?'<div class="row" style="gap:6px;width:100%"><label for="admpw" class="srh">'+t('admNewPw')+'</label><input id="admpw" class="inp" data-adm="admPwVal" value="'+esc(S.admPwVal)+'" placeholder="'+t('passHelp')+'" style="flex:1" autocomplete="off"><button class="btn small primary" data-a="admpwok" data-id="'+u.id+'">'+t('verify')+'</button></div>':'';
     return '<div class="box" style="flex-direction:column;align-items:stretch;gap:6px"><div class="row between"><b>'+esc(u.name)+(u.blocked?' <span class="badge" style="color:var(--danger)">'+t('admBlocked')+'</span>':'')+'</b><span class="meta" dir="ltr">+222 '+esc(u.phone)+'</span></div>'+
      '<div class="meta">'+tc('admAdsN',u.ads)+' · '+t('since').replace('{d}',monthYear(u.since))+'</div>'+
      '<div class="row" style="flex-wrap:wrap"><button class="btn small" data-a="admpw" data-id="'+u.id+'">'+t('admNewPw')+'</button>'+(u.id===S.user.id?'':'<button class="btn small '+(u.blocked?'':'danger')+'" data-a="admblock" data-id="'+u.id+'" data-v="'+(u.blocked?0:1)+'">'+t(u.blocked?'admUnblock':'admBlock')+'</button>')+'</div>'+pw+'</div>';}).join('');
