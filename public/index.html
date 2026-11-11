@@ -130,6 +130,7 @@ h2{margin:0;font-size:17px;font-weight:700}
 .cbody{padding:8px 10px 10px;display:flex;flex-direction:column;gap:1px;min-width:0}
 .ctitle{font-weight:600;font-size:14px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .price{font-weight:800;color:var(--brand);font-variant-numeric:tabular-nums}
+.card .price{white-space:nowrap;overflow:hidden}
 .meta{font-size:12px;color:var(--muted)}
 .empty{padding:32px 16px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
 nav.tabs{position:relative;z-index:10;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:end;background:var(--surface);border-top:1px solid var(--line);padding:6px 8px 10px}
@@ -594,7 +595,7 @@ var TX={
   hoodPh2:'مثال: وسط المدينة',nearLbl:'قرب… (معلم معروف)',nearPh:'مثال: سوق العاصمة، كارفور مدريد',nearShow:'قرب',allHoods:'كل المقاطعات',
   animInfo:'معلومات المواشي',species:'النوع',sp_mouton:'خروف',sp_chevre:'ماعز',sp_chameau:'جمل',sp_vache:'بقرة',sp_volaille:'دواجن',sp_autre:'أخرى',
   count:'عدد الرؤوس',heads:'رؤوس',head:'رأس',sex:'الجنس',sx_m:'ذكر',sx_f:'أنثى',sx_mix:'ذكور وإناث',age:'العمر',ag_0:'أقل من سنة',ag_1:'من سنة إلى سنتين',ag_2:'من سنتين إلى 4 سنوات',ag_4:'أكثر من 4 سنوات',
-  breed:'السلالة',tripInfo:'الرحلة',ctype:'أنت',ct_offer:'سائق: أعرض مقاعد',ct_demand:'راكب: أبحث عن رحلة',cfrom:'الانطلاق',cto:'الوصول',cdate:'التاريخ',ctime:'ساعة الانطلاق',cseats:'المقاعد',cseatsD:'المقاعد المطلوبة',ccar:'السيارة',ccarPh:'مثال: تويوتا هايلكس بيضاء',cstops:'محطات التوقف',cstopsPh:'مثال: بوتلميت، ألاك',cbags:'الأمتعة',bg_s:'حقيبة صغيرة',bg_m:'حقيبة سفر',bg_l:'أمتعة كبيرة',cclim:'مكيّف',cwomen:'للنساء فقط',errCtype:'اختر سائق أو راكب.',errCfrom:'اختر مدينة الانطلاق.',errCto:'اختر مدينة وصول مختلفة عن الانطلاق.',errCdate:'اختر تاريخاً قادماً.',errCtime:'حدّد الساعة.',errCseats:'حدّد عدد المقاعد (من 1 إلى 8).',pricePlace:'السعر للمقعد',budgetPlace:'الميزانية للمقعد',perPlace:' / للمقعد',placesLeft:'{n} مقاعد',placeLeft:'مقعد واحد',allCities:'كل المدن',anyDate:'كل التواريخ',seatsMin:'أقل عدد من المقاعد',tripType:'الإعلانات',tt_offer:'رحلات معروضة',tt_demand:'طلبات ركاب',tripPast:'انتهى موعد هذه الرحلة.',tripDemand:'طلب رحلة',swapCities:'تبديل الانطلاق والوصول',breedPh:'مثال: لادوم',tabaskiOk:'مناسب لعيد الأضحى',delivery:'التوصيل ممكن',errSpecies:'اختر النوع.',errCount:'اكتب عدد الرؤوس.',
+  breed:'السلالة',tripInfo:'الرحلة',ctype:'أنت',ct_offer:'سائق: أعرض مقاعد',ct_demand:'راكب: أبحث عن رحلة',cfrom:'الانطلاق',cto:'الوصول',cdate:'التاريخ',ctime:'ساعة الانطلاق',cseats:'المقاعد',cseatsD:'المقاعد المطلوبة',ccar:'السيارة',ccarPh:'مثال: تويوتا هايلكس بيضاء',cstops:'محطات التوقف',cstopsPh:'مثال: بوتلميت، ألاك',cbags:'الأمتعة',bg_s:'حقيبة صغيرة',bg_m:'حقيبة سفر',bg_l:'أمتعة كبيرة',cclim:'مكيّف',cwomen:'للنساء فقط',errCtype:'اختر سائق أو راكب.',errCfrom:'اختر مدينة الانطلاق.',errCto:'اختر مدينة وصول مختلفة عن الانطلاق.',errCdate:'اختر تاريخاً قادماً.',errCtime:'حدّد الساعة.',errCseats:'حدّد عدد المقاعد (من 1 إلى 8).',pricePlace:'السعر للمقعد',budgetPlace:'الميزانية للمقعد',perPlace:' للمقعد',placesLeft:'{n} مقاعد',placeLeft:'مقعد واحد',allCities:'كل المدن',anyDate:'كل التواريخ',seatsMin:'أقل عدد من المقاعد',tripType:'الإعلانات',tt_offer:'رحلات معروضة',tt_demand:'طلبات ركاب',tripPast:'انتهى موعد هذه الرحلة.',tripDemand:'طلب رحلة',swapCities:'تبديل الانطلاق والوصول',breedPh:'مثال: لادوم',tabaskiOk:'مناسب لعيد الأضحى',delivery:'التوصيل ممكن',errSpecies:'اختر النوع.',errCount:'اكتب عدد الرؤوس.',
   allSpecies:'كل الأنواع',tabBanner:'عيد الأضحى: خراف للبيع',tabBannerSub:'عرض',
   voiceLbl:'إعلان صوتي',voiceRec:'سجّل رسالة صوتية',voiceHelp:'صف سلعتك في 30 ثانية بالحسانية أو العربية أو الفرنسية.',voiceDel:'حذف الرسالة الصوتية',voiceTooBig:'الرسالة طويلة جداً: دقيقة واحدة كحد أقصى.',voiceBad:'اختر ملفاً صوتياً.',voiceListen:'استمع إلى البائع',voiceTag:'صوتي',
   eco:'توفير الإنترنت',ecoOn:'مفعّل',ecoOff:'غير مفعّل',ecoShow:'عرض الصورة',ecoToastOn:'تم تفعيل توفير الإنترنت: لا تُحمّل الصور إلا عند فتحها.',ecoToastOff:'تم إيقاف توفير الإنترنت',
@@ -883,6 +884,10 @@ function tc(k,n){var s=t(k);return S.lang==='ar'&&TC_FORM[k]?s.replace('{N}',arC
 function adUrl(a){return location.origin+'/?annonce='+encodeURIComponent(a.id);}
 function tripTitle(f,t2){return S.lang==='ar'?city(f)+' ← '+city(t2):city(f)+' → '+city(t2);}
 function fixArrow(x){if(x&&x.trip&&x.title&&/[\u0600-\u06FF]/.test(x.title)&&x.title.indexOf('→')>-1)x.title=x.title.replace(/→/g,'←');return x;}
+function fitPrices(){var l=app.querySelectorAll('.card .price');for(var i=0;i<l.length;i++){var el=l[i];if(el.scrollWidth<=el.clientWidth+1)continue;
+  var fs=parseFloat(getComputedStyle(el).fontSize)||18;while(el.scrollWidth>el.clientWidth+1&&fs>11){fs-=1;el.style.fontSize=fs+'px';}}}
+var fitRaf=0;try{new MutationObserver(function(){if(fitRaf)return;fitRaf=requestAnimationFrame(function(){fitRaf=0;fitPrices();});}).observe(document.getElementById('app')||document.body,{childList:true,subtree:true});}catch(e){}
+window.addEventListener('resize',function(){var l=app.querySelectorAll('.card .price');for(var i=0;i<l.length;i++)l[i].style.fontSize='';fitPrices();});
 function allAds(){S.remote.forEach(fixArrow);return S.remote;}
 function byId(id){var a=allAds();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
 function isFav(id){return S.favs.indexOf(id)>-1;}
