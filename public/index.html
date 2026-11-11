@@ -2020,7 +2020,7 @@ V.post=function(){
    (S.draftRestored&&!S.editId&&st===1?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
    step(1,'<div class="field"><div class="cattiles" role="group" aria-label="'+t('cat')+'">'+CATS.map(function(c){var on=d.cat===c.id;return '<button type="button" class="ctile" data-a="postcat" data-v="'+c.id+'" aria-pressed="'+on+'"><span class="ic"'+(on?'':' style="color:'+c.c+'"')+'>'+svg(ICONS[c.id],21,1.8)+'</span><span>'+c[S.lang]+'</span></button>';}).join('')+'</div>'+(e.cat?'<div class="err">'+t('errCat')+'</div>':'')+'</div>'+
      '<div id="catf">'+(d.cat==='covoit'?covoitFields(d,e):'')+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>')+
-   step(2,'<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+t('titlePh')+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
+   step(2,'<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+esc(titlePh(d))+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
      '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>'+
      '<details id="meddet" class="detmore"'+((S.medOpen||d.video||d.voice||S.vidUrl||S.vidBusy!=null||S.rec)?' open':'')+'><summary>'+svg(I.plus||'<path d="M12 5v14M5 12h14"/>',18)+t('medMore')+'</summary>'+
      videoField(d)+'<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div></details>')+
@@ -2053,6 +2053,31 @@ function pvHTML(d){
 document.addEventListener('input',function(e){if(S.screen!=='post'||!S.draft)return;var b=app.querySelector('#pvbox');if(b&&e.target.closest&&e.target.closest('#pf'))b.innerHTML=pvHTML(S.draft);});
 document.addEventListener('change',function(e){if(S.screen!=='post'||!S.draft)return;var b=app.querySelector('#pvbox');if(b&&e.target.closest&&e.target.closest('#pf'))setTimeout(function(){b.innerHTML=pvHTML(S.draft);},0);});
 document.addEventListener('toggle',function(e){if(e.target&&e.target.id==='moredet')S.detOpen=e.target.open;if(e.target&&e.target.id==='meddet')S.medOpen=e.target.open;},true);
+var TPH={fr:{
+ smart:'iPhone 13 128 Go',basic:'Nokia 105 neuf',tab:'Samsung Galaxy Tab A8',tv:'Télévision Samsung 55 pouces',console:'PlayStation 5 avec 2 manettes',laptop:'HP EliteBook i5 16 Go',desktop:'PC de bureau Dell i7 avec écran',acctel:'Écouteurs AirPods Pro',accpc:'Imprimante HP LaserJet',other:'Appareil photo Canon EOS',
+ salon:'Salon marocain 6 places',ameub:'Armoire 3 portes en bois',table:'Table à manger 6 chaises',tapis:'Grand tapis 3 × 4 m',electro:'Réfrigérateur LG 300 litres',deco:'Lampe de salon dorée',cuisine:'Gazinière 4 feux avec four',
+ car:'Toyota Hilux 2015 diesel',bus:'Minibus Toyota Hiace 15 places',truck:'Camion Mercedes 10 tonnes',moto:'Moto Haojue 125',bike:'Vélo VTT adulte',parts:'Moteur Toyota 1KZ',service:'Mécanicien à domicile',
+ 'sale:house':'Maison 4 chambres à Tevragh Zeina','sale:land':'Terrain 300 m² titré','rent:apt':'Appartement 3 pièces à louer','rent:house':'Maison 3 chambres à louer','rent:shop':'Boutique à louer au marché Capitale','rent:land':'Terrain à louer pour garage',
+ trad:'Melhfa voile neuve',clothes:'Costume homme taille L',shoes:'Baskets Nike taille 42',jewelry:'Collier en or 18 carats',watches:'Montre Casio homme',bags:'Sac à main en cuir',
+ bebeEquip:'Poussette Chicco comme neuve',mobEnfant:'Lit bébé en bois',vetBebe:'Lot de vêtements bébé 0-6 mois',vetEnfant:'Uniforme scolaire 8 ans',vetMat:'Robe de grossesse taille M',chausEnfant:'Sandales enfant pointure 28',bijouxEnfant:'Bracelet en or pour bébé',accEnfant:'Cartable à roulettes',jouets:'Voiture électrique pour enfant',babysit:'Nounou disponible à Ksar',aideDom:'Femme de ménage, 5 jours par semaine',
+ offer:'Recherche vendeuse pour boutique',demand:'Chauffeur avec permis cherche travail',
+ mouton:'Bélier pour la Tabaski',chevre:'2 chèvres laitières',chameau:'Chamelle de 4 ans',vache:'Vache laitière',volaille:'20 poulets fermiers',autre:'Âne avec charrette',
+ c_autre:'Groupe électrogène 5 kVA'},
+ar:{
+ smart:'آيفون 13 سعة 128 جيغا',basic:'نوكيا 105 جديد',tab:'سامسونج جالاكسي تاب A8',tv:'تلفاز سامسونج 55 بوصة',console:'بلايستيشن 5 مع ذراعين',laptop:'حاسوب HP i5 رام 16',desktop:'حاسوب مكتبي Dell i7 مع شاشة',acctel:'سماعات AirPods Pro',accpc:'طابعة HP ليزر',other:'كاميرا كانون EOS',
+ salon:'صالون مغربي 6 مقاعد',ameub:'خزانة خشبية 3 أبواب',table:'طاولة طعام مع 6 كراسي',tapis:'زربية كبيرة 3 × 4 م',electro:'ثلاجة LG سعة 300 لتر',deco:'مصباح صالون ذهبي',cuisine:'فرن غاز 4 عيون',
+ car:'تويوتا هيلكس 2015 ديزل',bus:'حافلة صغيرة تويوتا هياس 15 مقعداً',truck:'شاحنة مرسيدس 10 أطنان',moto:'دراجة نارية 125',bike:'دراجة هوائية للكبار',parts:'محرك تويوتا 1KZ',service:'ميكانيكي متنقل',
+ 'sale:house':'منزل 4 غرف في تفرغ زينة','sale:land':'قطعة أرضية 300 م² بسند','rent:apt':'شقة 3 غرف للإيجار','rent:house':'منزل 3 غرف للإيجار','rent:shop':'محل للإيجار في سوق العاصمة','rent:land':'قطعة أرضية للإيجار',
+ trad:'ملحفة جديدة',clothes:'بدلة رجالية مقاس L',shoes:'حذاء رياضي نايكي مقاس 42',jewelry:'قلادة ذهب عيار 18',watches:'ساعة كاسيو رجالية',bags:'حقيبة يد جلدية',
+ bebeEquip:'عربة أطفال شيكو شبه جديدة',mobEnfant:'سرير رضيع خشبي',vetBebe:'ملابس رضع 0-6 أشهر',vetEnfant:'زي مدرسي 8 سنوات',vetMat:'فستان حمل مقاس M',chausEnfant:'صندل أطفال مقاس 28',bijouxEnfant:'سوار ذهب للرضيع',accEnfant:'حقيبة مدرسية بعجلات',jouets:'سيارة كهربائية للأطفال',babysit:'مربية أطفال متاحة في لكصر',aideDom:'عاملة منزلية 5 أيام في الأسبوع',
+ offer:'مطلوب بائعة لمحل',demand:'سائق برخصة يبحث عن عمل',
+ mouton:'كبش للعيد',chevre:'عنزتان حلوبتان',chameau:'ناقة عمرها 4 سنوات',vache:'بقرة حلوب',volaille:'20 دجاجة بلدية',autre:'حمار مع عربة',
+ c_autre:'مولد كهربائي 5 كيلوفولت'}};
+function titlePh(d){var L=TPH[S.lang]||TPH.fr,c=d.cat,v='';
+  if(c==='auto')v=d.vkind;else if(c==='immo')v=d.kind?(d.deal||'sale')+':'+d.kind:'';else if(c==='multi')v=d.mtype;else if(c==='maison')v=d.hsub;
+  else if(c==='mode')v=d.mosub;else if(c==='fam')v=d.fsub;else if(c==='job')v=d.joffer;else if(c==='anim')v=d.species;else if(c==='autre')v='c_autre';
+  var ex=v&&L[v];if(!ex&&c==='immo'&&d.kind)ex=L['rent:'+d.kind]||L['sale:'+d.kind];
+  return ex?(S.lang==='ar'?'مثال: ':'Ex. : ')+ex:t('titlePh');}
 V.login=function(){
   var L=S.login,reg=L.mode==='register';
   var seg='<div class="seg" role="tablist"><button role="tab" data-a="lmode" data-v="login" aria-selected="'+(!reg)+'">'+t('tabLogin')+'</button><button role="tab" data-a="lmode" data-v="register" aria-selected="'+reg+'">'+t('tabRegister')+'</button></div>';
