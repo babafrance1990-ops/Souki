@@ -166,6 +166,11 @@ export async function onRequest(ctx) {
       const b = await readBody(req);
       const phone = String(b.phone || '').replace(/\D/g, '');
       const pass = String(b.password || '');
+      if (parts[1] === 'check' && method === 'POST') {
+        if (!/^\d{8}$/.test(phone)) return fail('phone');
+        const u = await db.prepare('SELECT id, blocked FROM users WHERE phone = ?').bind(phone).first();
+        return json({ exists: !!u, blocked: !!(u && u.blocked) });
+      }
       if (parts[1] === 'register' && method === 'POST') {
         const name = String(b.name || '').trim().slice(0, 30);
         if (!/^\d{8}$/.test(phone)) return fail('phone');
