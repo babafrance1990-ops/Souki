@@ -55,7 +55,7 @@ button{cursor:pointer}
 .pill{height:36px;padding:0 12px;border-radius:18px;border:1px solid rgba(255,255,255,.5);background:transparent;color:inherit;font-weight:700;font-size:14px}
 .searchbox{display:flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:14px;background:var(--surface);color:var(--muted)}
 .searchbox input{flex:1;min-width:0;border:none;outline:none;background:transparent;color:var(--fg)}
-.hsel{max-width:150px;height:34px;border-radius:17px;border:none;padding:0 10px;background:rgba(255,255,255,.18);color:var(--brand-fg);font-weight:600;font-size:16px}
+.hsel{max-width:150px;min-width:0;width:100%;height:34px;border-radius:17px;border:none;padding:0 10px;background:rgba(255,255,255,.18);color:var(--brand-fg);font-weight:600;font-size:16px}
 .hsel option,.hsel optgroup{color:#1C2A22}
 .sec{padding:16px;display:flex;flex-direction:column;gap:12px}
 h1{margin:0;font-size:21px;line-height:1.3;text-wrap:balance}
@@ -331,6 +331,9 @@ html,body{overflow-x:hidden;max-width:100%}
 .lgclose{position:absolute;top:10px;inset-inline-start:10px;z-index:2}
 .vmbrand{display:flex;flex-direction:column;align-items:center;gap:8px;margin:8px 0 4px}
 .vmbrand .vmlogo{border-radius:18px;box-shadow:0 6px 18px rgba(0,0,0,.15)}
+.hlogo{width:28px;height:28px;border-radius:8px;vertical-align:middle;margin-inline-end:6px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.vmimg{display:block;width:180px;height:auto;border-radius:22px;mix-blend-mode:multiply}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .vmimg{mix-blend-mode:normal}}:root[data-theme="dark"] .vmimg{mix-blend-mode:normal}
 .vmword{display:flex;align-items:baseline;gap:10px}.vmword b{font-size:28px;font-weight:900;letter-spacing:-.02em;color:var(--fg)}.vmword span{font-size:22px;font-weight:800;color:#00A95C}
 .lgf{display:flex;flex-direction:column;gap:8px}.lgl{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--muted)}.lgf.act .lgl{color:var(--fg)}
 .lgphonebox{display:flex;align-items:flex-end;justify-content:center;gap:6px;border:0;background:none;padding:6px 0 10px;border-bottom:3px solid var(--line);cursor:pointer;min-height:56px;width:100%}
@@ -2239,7 +2242,7 @@ V.home=function(){
   var hoodRow=S.city==='Nouakchott'?'<div class="row" style="gap:6px">'+svg(I.pin,16)+'<label for="hoodsel" class="srh">'+t('hood')+'</label><select id="hoodsel" class="hsel" style="max-width:none;flex:1">'+
     '<option value="">'+t('allHoods')+'</option>'+hoodOptions(S.hood,true)+'</select></div>':'';
   var band=S.cat?'':'<button class="tabband" data-a="tabaski">'+svg(ICONS.anim,24,1.8)+'<span style="flex:1;min-width:0">'+t('tabBanner')+'</span><span class="tabgo">'+t('tabBannerSub')+'</span></button>';
-  return '<div class="scroll"><header class="hdr"><div class="row between"><button class="logo" data-a="gohome" aria-label="'+t('home')+'">'+(S.lang==='ar'?'بيع<span>لي</span>':'Vends-<span>moi</span>')+'</button><div class="row" style="gap:4px;min-width:0">'+svg(I.pin,16)+'<label for="city" class="srh">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
+  return '<div class="scroll"><header class="hdr"><div class="row between"><button class="logo" data-a="gohome" aria-label="'+t('home')+'"><img class="hlogo" src="/icon-192.png" alt="" width="30" height="30">'+(S.lang==='ar'?'بيع<span>لي</span>':'Vends-<span>moi</span>')+'</button><div class="row" style="gap:4px;min-width:0;flex:0 1 auto;margin-inline:6px">'+svg(I.pin,16)+'<label for="city" class="srh">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
    '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" class="srh">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"><button type="button" class="camq" data-a="visual" aria-label="'+t('imgSearch')+'" title="'+t('imgSearch')+'">'+svg(I.cam,22)+'</button></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
    '</header>'+
    '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles">'+cats+'</div></div>'+(S.cat?'<button class="linkbtn" data-a="cat" data-c="" style="color:var(--brand);align-self:flex-end;font-size:13px">'+t('showAll')+'</button>':'')+
@@ -2382,7 +2385,7 @@ function titlePh(d){var L=TPH[S.lang]||TPH.fr,c=d.cat,v='';
 function flagMark(sz){return '<svg class="vmlogo" width="'+sz+'" height="'+sz+'" viewBox="0 0 64 64" aria-hidden="true"><defs><clipPath id="vmc"><rect width="64" height="64" rx="15"/></clipPath></defs><g clip-path="url(#vmc)"><rect width="64" height="64" fill="#00A95C"/><rect width="64" height="10" fill="#D01C1F"/><rect y="54" width="64" height="10" fill="#D01C1F"/>'+
   '<path d="M16 21A16 16 0 0 0 48 21A18.5 18.5 0 0 1 16 21Z" fill="#FFD100"/><path d="M32 12l2.2 4.5 5 .7-3.6 3.5.85 5-4.45-2.35-4.45 2.35.85-5-3.6-3.5 5-.7z" fill="#FFD100"/>'+
   '<text x="32" y="51.5" text-anchor="middle" font-family="system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-weight="900" font-size="14" fill="#FFFFFF" direction="ltr" unicode-bidi="bidi-override">V.</text></g></svg>';}
-function siteLogo(){return '<div class="vmbrand">'+flagMark(76)+'<div class="vmword"><b>Vends-moi</b><span>بيعلي</span></div></div>';}
+function siteLogo(){return '<div class="vmbrand"><img class="vmimg" src="/logo.webp" width="180" height="168" alt="Vends-moi · بيعلي"></div>';}
 V.login=function(){
   var L=S.login;if(!L.active)L.active='phone';var ex=L.exists;
   var stage=ex===false?(L.pin1?'confirm':'new'):'pin';
