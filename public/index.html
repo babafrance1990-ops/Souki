@@ -458,7 +458,9 @@ button.pinrow{border:0;background:none;width:100%;cursor:pointer;padding:0}
 (function(){
 var CATS=[
  {id:'auto',fr:'Véhicules',ar:'مركبات',c:'#9A3412'},
- {id:'multi',fr:'Télé­phones & électro­nique',ar:'هواتف وإلكترونيات',c:'#5B4BA8'},
+ {id:'phone',fr:'Télé­phones',ar:'هواتف',c:'#5B4BA8'},
+ {id:'multi',fr:'Électro­nique',ar:'إلكترونيات',c:'#2563A8'},
+ {id:'menager',fr:'Électro­ménager',ar:'أجهزة منزلية',c:'#C2410C'},
  {id:'immo',fr:'Immobilier',ar:'عقارات',c:'#0B6B3A'},
  {id:'anim',fr:'Animaux',ar:'مواشي',c:'#8A5A12'},
  {id:'maison',fr:'Maison',ar:'المنزل',c:'#B7791F'},
@@ -485,6 +487,8 @@ var WILAYAS=[
 var NKC=[{id:'nkcO',fr:'Nouakchott-Ouest',ar:'نواكشوط الغربية',h:['Tevragh Zeina','Ksar','Sebkha']},{id:'nkcN',fr:'Nouakchott-Nord',ar:'نواكشوط الشمالية',h:['Dar Naim','Teyarett','Toujounine']},{id:'nkcS',fr:'Nouakchott-Sud',ar:'نواكشوط الجنوبية',h:['Arafat','El Mina','Riyadh']}];
 var CITIES=[];WILAYAS.forEach(function(w){w.cities.forEach(function(c){CITIES.push(c);});});
 var ICONS={
+ phone:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+ menager:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 9h14M8 5v1M8 12v3"/>',
  tel:'<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
  multi:'<rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
  elec:'<rect x="5" y="2" width="14" height="20" rx="2"/><path d="M5 9h14M8 5v1M8 12v3"/>',
@@ -570,7 +574,7 @@ var TX={
   hoodPh2:'Ex. : Centre',nearLbl:'Près de… (repère connu)',nearPh:'Ex. : marché Capitale, Carrefour Madrid',nearShow:'Près de',allHoods:'Tous les quartiers',
   animInfo:'Informations sur les animaux',species:'Espèce',sp_mouton:'Mouton',sp_chevre:'Chèvre',sp_chameau:'Chameau',sp_vache:'Vache',sp_volaille:'Volaille',sp_autre:'Autre',
   count:'Nombre de têtes',heads:'têtes',head:'tête',sex:'Sexe',sx_m:'Mâle',sx_f:'Femelle',sx_mix:'Mâles et femelles',age:'Âge',ag_0:'Moins d’1 an',ag_1:'1 à 2 ans',ag_2:'2 à 4 ans',ag_4:'Plus de 4 ans',
-  breed:'Race',tabLogin:'Se connecter',tabReg:'Créer un compte',lgToReg:'Ce numéro n’a pas encore de compte : créez-le en quelques secondes.',lgToLog:'Ce numéro a déjà un compte : entrez votre code secret.',lgPhoneL:'Numéro de téléphone',lgCodeL:'Code secret',lgNewL:'Choisissez un code secret',lgConfL:'Confirmez le code secret',lgNameL:'Votre prénom',lgNewAcc:'Nouveau sur Vends-moi : écrivez votre prénom et choisissez un code.',lgChecking:'Vérification du numéro…',lgNeedName:'Écrivez d’abord votre prénom.',lgPhoneH:'Votre numéro de téléphone',lgPhoneP:'Le numéro avec lequel les acheteurs vous appelleront.',lgNext:'Continuer',lgPinH:'Entrez votre code secret',lgNewH:'Choisissez votre code secret',lgNewP:'4 chiffres, comme pour Bankily. Évitez 1234 ou 0000.',lgConfH:'Confirmez votre code secret',lgConfP:'Tapez le même code une deuxième fois.',lgMismatch:'Les deux codes ne sont pas identiques. Recommencez.',lgNameH:'Bienvenue sur Vends-moi',lgNameP:'Ce numéro n’a pas encore de compte. Comment vous appelez-vous ?',lgChange:'Changer de numéro',lgOld:'J’ai un ancien mot de passe',lgOldH:'Votre ancien mot de passe',lgCreate:'Créer mon compte',lgDel:'Effacer',lgWelcome:'Bienvenue !',e_pin_format:'Le code secret doit contenir exactement 4 chiffres.',e_pin_weak:'Ce code est trop facile à deviner (1234, 0000…). Choisissez-en un autre.',oldPw:'Ancien compte ? Votre mot de passe fonctionne toujours.',waLogin:'Se connecter avec WhatsApp',waOr:'ou',waStep:'WhatsApp va s’ouvrir avec un message déjà écrit. Touchez « Envoyer », puis revenez ici.',waOpen:'Ouvrir WhatsApp',waWait:'En attente de votre message WhatsApp…',waExpired:'Le délai est dépassé. Recommencez.',waCancel:'Annuler',waMsgLogin:'Connexion Vends-moi, code {c}',waMsgVerify:'Vérification Vends-moi, code {c}',waNeedPhone:'Écrivez d’abord votre numéro ci-dessus.',verifiedB:'Numéro vérifié',verifyH:'Vérifiez votre numéro',verifyP:'Un message WhatsApp suffit. Les acheteurs font plus confiance aux numéros vérifiés.',verifyBtn:'Vérifier avec WhatsApp',verifyOk:'Votre numéro est vérifié.',forgotWa:'Connectez-vous avec WhatsApp (bouton ci-dessus), puis choisissez un nouveau code dans « Modifier mon profil ».',pinNewL:'Nouveau code secret (4 chiffres)',pinChange:'Changer mon code secret',pinSaved:'Code secret modifié.',manage:'Gérer',shareAd:'Partager l’annonce',close:'Fermer',delDone:'Annonce supprimée.',adminBadge:'Administrateur',noAdminCfg:'Aucun numéro administrateur n’est réglé sur le serveur (ADMIN_PHONES).',pwShow:'Afficher le code',pwHide:'Masquer le code',stayIn:'Vous restez connecté sur ce téléphone, même après avoir fermé l’application.',credsH:'Gardez votre code secret',credsP:'Envoyez-vous votre numéro et votre code secret sur WhatsApp : vous les retrouverez facilement si vous changez de téléphone.',credsWa:'M’envoyer mes identifiants sur WhatsApp',credsDone:'C’est fait, masquer',credsMsg:'Mon compte Vends-moi\nNuméro : {p}\nCode secret : {w}\n{u}',impBtn:'Importer depuis Facebook ou WhatsApp',impT:'Importer une annonce',impHelp:'Copiez le texte de votre annonce (Facebook, WhatsApp, TikTok…) et collez-le ici. Le formulaire se remplit tout seul, vous n’aurez plus qu’à vérifier et ajouter les photos.',impPh:'Ex. : Frigo LG 300 litres très bon état, 9000 MRU, Tevragh Zeina. Appelez le 36…',impGo:'Remplir l’annonce',impWait:'Lecture du texte…',impOk:'Annonce remplie. Vérifiez et ajoutez vos photos.',impEmpty:'Collez d’abord le texte de votre annonce.',impOwn:'Importez seulement vos propres annonces.',bulkT:'Ajouter plusieurs annonces',bulkSub:'Pour les boutiques : collez la liste de vos produits, une ligne par produit avec son prix.',bulkPh:'Ex. :\nClimatiseur LG 1,5 CV – 18 000\nRéfrigérateur Samsung 300 L – 15 000\nVentilateur sur pied – 2 500',bulkShop:'Nom de la boutique',bulkGo:'Analyser la liste',bulkN:'{n} annonces prêtes',bulkPub:'Publier les {n} annonces',bulkPubbing:'Publication {i} sur {n}…',bulkDone:'{n} annonces publiées.',bulkErr:'À compléter',bulkRm:'Retirer',bulkPh2:'Photos',bulkAll:'Ville de toutes les annonces',bulkType:'Type',admNewShop:'Créer un compte commerçant',admShopHelp:'Avec l’accord du commerçant : créez son compte, publiez ses produits (connectez-vous avec ses identifiants), puis envoyez-lui son accès sur WhatsApp.',admPhone:'Numéro (8 chiffres)',admName:'Nom',admCreate:'Créer le compte',admCreated:'Compte créé',admSendWa:'Envoyer l’accès sur WhatsApp',admWaMsg:'Bonjour {n}, votre compte Vends-moi est prêt.\nNuméro : {p}\nMot de passe : {w}\nConnectez-vous sur {u}',delivL:'Je peux livrer',delivB:'Livraison',delivNoteL:'Conditions de livraison',delivNotePh:'Ex. : Gratuite à Nouakchott, 500 MRU ailleurs',delivH:'Livraison possible',newB:'Nouveau',photosN:'{n} photos',favAdd:'Ajouter aux favoris',revN:'({n} avis)',stViews:'vues',stView:'vue',stContacts:'contacts',stContact:'contact',stTitle:'Statistiques de votre annonce',stPeople:'Personnes qui vous ont contacté',stNone:'Personne ne vous a encore contacté. Partagez votre annonce dans vos groupes WhatsApp.',stAnon:'Les visiteurs sans compte sont comptés, mais leur nom n’apparaît pas.',k_wa:'WhatsApp',k_call:'Appel',k_msg:'Message',ss_elec:'Électricien',ss_plomb:'Plombier',ss_macon:'Maçonnerie',ss_peint:'Peinture',ss_clim:'Climatisation & froid',ss_repTel:'Réparation de téléphones',ss_couture:'Couture',ss_cours:'Cours particuliers',ss_transport:'Transport & déménagement',ss_fete:'Location pour fêtes',ss_menage:'Ménage & nettoyage',ss_autreS:'Autre service',servInfo:'Le service',ssub:'Type de service',errSsub:'Choisissez le type de service.',soffer:'Vous',so_offer:'Je propose ce service',so_demand:'Je cherche ce service',sarea:'Quartiers ou villes',sareaPh:'Ex. : Tevragh Zeina, Ksar',shome:'Se déplace à domicile',tarif:'Tarif à partir de',mt_solar:'Solaire & batteries',mt_gen:'Groupe électrogène',vk_rental:'Location de voiture',vdriver:'Avec chauffeur',perDay:' /jour',priceDay:'Prix par jour',k2_room:'Chambre',allTypes:'Tout',tripInfo:'Le trajet',ctype:'Vous êtes',ct_offer:'Conducteur : je propose des places',ct_demand:'Passager : je cherche un trajet',cfrom:'Départ',cto:'Arrivée',cdate:'Date',ctime:'Heure de départ',cseats:'Places',cseatsD:'Places voulues',ccar:'Véhicule',ccarPh:'Ex. : Toyota Hilux blanche',cstops:'Étapes',cstopsPh:'Ex. : Boutilimit, Aleg',cbags:'Bagages',bg_s:'Petit sac',bg_m:'Valise',bg_l:'Gros bagages',cclim:'Climatisation',cwomen:'Réservé aux femmes',errCtype:'Choisissez conducteur ou passager.',errCfrom:'Choisissez la ville de départ.',errCto:'Choisissez une ville d’arrivée différente du départ.',errCdate:'Choisissez une date à venir.',errCtime:'Indiquez l’heure.',errCseats:'Indiquez le nombre de places (1 à 8).',pricePlace:'Prix par place',budgetPlace:'Budget par place',perPlace:' / place',placesLeft:'{n} places',placeLeft:'1 place',allCities:'Toutes les villes',anyDate:'Toutes les dates',seatsMin:'Places minimum',tripType:'Annonces',tt_offer:'Trajets proposés',tt_demand:'Demandes de passagers',tripPast:'Ce trajet est passé.',tripDemand:'Demande de trajet',swapCities:'Inverser départ et arrivée',breedPh:'Ex. : Touabire, Ladoum',tabaskiOk:'Idéal pour la Tabaski',delivery:'Livraison possible',errSpecies:'Choisissez l’espèce.',errCount:'Indiquez le nombre de têtes.',
+  breed:'Race',hi_oven:'Four',hi_water:'Fontaine à eau',hi_small:'Petit électroménager',smallL:'Appareil',sm_blender:'Mixeur / blender',sm_robot:'Robot de cuisine',sm_juicer:'Presse-agrumes / extracteur',sm_kettle:'Bouilloire',sm_iron:'Fer à repasser',sm_vacuum:'Aspirateur',sm_airfryer:'Friteuse sans huile',sm_coffee:'Cafetière',sm_hair:'Sèche-cheveux / lisseur',sm_other:'Autre appareil',allSmall:'Tous les appareils',tabLogin:'Se connecter',tabReg:'Créer un compte',lgToReg:'Ce numéro n’a pas encore de compte : créez-le en quelques secondes.',lgToLog:'Ce numéro a déjà un compte : entrez votre code secret.',lgPhoneL:'Numéro de téléphone',lgCodeL:'Code secret',lgNewL:'Choisissez un code secret',lgConfL:'Confirmez le code secret',lgNameL:'Votre prénom',lgNewAcc:'Nouveau sur Vends-moi : écrivez votre prénom et choisissez un code.',lgChecking:'Vérification du numéro…',lgNeedName:'Écrivez d’abord votre prénom.',lgPhoneH:'Votre numéro de téléphone',lgPhoneP:'Le numéro avec lequel les acheteurs vous appelleront.',lgNext:'Continuer',lgPinH:'Entrez votre code secret',lgNewH:'Choisissez votre code secret',lgNewP:'4 chiffres, comme pour Bankily. Évitez 1234 ou 0000.',lgConfH:'Confirmez votre code secret',lgConfP:'Tapez le même code une deuxième fois.',lgMismatch:'Les deux codes ne sont pas identiques. Recommencez.',lgNameH:'Bienvenue sur Vends-moi',lgNameP:'Ce numéro n’a pas encore de compte. Comment vous appelez-vous ?',lgChange:'Changer de numéro',lgOld:'J’ai un ancien mot de passe',lgOldH:'Votre ancien mot de passe',lgCreate:'Créer mon compte',lgDel:'Effacer',lgWelcome:'Bienvenue !',e_pin_format:'Le code secret doit contenir exactement 4 chiffres.',e_pin_weak:'Ce code est trop facile à deviner (1234, 0000…). Choisissez-en un autre.',oldPw:'Ancien compte ? Votre mot de passe fonctionne toujours.',waLogin:'Se connecter avec WhatsApp',waOr:'ou',waStep:'WhatsApp va s’ouvrir avec un message déjà écrit. Touchez « Envoyer », puis revenez ici.',waOpen:'Ouvrir WhatsApp',waWait:'En attente de votre message WhatsApp…',waExpired:'Le délai est dépassé. Recommencez.',waCancel:'Annuler',waMsgLogin:'Connexion Vends-moi, code {c}',waMsgVerify:'Vérification Vends-moi, code {c}',waNeedPhone:'Écrivez d’abord votre numéro ci-dessus.',verifiedB:'Numéro vérifié',verifyH:'Vérifiez votre numéro',verifyP:'Un message WhatsApp suffit. Les acheteurs font plus confiance aux numéros vérifiés.',verifyBtn:'Vérifier avec WhatsApp',verifyOk:'Votre numéro est vérifié.',forgotWa:'Connectez-vous avec WhatsApp (bouton ci-dessus), puis choisissez un nouveau code dans « Modifier mon profil ».',pinNewL:'Nouveau code secret (4 chiffres)',pinChange:'Changer mon code secret',pinSaved:'Code secret modifié.',manage:'Gérer',shareAd:'Partager l’annonce',close:'Fermer',delDone:'Annonce supprimée.',adminBadge:'Administrateur',noAdminCfg:'Aucun numéro administrateur n’est réglé sur le serveur (ADMIN_PHONES).',pwShow:'Afficher le code',pwHide:'Masquer le code',stayIn:'Vous restez connecté sur ce téléphone, même après avoir fermé l’application.',credsH:'Gardez votre code secret',credsP:'Envoyez-vous votre numéro et votre code secret sur WhatsApp : vous les retrouverez facilement si vous changez de téléphone.',credsWa:'M’envoyer mes identifiants sur WhatsApp',credsDone:'C’est fait, masquer',credsMsg:'Mon compte Vends-moi\nNuméro : {p}\nCode secret : {w}\n{u}',impBtn:'Importer depuis Facebook ou WhatsApp',impT:'Importer une annonce',impHelp:'Copiez le texte de votre annonce (Facebook, WhatsApp, TikTok…) et collez-le ici. Le formulaire se remplit tout seul, vous n’aurez plus qu’à vérifier et ajouter les photos.',impPh:'Ex. : Frigo LG 300 litres très bon état, 9000 MRU, Tevragh Zeina. Appelez le 36…',impGo:'Remplir l’annonce',impWait:'Lecture du texte…',impOk:'Annonce remplie. Vérifiez et ajoutez vos photos.',impEmpty:'Collez d’abord le texte de votre annonce.',impOwn:'Importez seulement vos propres annonces.',bulkT:'Ajouter plusieurs annonces',bulkSub:'Pour les boutiques : collez la liste de vos produits, une ligne par produit avec son prix.',bulkPh:'Ex. :\nClimatiseur LG 1,5 CV – 18 000\nRéfrigérateur Samsung 300 L – 15 000\nVentilateur sur pied – 2 500',bulkShop:'Nom de la boutique',bulkGo:'Analyser la liste',bulkN:'{n} annonces prêtes',bulkPub:'Publier les {n} annonces',bulkPubbing:'Publication {i} sur {n}…',bulkDone:'{n} annonces publiées.',bulkErr:'À compléter',bulkRm:'Retirer',bulkPh2:'Photos',bulkAll:'Ville de toutes les annonces',bulkType:'Type',admNewShop:'Créer un compte commerçant',admShopHelp:'Avec l’accord du commerçant : créez son compte, publiez ses produits (connectez-vous avec ses identifiants), puis envoyez-lui son accès sur WhatsApp.',admPhone:'Numéro (8 chiffres)',admName:'Nom',admCreate:'Créer le compte',admCreated:'Compte créé',admSendWa:'Envoyer l’accès sur WhatsApp',admWaMsg:'Bonjour {n}, votre compte Vends-moi est prêt.\nNuméro : {p}\nMot de passe : {w}\nConnectez-vous sur {u}',delivL:'Je peux livrer',delivB:'Livraison',delivNoteL:'Conditions de livraison',delivNotePh:'Ex. : Gratuite à Nouakchott, 500 MRU ailleurs',delivH:'Livraison possible',newB:'Nouveau',photosN:'{n} photos',favAdd:'Ajouter aux favoris',revN:'({n} avis)',stViews:'vues',stView:'vue',stContacts:'contacts',stContact:'contact',stTitle:'Statistiques de votre annonce',stPeople:'Personnes qui vous ont contacté',stNone:'Personne ne vous a encore contacté. Partagez votre annonce dans vos groupes WhatsApp.',stAnon:'Les visiteurs sans compte sont comptés, mais leur nom n’apparaît pas.',k_wa:'WhatsApp',k_call:'Appel',k_msg:'Message',ss_elec:'Électricien',ss_plomb:'Plombier',ss_macon:'Maçonnerie',ss_peint:'Peinture',ss_clim:'Climatisation & froid',ss_repTel:'Réparation de téléphones',ss_couture:'Couture',ss_cours:'Cours particuliers',ss_transport:'Transport & déménagement',ss_fete:'Location pour fêtes',ss_menage:'Ménage & nettoyage',ss_autreS:'Autre service',servInfo:'Le service',ssub:'Type de service',errSsub:'Choisissez le type de service.',soffer:'Vous',so_offer:'Je propose ce service',so_demand:'Je cherche ce service',sarea:'Quartiers ou villes',sareaPh:'Ex. : Tevragh Zeina, Ksar',shome:'Se déplace à domicile',tarif:'Tarif à partir de',mt_solar:'Solaire & batteries',mt_gen:'Groupe électrogène',vk_rental:'Location de voiture',vdriver:'Avec chauffeur',perDay:' /jour',priceDay:'Prix par jour',k2_room:'Chambre',allTypes:'Tout',tripInfo:'Le trajet',ctype:'Vous êtes',ct_offer:'Conducteur : je propose des places',ct_demand:'Passager : je cherche un trajet',cfrom:'Départ',cto:'Arrivée',cdate:'Date',ctime:'Heure de départ',cseats:'Places',cseatsD:'Places voulues',ccar:'Véhicule',ccarPh:'Ex. : Toyota Hilux blanche',cstops:'Étapes',cstopsPh:'Ex. : Boutilimit, Aleg',cbags:'Bagages',bg_s:'Petit sac',bg_m:'Valise',bg_l:'Gros bagages',cclim:'Climatisation',cwomen:'Réservé aux femmes',errCtype:'Choisissez conducteur ou passager.',errCfrom:'Choisissez la ville de départ.',errCto:'Choisissez une ville d’arrivée différente du départ.',errCdate:'Choisissez une date à venir.',errCtime:'Indiquez l’heure.',errCseats:'Indiquez le nombre de places (1 à 8).',pricePlace:'Prix par place',budgetPlace:'Budget par place',perPlace:' / place',placesLeft:'{n} places',placeLeft:'1 place',allCities:'Toutes les villes',anyDate:'Toutes les dates',seatsMin:'Places minimum',tripType:'Annonces',tt_offer:'Trajets proposés',tt_demand:'Demandes de passagers',tripPast:'Ce trajet est passé.',tripDemand:'Demande de trajet',swapCities:'Inverser départ et arrivée',breedPh:'Ex. : Touabire, Ladoum',tabaskiOk:'Idéal pour la Tabaski',delivery:'Livraison possible',errSpecies:'Choisissez l’espèce.',errCount:'Indiquez le nombre de têtes.',
   allSpecies:'Toutes les espèces',tabBanner:'Spécial Tabaski : moutons à vendre',tabBannerSub:'Voir',
   voiceLbl:'Annonce vocale',voiceRec:'Enregistrer un message vocal',voiceHelp:'Décrivez votre article en 30 secondes, en hassaniya, en arabe ou en français.',voiceDel:'Supprimer le vocal',voiceTooBig:'Message trop long : 1 minute maximum.',voiceBad:'Choisissez un fichier audio.',voiceListen:'Écouter le vendeur',voiceTag:'Vocal',
   eco:'Économie de données',ecoOn:'activée',ecoOff:'désactivée',ecoShow:'Voir la photo',ecoToastOn:'Économie de données activée : les photos se chargent seulement quand vous les ouvrez.',ecoToastOff:'Économie de données désactivée',
@@ -636,7 +640,7 @@ var TX={
   hi_lit:'Lit',hi_armoire:'Armoire',hi_buffet:'Commode / buffet',hi_canape:'Canapé / fauteuil',hi_meubleTv:'Meuble TV',hi_etagere:'Étagère',
   hi_tableChaises:'Table + chaises',hi_tableManger:'Table à manger',hi_chaises:'Chaises',hi_tableBasse:'Table basse',hi_bureau:'Bureau',
   hi_tapis:'Tapis',hi_natte:'Natte',hi_moquette:'Moquette',
-  hi_fridge:'Réfrigérateur',hi_freezer:'Congélateur',hi_clim:'Climatiseur',hi_fan:'Ventilateur',hi_washer:'Machine à laver',hi_cooker:'Cuisinière / four',hi_micro:'Micro-ondes',hi_heater:'Chauffe-eau',
+  hi_fridge:'Réfrigérateur',hi_freezer:'Congélateur',hi_clim:'Climatiseur',hi_fan:'Ventilateur',hi_washer:'Machine à laver',hi_cooker:'Cuisinière / gazinière',hi_micro:'Micro-ondes',hi_heater:'Chauffe-eau',
   hi_rideaux:'Rideaux',hi_lampe:'Lampe / lustre',hi_miroir:'Miroir',hi_tableau:'Tableau / cadre',hi_vase:'Vase / objet déco',
   hi_theSet:'Service à thé complet',hi_theiere:'Théière',hi_plateau:'Plateau',hi_vaisselle:'Vaisselle',hi_marmites:'Marmites / casseroles',hi_gaz:'Bouteille de gaz / réchaud',
   qty:'Quantité',qtyMat:'Nombre de matelas',qtyChair:'Nombre de chaises',pcsMat:'matelas',pcsChair:'chaises',hdims:'Dimensions',hdimsPh:'Ex. : 3 m × 4 m',
@@ -701,7 +705,7 @@ var TX={
   hoodPh2:'مثال: وسط المدينة',nearLbl:'قرب… (معلم معروف)',nearPh:'مثال: سوق العاصمة، كارفور مدريد',nearShow:'قرب',allHoods:'كل المقاطعات',
   animInfo:'معلومات المواشي',species:'النوع',sp_mouton:'خروف',sp_chevre:'ماعز',sp_chameau:'جمل',sp_vache:'بقرة',sp_volaille:'دواجن',sp_autre:'أخرى',
   count:'عدد الرؤوس',heads:'رؤوس',head:'رأس',sex:'الجنس',sx_m:'ذكر',sx_f:'أنثى',sx_mix:'ذكور وإناث',age:'العمر',ag_0:'أقل من سنة',ag_1:'من سنة إلى سنتين',ag_2:'من سنتين إلى 4 سنوات',ag_4:'أكثر من 4 سنوات',
-  breed:'السلالة',tabLogin:'الدخول',tabReg:'إنشاء حساب',lgToReg:'هذا الرقم ليس له حساب بعد: أنشئه في ثوانٍ.',lgToLog:'هذا الرقم له حساب: أدخل رمزك السري.',lgPhoneL:'رقم الهاتف',lgCodeL:'الرمز السري',lgNewL:'اختر رمزاً سرياً',lgConfL:'أكّد الرمز السري',lgNameL:'اسمك',lgNewAcc:'جديد في بيعلي: اكتب اسمك واختر رمزاً.',lgChecking:'جارٍ التحقق من الرقم…',lgNeedName:'اكتب اسمك أولاً.',lgPhoneH:'رقم هاتفك',lgPhoneP:'الرقم الذي سيتصل بك عليه المشترون.',lgNext:'متابعة',lgPinH:'أدخل رمزك السري',lgNewH:'اختر رمزك السري',lgNewP:'4 أرقام، مثل بنكيلي. تجنّب 1234 أو 0000.',lgConfH:'أكّد رمزك السري',lgConfP:'اكتب نفس الرمز مرة ثانية.',lgMismatch:'الرمزان غير متطابقين. أعد المحاولة.',lgNameH:'مرحباً بك في بيعلي',lgNameP:'لا يوجد حساب بهذا الرقم بعد. ما اسمك؟',lgChange:'تغيير الرقم',lgOld:'لدي كلمة مرور قديمة',lgOldH:'كلمة المرور القديمة',lgCreate:'إنشاء حسابي',lgDel:'مسح',lgWelcome:'مرحباً!',e_pin_format:'يجب أن يتكون الرمز السري من 4 أرقام بالضبط.',e_pin_weak:'هذا الرمز سهل التخمين (1234، 0000…). اختر رمزاً آخر.',oldPw:'حساب قديم؟ كلمة المرور القديمة لا تزال تعمل.',waLogin:'الدخول عبر واتساب',waOr:'أو',waStep:'سيفتح واتساب برسالة مكتوبة مسبقاً. اضغط «إرسال» ثم عد إلى هنا.',waOpen:'فتح واتساب',waWait:'في انتظار رسالتك على واتساب…',waExpired:'انتهت المهلة. أعد المحاولة.',waCancel:'إلغاء',waMsgLogin:'دخول بيعلي، الرمز {c}',waMsgVerify:'تأكيد بيعلي، الرمز {c}',waNeedPhone:'اكتب رقمك أولاً في الأعلى.',verifiedB:'رقم مؤكَّد',verifyH:'أكِّد رقمك',verifyP:'رسالة واتساب واحدة تكفي. يثق المشترون أكثر في الأرقام المؤكَّدة.',verifyBtn:'التأكيد عبر واتساب',verifyOk:'تم تأكيد رقمك.',forgotWa:'ادخل عبر واتساب (الزر أعلاه)، ثم اختر رمزاً جديداً في «تعديل ملفي».',pinNewL:'رمز سري جديد (4 أرقام)',pinChange:'تغيير رمزي السري',pinSaved:'تم تغيير الرمز السري.',manage:'إدارة',shareAd:'مشاركة الإعلان',close:'إغلاق',delDone:'تم حذف الإعلان.',adminBadge:'مدير الموقع',noAdminCfg:'لم يُحدَّد أي رقم مدير على الخادم (ADMIN_PHONES).',pwShow:'إظهار الرمز',pwHide:'إخفاء الرمز',stayIn:'تبقى متصلاً على هذا الهاتف حتى بعد إغلاق التطبيق.',credsH:'احتفظ برمزك السري',credsP:'أرسل لنفسك رقمك ورمزك السري على واتساب: ستجدها بسهولة إذا غيّرت هاتفك.',credsWa:'أرسل لي بيانات الدخول على واتساب',credsDone:'تم، إخفاء',credsMsg:'حسابي في بيعلي\nالرقم: {p}\nالرمز السري: {w}\n{u}',impBtn:'استيراد من فيسبوك أو واتساب',impT:'استيراد إعلان',impHelp:'انسخ نص إعلانك (فيسبوك، واتساب، تيك توك…) والصقه هنا. تُملأ الاستمارة تلقائياً، ولن يبقى عليك إلا التحقق وإضافة الصور.',impPh:'مثال: ثلاجة LG سعة 300 لتر حالة جيدة جداً، 9000 أوقية، تفرغ زينة. اتصل على 36…',impGo:'املأ الإعلان',impWait:'جارٍ قراءة النص…',impOk:'تم ملء الإعلان. تحقق وأضف صورك.',impEmpty:'الصق أولاً نص إعلانك.',impOwn:'استورد إعلاناتك فقط.',bulkT:'إضافة عدة إعلانات',bulkSub:'للمحلات: الصق قائمة منتجاتك، سطر لكل منتج مع سعره.',bulkPh:'مثال:\nمكيف LG 1.5 حصان – 18000\nثلاجة سامسونج 300 لتر – 15000\nمروحة واقفة – 2500',bulkShop:'اسم المحل',bulkGo:'تحليل القائمة',bulkN:'{n} إعلانات جاهزة',bulkPub:'نشر {n} إعلانات',bulkPubbing:'نشر {i} من {n}…',bulkDone:'تم نشر {n} إعلانات.',bulkErr:'يجب الإكمال',bulkRm:'حذف',bulkPh2:'الصور',bulkAll:'مدينة كل الإعلانات',bulkType:'النوع',admNewShop:'إنشاء حساب لتاجر',admShopHelp:'بموافقة التاجر: أنشئ حسابه، انشر منتجاته (ادخل ببياناته)، ثم أرسل له بيانات الدخول على واتساب.',admPhone:'الرقم (8 أرقام)',admName:'الاسم',admCreate:'إنشاء الحساب',admCreated:'تم إنشاء الحساب',admSendWa:'إرسال بيانات الدخول على واتساب',admWaMsg:'السلام عليكم {n}، حسابك في بيعلي جاهز.\nالرقم: {p}\nكلمة السر: {w}\nادخل على {u}',delivL:'يمكنني التوصيل',delivB:'توصيل',delivNoteL:'شروط التوصيل',delivNotePh:'مثال: مجاني في نواكشوط، 500 أوقية خارجها',delivH:'التوصيل متاح',newB:'جديد',photosN:'{n} صور',favAdd:'أضف إلى المفضلة',revN:'({n} تقييم)',stViews:'مشاهدات',stView:'مشاهدة',stContacts:'اتصالات',stContact:'اتصال',stTitle:'إحصائيات إعلانك',stPeople:'الأشخاص الذين تواصلوا معك',stNone:'لم يتواصل معك أحد بعد. شارك إعلانك في مجموعات واتساب.',stAnon:'يُحسب الزوار بدون حساب، لكن لا تظهر أسماؤهم.',k_wa:'واتساب',k_call:'اتصال',k_msg:'رسالة',ss_elec:'كهربائي',ss_plomb:'سبّاك',ss_macon:'بناء',ss_peint:'صباغة',ss_clim:'تكييف وتبريد',ss_repTel:'إصلاح الهواتف',ss_couture:'خياطة',ss_cours:'دروس خصوصية',ss_transport:'نقل وترحيل',ss_fete:'تأجير للحفلات',ss_menage:'تنظيف',ss_autreS:'خدمة أخرى',servInfo:'الخدمة',ssub:'نوع الخدمة',errSsub:'اختر نوع الخدمة.',soffer:'أنت',so_offer:'أقدّم هذه الخدمة',so_demand:'أبحث عن هذه الخدمة',sarea:'الأحياء أو المدن',sareaPh:'مثال: تفرغ زينة، لكصر',shome:'يتنقّل إلى المنازل',tarif:'السعر ابتداءً من',mt_solar:'طاقة شمسية وبطاريات',mt_gen:'مولد كهربائي',vk_rental:'تأجير سيارات',vdriver:'مع سائق',perDay:' /يوم',priceDay:'السعر لليوم',k2_room:'غرفة',allTypes:'الكل',tripInfo:'الرحلة',ctype:'أنت',ct_offer:'سائق: أعرض مقاعد',ct_demand:'راكب: أبحث عن رحلة',cfrom:'الانطلاق',cto:'الوصول',cdate:'التاريخ',ctime:'ساعة الانطلاق',cseats:'المقاعد',cseatsD:'المقاعد المطلوبة',ccar:'السيارة',ccarPh:'مثال: تويوتا هايلكس بيضاء',cstops:'محطات التوقف',cstopsPh:'مثال: بوتلميت، ألاك',cbags:'الأمتعة',bg_s:'حقيبة صغيرة',bg_m:'حقيبة سفر',bg_l:'أمتعة كبيرة',cclim:'مكيّف',cwomen:'للنساء فقط',errCtype:'اختر سائق أو راكب.',errCfrom:'اختر مدينة الانطلاق.',errCto:'اختر مدينة وصول مختلفة عن الانطلاق.',errCdate:'اختر تاريخاً قادماً.',errCtime:'حدّد الساعة.',errCseats:'حدّد عدد المقاعد (من 1 إلى 8).',pricePlace:'السعر للمقعد',budgetPlace:'الميزانية للمقعد',perPlace:' للمقعد',placesLeft:'{n} مقاعد',placeLeft:'مقعد واحد',allCities:'كل المدن',anyDate:'كل التواريخ',seatsMin:'أقل عدد من المقاعد',tripType:'الإعلانات',tt_offer:'رحلات معروضة',tt_demand:'طلبات ركاب',tripPast:'انتهى موعد هذه الرحلة.',tripDemand:'طلب رحلة',swapCities:'تبديل الانطلاق والوصول',breedPh:'مثال: لادوم',tabaskiOk:'مناسب لعيد الأضحى',delivery:'التوصيل ممكن',errSpecies:'اختر النوع.',errCount:'اكتب عدد الرؤوس.',
+  breed:'السلالة',hi_oven:'فرن',hi_water:'مبرد مياه',hi_small:'أجهزة صغيرة',smallL:'الجهاز',sm_blender:'خلاط',sm_robot:'محضّر طعام',sm_juicer:'عصارة',sm_kettle:'غلاية',sm_iron:'مكواة',sm_vacuum:'مكنسة كهربائية',sm_airfryer:'قلاية هوائية',sm_coffee:'آلة قهوة',sm_hair:'مجفف / مملس الشعر',sm_other:'جهاز آخر',allSmall:'كل الأجهزة',tabLogin:'الدخول',tabReg:'إنشاء حساب',lgToReg:'هذا الرقم ليس له حساب بعد: أنشئه في ثوانٍ.',lgToLog:'هذا الرقم له حساب: أدخل رمزك السري.',lgPhoneL:'رقم الهاتف',lgCodeL:'الرمز السري',lgNewL:'اختر رمزاً سرياً',lgConfL:'أكّد الرمز السري',lgNameL:'اسمك',lgNewAcc:'جديد في بيعلي: اكتب اسمك واختر رمزاً.',lgChecking:'جارٍ التحقق من الرقم…',lgNeedName:'اكتب اسمك أولاً.',lgPhoneH:'رقم هاتفك',lgPhoneP:'الرقم الذي سيتصل بك عليه المشترون.',lgNext:'متابعة',lgPinH:'أدخل رمزك السري',lgNewH:'اختر رمزك السري',lgNewP:'4 أرقام، مثل بنكيلي. تجنّب 1234 أو 0000.',lgConfH:'أكّد رمزك السري',lgConfP:'اكتب نفس الرمز مرة ثانية.',lgMismatch:'الرمزان غير متطابقين. أعد المحاولة.',lgNameH:'مرحباً بك في بيعلي',lgNameP:'لا يوجد حساب بهذا الرقم بعد. ما اسمك؟',lgChange:'تغيير الرقم',lgOld:'لدي كلمة مرور قديمة',lgOldH:'كلمة المرور القديمة',lgCreate:'إنشاء حسابي',lgDel:'مسح',lgWelcome:'مرحباً!',e_pin_format:'يجب أن يتكون الرمز السري من 4 أرقام بالضبط.',e_pin_weak:'هذا الرمز سهل التخمين (1234، 0000…). اختر رمزاً آخر.',oldPw:'حساب قديم؟ كلمة المرور القديمة لا تزال تعمل.',waLogin:'الدخول عبر واتساب',waOr:'أو',waStep:'سيفتح واتساب برسالة مكتوبة مسبقاً. اضغط «إرسال» ثم عد إلى هنا.',waOpen:'فتح واتساب',waWait:'في انتظار رسالتك على واتساب…',waExpired:'انتهت المهلة. أعد المحاولة.',waCancel:'إلغاء',waMsgLogin:'دخول بيعلي، الرمز {c}',waMsgVerify:'تأكيد بيعلي، الرمز {c}',waNeedPhone:'اكتب رقمك أولاً في الأعلى.',verifiedB:'رقم مؤكَّد',verifyH:'أكِّد رقمك',verifyP:'رسالة واتساب واحدة تكفي. يثق المشترون أكثر في الأرقام المؤكَّدة.',verifyBtn:'التأكيد عبر واتساب',verifyOk:'تم تأكيد رقمك.',forgotWa:'ادخل عبر واتساب (الزر أعلاه)، ثم اختر رمزاً جديداً في «تعديل ملفي».',pinNewL:'رمز سري جديد (4 أرقام)',pinChange:'تغيير رمزي السري',pinSaved:'تم تغيير الرمز السري.',manage:'إدارة',shareAd:'مشاركة الإعلان',close:'إغلاق',delDone:'تم حذف الإعلان.',adminBadge:'مدير الموقع',noAdminCfg:'لم يُحدَّد أي رقم مدير على الخادم (ADMIN_PHONES).',pwShow:'إظهار الرمز',pwHide:'إخفاء الرمز',stayIn:'تبقى متصلاً على هذا الهاتف حتى بعد إغلاق التطبيق.',credsH:'احتفظ برمزك السري',credsP:'أرسل لنفسك رقمك ورمزك السري على واتساب: ستجدها بسهولة إذا غيّرت هاتفك.',credsWa:'أرسل لي بيانات الدخول على واتساب',credsDone:'تم، إخفاء',credsMsg:'حسابي في بيعلي\nالرقم: {p}\nالرمز السري: {w}\n{u}',impBtn:'استيراد من فيسبوك أو واتساب',impT:'استيراد إعلان',impHelp:'انسخ نص إعلانك (فيسبوك، واتساب، تيك توك…) والصقه هنا. تُملأ الاستمارة تلقائياً، ولن يبقى عليك إلا التحقق وإضافة الصور.',impPh:'مثال: ثلاجة LG سعة 300 لتر حالة جيدة جداً، 9000 أوقية، تفرغ زينة. اتصل على 36…',impGo:'املأ الإعلان',impWait:'جارٍ قراءة النص…',impOk:'تم ملء الإعلان. تحقق وأضف صورك.',impEmpty:'الصق أولاً نص إعلانك.',impOwn:'استورد إعلاناتك فقط.',bulkT:'إضافة عدة إعلانات',bulkSub:'للمحلات: الصق قائمة منتجاتك، سطر لكل منتج مع سعره.',bulkPh:'مثال:\nمكيف LG 1.5 حصان – 18000\nثلاجة سامسونج 300 لتر – 15000\nمروحة واقفة – 2500',bulkShop:'اسم المحل',bulkGo:'تحليل القائمة',bulkN:'{n} إعلانات جاهزة',bulkPub:'نشر {n} إعلانات',bulkPubbing:'نشر {i} من {n}…',bulkDone:'تم نشر {n} إعلانات.',bulkErr:'يجب الإكمال',bulkRm:'حذف',bulkPh2:'الصور',bulkAll:'مدينة كل الإعلانات',bulkType:'النوع',admNewShop:'إنشاء حساب لتاجر',admShopHelp:'بموافقة التاجر: أنشئ حسابه، انشر منتجاته (ادخل ببياناته)، ثم أرسل له بيانات الدخول على واتساب.',admPhone:'الرقم (8 أرقام)',admName:'الاسم',admCreate:'إنشاء الحساب',admCreated:'تم إنشاء الحساب',admSendWa:'إرسال بيانات الدخول على واتساب',admWaMsg:'السلام عليكم {n}، حسابك في بيعلي جاهز.\nالرقم: {p}\nكلمة السر: {w}\nادخل على {u}',delivL:'يمكنني التوصيل',delivB:'توصيل',delivNoteL:'شروط التوصيل',delivNotePh:'مثال: مجاني في نواكشوط، 500 أوقية خارجها',delivH:'التوصيل متاح',newB:'جديد',photosN:'{n} صور',favAdd:'أضف إلى المفضلة',revN:'({n} تقييم)',stViews:'مشاهدات',stView:'مشاهدة',stContacts:'اتصالات',stContact:'اتصال',stTitle:'إحصائيات إعلانك',stPeople:'الأشخاص الذين تواصلوا معك',stNone:'لم يتواصل معك أحد بعد. شارك إعلانك في مجموعات واتساب.',stAnon:'يُحسب الزوار بدون حساب، لكن لا تظهر أسماؤهم.',k_wa:'واتساب',k_call:'اتصال',k_msg:'رسالة',ss_elec:'كهربائي',ss_plomb:'سبّاك',ss_macon:'بناء',ss_peint:'صباغة',ss_clim:'تكييف وتبريد',ss_repTel:'إصلاح الهواتف',ss_couture:'خياطة',ss_cours:'دروس خصوصية',ss_transport:'نقل وترحيل',ss_fete:'تأجير للحفلات',ss_menage:'تنظيف',ss_autreS:'خدمة أخرى',servInfo:'الخدمة',ssub:'نوع الخدمة',errSsub:'اختر نوع الخدمة.',soffer:'أنت',so_offer:'أقدّم هذه الخدمة',so_demand:'أبحث عن هذه الخدمة',sarea:'الأحياء أو المدن',sareaPh:'مثال: تفرغ زينة، لكصر',shome:'يتنقّل إلى المنازل',tarif:'السعر ابتداءً من',mt_solar:'طاقة شمسية وبطاريات',mt_gen:'مولد كهربائي',vk_rental:'تأجير سيارات',vdriver:'مع سائق',perDay:' /يوم',priceDay:'السعر لليوم',k2_room:'غرفة',allTypes:'الكل',tripInfo:'الرحلة',ctype:'أنت',ct_offer:'سائق: أعرض مقاعد',ct_demand:'راكب: أبحث عن رحلة',cfrom:'الانطلاق',cto:'الوصول',cdate:'التاريخ',ctime:'ساعة الانطلاق',cseats:'المقاعد',cseatsD:'المقاعد المطلوبة',ccar:'السيارة',ccarPh:'مثال: تويوتا هايلكس بيضاء',cstops:'محطات التوقف',cstopsPh:'مثال: بوتلميت، ألاك',cbags:'الأمتعة',bg_s:'حقيبة صغيرة',bg_m:'حقيبة سفر',bg_l:'أمتعة كبيرة',cclim:'مكيّف',cwomen:'للنساء فقط',errCtype:'اختر سائق أو راكب.',errCfrom:'اختر مدينة الانطلاق.',errCto:'اختر مدينة وصول مختلفة عن الانطلاق.',errCdate:'اختر تاريخاً قادماً.',errCtime:'حدّد الساعة.',errCseats:'حدّد عدد المقاعد (من 1 إلى 8).',pricePlace:'السعر للمقعد',budgetPlace:'الميزانية للمقعد',perPlace:' للمقعد',placesLeft:'{n} مقاعد',placeLeft:'مقعد واحد',allCities:'كل المدن',anyDate:'كل التواريخ',seatsMin:'أقل عدد من المقاعد',tripType:'الإعلانات',tt_offer:'رحلات معروضة',tt_demand:'طلبات ركاب',tripPast:'انتهى موعد هذه الرحلة.',tripDemand:'طلب رحلة',swapCities:'تبديل الانطلاق والوصول',breedPh:'مثال: لادوم',tabaskiOk:'مناسب لعيد الأضحى',delivery:'التوصيل ممكن',errSpecies:'اختر النوع.',errCount:'اكتب عدد الرؤوس.',
   allSpecies:'كل الأنواع',tabBanner:'عيد الأضحى: خراف للبيع',tabBannerSub:'عرض',
   voiceLbl:'إعلان صوتي',voiceRec:'سجّل رسالة صوتية',voiceHelp:'صف سلعتك في 30 ثانية بالحسانية أو العربية أو الفرنسية.',voiceDel:'حذف الرسالة الصوتية',voiceTooBig:'الرسالة طويلة جداً: دقيقة واحدة كحد أقصى.',voiceBad:'اختر ملفاً صوتياً.',voiceListen:'استمع إلى البائع',voiceTag:'صوتي',
   eco:'توفير الإنترنت',ecoOn:'مفعّل',ecoOff:'غير مفعّل',ecoShow:'عرض الصورة',ecoToastOn:'تم تفعيل توفير الإنترنت: لا تُحمّل الصور إلا عند فتحها.',ecoToastOff:'تم إيقاف توفير الإنترنت',
@@ -767,7 +771,7 @@ var TX={
   hi_lit:'سرير',hi_armoire:'خزانة ملابس',hi_buffet:'خزانة / بوفيه',hi_canape:'كنبة / كرسي',hi_meubleTv:'طاولة تلفاز',hi_etagere:'رفوف',
   hi_tableChaises:'طاولة مع كراسي',hi_tableManger:'طاولة طعام',hi_chaises:'كراسي',hi_tableBasse:'طاولة صغيرة',hi_bureau:'مكتب',
   hi_tapis:'زربية',hi_natte:'حصير',hi_moquette:'موكيت',
-  hi_fridge:'ثلاجة',hi_freezer:'مجمد',hi_clim:'مكيف',hi_fan:'مروحة',hi_washer:'غسالة',hi_cooker:'طباخة / فرن',hi_micro:'ميكروويف',hi_heater:'سخان ماء',
+  hi_fridge:'ثلاجة',hi_freezer:'مجمد',hi_clim:'مكيف',hi_fan:'مروحة',hi_washer:'غسالة',hi_cooker:'طباخة / موقد غاز',hi_micro:'ميكروويف',hi_heater:'سخان ماء',
   hi_rideaux:'ستائر',hi_lampe:'مصباح / ثريا',hi_miroir:'مرآة',hi_tableau:'لوحة / إطار',hi_vase:'مزهرية / تحفة',
   hi_theSet:'طقم شاي كامل',hi_theiere:'إبريق شاي',hi_plateau:'صينية',hi_vaisselle:'أواني',hi_marmites:'قدور',hi_gaz:'قنينة غاز / موقد',
   qty:'الكمية',qtyMat:'عدد الفرش',qtyChair:'عدد الكراسي',pcsMat:'فرش',pcsChair:'كراسي',hdims:'المقاسات',hdimsPh:'مثال: 3 م × 4 م',
@@ -948,7 +952,7 @@ var SAMPLE_AR={
 var AR_WORDS={'Entreprise [nom]':'شركة [الاسم]','Port de pêche':'ميناء الصيد','Garage [nom]':'ورشة [الاسم]','Électro [nom]':'متجر إلكترونيات [الاسم]','Carrefour Madrid':'كارفور مدريد','Voile':'فوال','Bazin':'بازان','Bleu et orange':'أزرق وبرتقالي','Noir':'أسود','7j/7, 8h–20h':'كل يوم، 8–20','Toyota Hilux, Prado':'تويوتا هيلوكس، برادو','Velours bordeaux':'قطيفة عنابية','Rouge et beige':'أحمر وبيج','4 m × 3 m':'4 م × 3 م','3 m × 4 m':'3 م × 4 م','Boutique [nom]':'متجر [الاسم]','Agence [nom]':'وكالة [الاسم]','Marché Capitale':'سوق العاصمة','Bleu nuit':'أزرق داكن','Blanc':'أبيض','Touabire':'توابير',
  'Mohamed':'محمد','Aïcha':'عائشة','Sidi':'سيدي','Mariem':'مريم','Ahmed':'أحمد','Brahim':'ابراهيم','Abdallahi':'عبد الله','Fatimetou':'فاطمتو','Sidi Mohamed':'سيدي محمد','Yahya':'يحيى','Khadija':'خديجة','Cheikh':'الشيخ','Moussa':'موسى','Ely':'اعل','Ahmedou':'أحمدو','Mohamed Lemine':'محمد الأمين'};
 function applySampleLang(){var ar=S.lang==='ar';function w(v){return ar&&v&&AR_WORDS[v]?AR_WORDS[v]:v;}
-  SAMPLES.forEach(function(a){
+  SAMPLES.forEach(function(a){catNorm(a);
     if(!a._fr)a._fr={title:a.title,desc:a.desc,near:a.near,seller:a.seller,shop:a.shop?{name:a.shop.name,market:a.shop.market}:null,color:a.dev&&a.dev.color,breed:a.anim&&a.anim.breed};
     var f=a._fr,tr=SAMPLE_AR[a.id];
     a.title=ar&&tr?tr[0]:f.title;a.desc=ar&&tr?tr[1]:f.desc;
@@ -1012,13 +1016,13 @@ function statsBox(a){
     '<div><b style="display:block;margin-bottom:4px">'+t('stPeople')+'</b>'+ppl+'</div><p class="meta" style="margin:0">'+t('stAnon')+'</p></div>';}
 
 /* ===== Importer une annonce / ajouter plusieurs annonces (IA + règles simples) ===== */
-var TYPE_KEY={auto:'vkind',multi:'mtype',maison:'hsub',mode:'mosub',fam:'fsub',anim:'species',job:'joffer',serv:'ssub',immo:'kind'};
-function typeList(c){return c==='auto'?VKINDS:c==='multi'?MTYPES:c==='maison'?HSUBS:c==='mode'?MOSUBS:c==='fam'?FSUBS:c==='anim'?SPECIES:c==='job'?['offer','demand']:c==='serv'?SSUBS:c==='immo'?KINDS:[];}
-function typeLabel(c,v){var pre={auto:'vk_',multi:'mt_',maison:'hs_',mode:'ms_',fam:'fs_',anim:'sp_',job:'jos_',serv:'ss_',immo:'k2_'}[c];return t(pre+v+(c==='job'?'P':''));}
+var TYPE_KEY={auto:'vkind',multi:'mtype',phone:'mtype',menager:'hitem',maison:'hsub',mode:'mosub',fam:'fsub',anim:'species',job:'joffer',serv:'ssub',immo:'kind'};
+function typeList(c){return c==='auto'?VKINDS:isMM(c)?mtypes(c):c==='menager'?EL_ITEMS:c==='maison'?HSUBS:c==='mode'?MOSUBS:c==='fam'?FSUBS:c==='anim'?SPECIES:c==='job'?['offer','demand']:c==='serv'?SSUBS:c==='immo'?KINDS:[];}
+function typeLabel(c,v){var pre={auto:'vk_',multi:'mt_',phone:'mt_',menager:'hi_',maison:'hs_',mode:'ms_',fam:'fs_',anim:'sp_',job:'jos_',serv:'ss_',immo:'k2_'}[c];return t(pre+v+(c==='job'?'P':''));}
 var IKW={
  auto:{car:'voiture|toyota|hilux|corolla|avensis|yaris|prado|land cruiser|mercedes|hyundai|nissan|peugeot|kia|4x4|pick up|سيارة|طوموبيل|تويوتا|هيلكس|مرسيدس|watya|oto',rental:'location voiture|voiture a louer|a louer avec chauffeur|تأجير سيارة|كراء سيارة',bus:'bus|minibus|hiace|حافلة|باص',truck:'camion|benne|شاحنة',moto:'moto|scooter|موتو|دراجة نارية',bike:'velo|vtt|دراجة هوائية|بشكليت',parts:'piece|pneu|jante|moteur|batterie voiture|قطع غيار|اطار|محرك'},
  multi:{smart:'iphone|~samsung|~galaxy|tecno|itel|infinix|redmi|xiaomi|~huawei|oppo|smartphone|هاتف|ايفون|سامسونج|تلفون',basic:'nokia|telephone simple|portable simple',tab:'tablette|ipad|tab |تابلت|لوحي',tv:'tv|tele|television|ecran|تلفاز|تلفزيون|شاشة',console:'playstation|ps4|ps5|xbox|console|manette|بلايستيشن',laptop:'pc portable|laptop|macbook|ordinateur portable|hp elitebook|lenovo|dell|لابتوب|حاسوب محمول',desktop:'pc de bureau|ordinateur de bureau|unite centrale|حاسوب مكتبي',acctel:'ecouteur|airpods|chargeur|powerbank|coque|سماعات|شاحن',accpc:'imprimante|clavier|souris|disque dur|طابعة',solar:'panneau solaire|solaire|batterie solaire|onduleur|طاقة شمسية|الواح شمسية|بطارية',gen:'groupe electrogene|generateur|مولد'},
- maison:{electro:'frigo|frigidaire|refrigerateur|congelateur|climatiseur|clim|split|ventilateur|machine a laver|cuisiniere|gaziniere|micro onde|chauffe eau|ثلاجة|تلاجة|مكيف|مروحة|غسالة|فرن|tallaja',salon:'salon|matelas|coussin|canape|صالون|فراش|وسائد',ameub:'armoire|lit|commode|meuble|خزانة|سرير|اثاث',table:'table|chaise|طاولة|كرسي',tapis:'tapis|natte|زربية|حصير',deco:'deco|lampe|rideau|miroir|ديكور|ستارة',cuisine:'marmite|vaisselle|theiere|verre|service a the|قدر|اواني|براد'},
+ maison:{electro:'mixeur|blender|bouilloire|aspirateur|fer a repasser|four |fontaine|خلاط|مكواة|مكنسة|frigo|frigidaire|refrigerateur|congelateur|climatiseur|clim|split|ventilateur|machine a laver|cuisiniere|gaziniere|micro onde|chauffe eau|ثلاجة|تلاجة|مكيف|مروحة|غسالة|فرن|tallaja',salon:'salon|matelas|coussin|canape|صالون|فراش|وسائد',ameub:'armoire|lit|commode|meuble|خزانة|سرير|اثاث',table:'table|chaise|طاولة|كرسي',tapis:'tapis|natte|زربية|حصير',deco:'deco|lampe|rideau|miroir|ديكور|ستارة',cuisine:'marmite|vaisselle|theiere|verre|service a the|قدر|اواني|براد'},
  mode:{trad:'melhfa|malhfa|daraa|deraa|boubou|voile|ملحفة|دراعة',shoes:'chaussure|basket|sandale|nike|adidas|حذاء|صندل',watches:'montre|ساعة',bags:'sac|valise|حقيبة',jewelry:'or |bijou|bague|collier|bracelet|ذهب|خاتم|قلادة',clothes:'chemise|pantalon|jean|robe|costume|t shirt|veste|قميص|سروال|فستان'},
  fam:{bebeEquip:'poussette|siege auto|عربة اطفال',mobEnfant:'lit bebe|berceau|سرير رضيع',jouets:'jouet|peluche|لعبة|العاب',vetBebe:'vetement bebe|body|ملابس رضع',babysit:'nounou|baby sitting|مربية',aideDom:'femme de menage|bonne|عاملة منزلية'},
  anim:{mouton:'mouton|belier|agneau|tabaski|خروف|كبش|حولي|اضحية|kebch',chevre:'chevre|bouc|ماعز|عنز|تيس',chameau:'chameau|chamelle|جمل|ناقة|naga',vache:'vache|taureau|veau|بقرة|عجل',volaille:'poule|poulet|pintade|دجاج'},
@@ -1027,13 +1031,15 @@ var IKW={
  serv:{elec:'electricien|electricite|كهربائي',plomb:'plombier|plomberie|سباك',macon:'macon|maconnerie|carrelage|بناء',peint:'peintre|peinture|صباغ',clim:'reparation clim|installation clim|frigoriste|تبريد',repTel:'reparation telephone|reparation ecran|اصلاح الهواتف',couture:'couture|couturier|tailleur|خياط',cours:'cours|professeur|soutien scolaire|دروس|استاذ',transport:'demenagement|transport de|ترحيل|نقل',fete:'location tente|chaises pour mariage|sono|خيمة|عرس',menage:'menage|nettoyage|تنظيف'}};
 function inorm(x){return ' '+String(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^a-z0-9؀-ۿ]+/g,' ')+' ';}
 function ihit(n,list){var sc=0;list.split('|').forEach(function(w){var low=w.charAt(0)==='~';w=inorm(low?w.slice(1):w).trim();if(w&&n.indexOf(' '+w)>-1)sc+=low?0.5:(w.length>4?2:1);});return sc;}
-var IKW_ITEM={fridge:'frigo|frigidaire|refrigerateur|ثلاجة|تلاجة|tallaja',freezer:'congelateur|مجمد|فريزر',clim:'climatiseur|clim|split|مكيف',fan:'ventilateur|مروحة',washer:'machine a laver|lave linge|غسالة',cooker:'cuisiniere|gaziniere|four |فرن|طباخة',micro:'micro onde|ميكروويف',heater:'chauffe eau|سخان'};
+var IKW_ITEM={fridge:'frigo|frigidaire|refrigerateur|ثلاجة|تلاجة|tallaja',freezer:'congelateur|مجمد|فريزر',clim:'climatiseur|clim|split|مكيف',fan:'ventilateur|مروحة',washer:'machine a laver|lave linge|غسالة',oven:'four |four electrique|فرن',cooker:'cuisiniere|gaziniere|طباخة',water:'fontaine|distributeur d eau|مبرد ماء',small:'mixeur|blender|bouilloire|aspirateur|fer a repasser|robot|cafetiere|friteuse|خلاط|مكواة|مكنسة|غلاية',micro:'micro onde|ميكروويف',heater:'chauffe eau|سخان'};
 function cityValues(){var o=[];WILAYAS.forEach(function(w){w.cities.forEach(function(c){o.push(c);});});return o;}
 function hparse1(line){
   var n=inorm(line),best=null,bs=0,bt='';
   Object.keys(IKW).forEach(function(c){Object.keys(IKW[c]).forEach(function(ty){var sc=ihit(n,IKW[c][ty]);if(c==='serv'&&sc)sc+=0.5;if(sc>bs){bs=sc;best=c;bt=ty;}});});
   var item='';if(best==='maison'&&bt==='electro'){var ib=0;Object.keys(IKW_ITEM).forEach(function(k){var sc=ihit(n,IKW_ITEM[k]);if(sc>ib){ib=sc;item=k;}});}
   if(best==='maison'&&bt==='electro'&&/reparation|installation|depannage|اصلاح|تركيب/.test(n)){best='serv';bt='clim';}
+  if(best==='maison'&&bt==='electro'){best='menager';bt=item;item='';}
+  if(best==='multi'&&PH_TYPES.indexOf(bt)>-1)best='phone';
   var it={item:item,cat:best||'autre',type:bt,deal:/louer|location|loyer|كراء|للايجار|ايجار/.test(n)?'rent':'sale',title:'',price:null,unit:'new',city:'',desc:''};
   var m=String(line).replace(/(\d)[ .  ](?=\d{3}\b)/g,'$1').match(/(\d+(?:[.,]\d+)?)\s*(mille|milles|k\b|ألف|الف)?\s*(mru|um|ouguiya|ouguiyas|أوقية|اوقية|mro)?/gi);
   if(m){var vals=m.map(function(x){var mm=x.match(/(\d+(?:[.,]\d+)?)\s*(mille|milles|k\b|ألف|الف)?/i),v=parseFloat(mm[1].replace(',','.'));if(mm[2])v*=1000;return {v:v,raw:x};}).filter(function(o){return o.v>=50&&!(String(Math.round(o.v)).length===8&&/^[234]/.test(String(Math.round(o.v))));});
@@ -1168,7 +1174,7 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden&&S.w
 function verifyBox(){var u=S.user;if(!u||u.verified||!S.wa)return '';
   if(S.waJob&&S.waJob.purpose==='verify')return waWaitBox();
   return '<div class="wabox"><b>'+t('verifyH')+'</b><p class="meta" style="margin:0">'+t('verifyP')+'</p><button class="btn wa wide" data-a="waverify">'+svg(I.msg,18)+t('verifyBtn')+'</button></div>';}
-function allAds(){S.remote.forEach(fixArrow);return S.remote;}
+function allAds(){S.remote.forEach(function(a){fixArrow(a);catNorm(a);});return S.remote;}
 function byId(id){var a=allAds();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
 function isFav(id){return S.favs.indexOf(id)>-1;}
 
@@ -1253,6 +1259,15 @@ function filtered(){
       if(of.sub&&(!mo||mo.sub!==of.sub))return false;
       if(of.pub&&(!mo||(mo.pub!==of.pub&&mo.pub!=='x')))return false;
     }
+    if(S.cat==='menager'){
+      var ef=S.hf,eo=a.home;
+      if(ef.pmin&&a.price<+ef.pmin)return false;
+      if(ef.pmax&&a.price>+ef.pmax)return false;
+      if(ef.mode==='new'&&(!eo||eo.cond!=='new'))return false;
+      if(ef.mode==='used'&&(!eo||eo.cond==='new'))return false;
+      if(ef.item&&(!eo||eo.item!==ef.item))return false;
+      if(ef.small&&(!eo||eo.small!==ef.small))return false;
+    }
     if(S.cat==='maison'){
       var hf=S.hf,ho=a.home;
       if(hf.pmin&&a.price<+hf.pmin)return false;
@@ -1262,7 +1277,7 @@ function filtered(){
       if(hf.sub&&(!ho||ho.sub!==hf.sub))return false;
       if(hf.item&&(!ho||ho.item!==hf.item))return false;
     }
-    if(S.cat==='multi'){
+    if(isMM(S.cat)){
       var mf=S.mf,mm=a.mm||(a.dev?{type:a.dev.dtype,brand:a.dev.brand,cond:a.dev.cond,storage:a.dev.storage}:null);
       if(mf.storageMin&&(!mm||!mm.storage||+mm.storage<+mf.storageMin))return false;
       if(mf.pmin&&a.price<+mf.pmin)return false;
@@ -1311,7 +1326,7 @@ function sectionsHTML(r){
     return '<section class="hsec"><button class="hsech" data-a="cat" data-c="'+k+'"><span><span class="hst">'+c[S.lang]+'</span>'+svg(S.lang==='ar'?I.back:I.chev,22,2.2)+'</span>'+
       '<span class="meta">'+t(sc[k]?'fromActivity':'latestIn')+'</span></button>'+
       '<div class="hrow">'+list.slice(0,10).map(card).join('')+(more?'<button class="card hmore" data-a="cat" data-c="'+k+'"><span>'+t('seeAllN').replace('{n}',num(list.length))+'</span>'+svg(S.lang==='ar'?I.back:I.chev,22)+'</button>':'')+'</div></section>';}).join('');}
-var CAT_STORE={serv:'svf',covoit:'vf',auto:'cf',immo:'rf',tel:'pf',multi:'mf',maison:'hf',mode:'of',fam:'ff',job:'jf',anim:'af'};
+var CAT_STORE={serv:'svf',covoit:'vf',auto:'cf',immo:'rf',tel:'pf',multi:'mf',phone:'mf',menager:'hf',maison:'hf',mode:'of',fam:'ff',job:'jf',anim:'af'};
 function catFilterCount(){var o=S[CAT_STORE[S.cat]];if(!o)return 0;return Object.keys(o).filter(function(k){var v=o[k];return v!==''&&v!=null&&v!==false&&!(Array.isArray(v)&&!v.length);}).length;}
 function refineBtn(){if(!CAT_STORE[S.cat])return '';var n=catFilterCount();
   return '<button class="refbtn" data-a="refine" aria-expanded="'+!!S.refOpen+'">'+svg(I.list,20)+'<span style="flex:1">'+t('refineT').replace('{c}',cname(S.cat))+(n?'<span class="meta" style="display:block">'+t('refineN').replace('{n}',n)+'</span>':'')+'</span>'+svg(S.refOpen?I.close:(S.lang==='ar'?I.back:I.chev),20)+'</button>';}
@@ -1614,7 +1629,7 @@ function servFilters(){var sf=S.svf,any=sf.sub||sf.offer||sf.pmin||sf.pmax;
    '<div class="field"><label for="svpmax">'+t('priceMax')+'</label><input id="svpmax" class="inp" data-svf="pmax" inputmode="numeric" value="'+esc(sf.pmax)+'" placeholder="—"></div>'+
    (any?'<button class="linkbtn" data-a="resetsvf" style="color:var(--brand);grid-column:1/-1">'+t('reset')+'</button>':'')+'</div>';}
 /* rangée d'icônes de types sur l'accueil, pour filtrer d'un toucher */
-var TYPE_ROW={auto:['cf','kind',function(){return VKINDS;},'vk_'],multi:['mf','type',function(){return MTYPES;},'mt_'],immo:['rf','kind',function(){return KINDS;},'k2_'],
+var TYPE_ROW={auto:['cf','kind',function(){return VKINDS;},'vk_'],multi:['mf','type',function(){return EL_TYPES;},'mt_'],phone:['mf','type',function(){return PH_TYPES;},'mt_'],menager:['hf','item',function(){return EL_ITEMS;},'hi_'],immo:['rf','kind',function(){return KINDS;},'k2_'],
   anim:['af','species',function(){return SPECIES;},'sp_'],maison:['hf','sub',function(){return HSUBS;},'hs_'],mode:['of','sub',function(){return MOSUBS;},'ms_'],
   serv:['svf','sub',function(){return SSUBS;},'ss_'],fam:['ff','sub',function(){return FSUBS;},'fs_'],job:['jf','offer',function(){return ['offer','demand'];},'jos_','P'],covoit:['vf','type',function(){return ['offer','demand'];},'tt_']};
 function typeRow(){var c=TYPE_ROW[S.cat];if(!c)return '';var st=c[0],k=c[1],cur=(S[st]&&S[st][k])||'',col=(CATS.filter(function(x){return x.id===S.cat;})[0]||{}).c;
@@ -1693,6 +1708,16 @@ function animSpecs(x){
   return '<h2>'+t('specs')+'</h2><div class="specs">'+h+(n%2?'<div></div>':'')+'</div>'+(b?'<div class="badges">'+b+'</div>':'');}
 
 var MTYPES=['smart','basic','tab','tv','console','laptop','desktop','acctel','accpc','solar','gen','other'];
+var PH_TYPES=['smart','basic','tab','acctel'],EL_TYPES=['laptop','desktop','tv','console','accpc','solar','gen','other'];
+function mtypes(c){return c==='phone'?PH_TYPES:EL_TYPES;}
+function isMM(c){return c==='multi'||c==='phone';}
+var EL_ITEMS=['fridge','washer','clim','freezer','oven','cooker','micro','fan','heater','water','small','other_i'];
+var SMALLS=['blender','robot','juicer','kettle','iron','vacuum','airfryer','coffee','hair','other'];
+/* anciennes annonces : les téléphones passent dans « Téléphones », l'électroménager dans « Électroménager » */
+function catNorm(a){if(!a||a._cn===a.cat)return a;
+  if(a.cat==='multi'){var ty=(a.mm&&a.mm.type)||(a.dev&&a.dev.dtype)||'';if(['smart','basic','tab','acctel'].indexOf(ty)>-1||ty==='acc'||(a.dev&&!a.mm))a.cat='phone';}
+  else if(a.cat==='maison'&&a.home&&a.home.sub==='electro')a.cat='menager';
+  a._cn=a.cat;return a;}
 var MBRANDS={solar:['Jinko','Longi','Canadian Solar','JA Solar','Felicity','Must','Autre'],gen:['Honda','Yamaha','Perkins','Elemax','Firman','Autre'],tv:['Samsung','LG','Sony','Hisense','TCL','Philips','Autre'],console:['Sony','Microsoft','Nintendo','Autre'],laptop:['HP','Dell','Lenovo','Apple','Asus','Acer','Toshiba','Microsoft','Autre'],
   desktop:['HP','Dell','Lenovo','Apple','Asus','Acer','Autre'],acctel:['Samsung','Apple','Oraimo','Anker','Xiaomi','Tecno','Autre'],accpc:['HP','Logitech','Dell','Lenovo','Canon','Epson','SanDisk','Autre'],other:['Autre']};
 var CONSOLES=['PS5','PS4','PS3','Xbox Series X','Xbox Series S','Xbox One','Nintendo Switch','Autre'];
@@ -1714,12 +1739,12 @@ function multiFilters(){
   function o(v,l,cur){return '<option value="'+v+'"'+(String(cur)===String(v)?' selected':'')+'>'+l+'</option>';}
   var seg='<div class="seg" role="tablist" aria-label="'+t('pcond')+'" style="grid-template-columns:repeat(3,minmax(0,1fr));grid-column:1/-1;margin-bottom:4px">'+
    [['',t('all')],['new',t('newM')],['used',t('usedM')]].map(function(x){return '<button type="button" role="tab" data-a="mmmode" data-v="'+x[0]+'" aria-selected="'+(m===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>';
-  var ty='<option value="">'+t('allMtypes')+'</option>'+MTYPES.map(function(x){return o(x,t('mt_'+x),mf.type);}).join('');
+  var ty='<option value="">'+t('allMtypes')+'</option>'+mtypes(S.cat).map(function(x){return o(x,t('mt_'+x),mf.type);}).join('');
   var brs=mf.type?MBRANDS[mf.type]:[];
   var br='<option value="">'+t('allBrands')+'</option>'+brs.map(function(b){return o(b,brandName(b),mf.brand);}).join('');
   var any=mf.type||mf.brand||mf.storageMin||mf.pmin||mf.pmax;
-  return '<div class="filters" role="group" aria-label="'+cname('multi')+'">'+seg+
-   fcards('mf','type',t('mtype'),MTYPES,function(x){return t('mt_'+x);},t('all'))+
+  return '<div class="filters" role="group" aria-label="'+cname(S.cat)+'">'+seg+
+   fcards('mf','type',t('mtype'),mtypes(S.cat),function(x){return t('mt_'+x);},t('all'))+
    (brs.length>1?'<div class="field" style="grid-column:1/-1"><label for="mfbrand">'+t('brand')+'</label><select id="mfbrand" class="inp" data-mf="brand">'+br+'</select></div>':'')+
    (isPhone(mf.type)?'<div class="field" style="grid-column:1/-1"><label for="mfst">'+t('storageMin')+'</label><select id="mfst" class="inp" data-mf="storageMin"><option value="">'+t('anyYear')+'</option>'+STORAGES.map(function(x){return o(x,gb(x)+'+',mf.storageMin);}).join('')+'</select></div>':'')+
    '<div class="field"><label for="mfpmin">'+t('priceMin')+'</label><input id="mfpmin" class="inp" data-mf="pmin" inputmode="numeric" value="'+esc(mf.pmin)+'" placeholder="0"></div>'+
@@ -1735,7 +1760,7 @@ function multiFields(d,e){
   function txt(id,key,label,ph,extra){return '<div class="field"><label for="'+id+'">'+label+O+'</label><input id="'+id+'" class="inp" data-f="'+key+'" maxlength="40" value="'+esc(d[key])+'" placeholder="'+ph+'"'+(extra||'')+'></div>';}
   var ty=d.mtype;
   var h='<div class="carbox"><div class="legend">'+t('mmInfo')+'</div><div class="field"><div class="legend" style="font-size:14px">'+t('mtype')+'</div><div class="row" style="flex-wrap:wrap">'+
-   MTYPES.map(function(x){return '<button type="button" class="chip" data-a="mmtype" data-v="'+x+'" aria-pressed="'+(ty===x)+'">'+t('mt_'+x)+'</button>';}).join('')+'</div>'+err('mtype','errMtype')+'</div>';
+   mtypes(d.cat).map(function(x){return '<button type="button" class="chip" data-a="mmtype" data-v="'+x+'" aria-pressed="'+(ty===x)+'">'+t('mt_'+x)+'</button>';}).join('')+'</div>'+err('mtype','errMtype')+'</div>';
   if(!ty)return h+'</div>';
   if(isPhone(ty)){d.pdtype=ty;return h+'</div>'+phoneFields(d,e,true);}
   var needBrand=ty==='tv'||ty==='console'||isPc(ty),rows=[];
@@ -1781,19 +1806,30 @@ function multiSpecs(m){
   return '<h2>'+t('specs')+'</h2><div class="specs">'+h+(n%2?'<div></div>':'')+'</div>'+(inc?'<h2>'+t('incl')+'</h2><div class="badges">'+inc+'</div>':'');}
 
 
-var HSUBS=['salon','ameub','table','tapis','electro','deco','cuisine'];
+var HSUBS=['salon','ameub','table','tapis','deco','cuisine'];
 var SSUBS=['elec','plomb','macon','peint','clim','repTel','couture','cours','transport','fete','menage','autreS'];
 var HITEMS={salon:['salonComplet','matelas','coussins','housses','other_i'],ameub:['lit','armoire','buffet','canape','meubleTv','etagere','other_i'],
   table:['tableChaises','tableManger','chaises','tableBasse','bureau','other_i'],tapis:['tapis','natte','moquette','other_i'],
-  electro:['fridge','freezer','clim','fan','washer','cooker','micro','heater','other_i'],deco:['rideaux','lampe','miroir','tableau','vase','other_i'],
+  electro:['fridge','washer','clim','freezer','oven','cooker','micro','fan','heater','water','small','other_i'],deco:['rideaux','lampe','miroir','tableau','vase','other_i'],
   cuisine:['theSet','theiere','plateau','vaisselle','marmites','gaz','other_i']};
 var HBRANDS=['LG','Samsung','Hisense','Midea','Haier','Beko','Whirlpool','Condor','Autre'];
-function homeMeta(a){var h=a.home,p=[t('hi_'+h.item)];
+function homeMeta(a){var h=a.home,p=[h.small?t('sm_'+h.small):t('hi_'+h.item)];
   if(h.brand)p.push(brandName(h.brand));if(h.cap)p.push(h.cap);
   if(h.qty&&(h.sub==='salon'||h.sub==='table'))p.push(h.qty+' '+t(h.sub==='salon'?'pcsMat':'pcsChair'));
   if(h.dims&&h.sub==='tapis')p.push(h.dims);
   return p.join(' · ');}
 
+function menagerFilters(){
+  var hf=S.hf,m=hf.mode||'';
+  var seg='<div class="seg" role="tablist" aria-label="'+t('cond')+'" style="grid-template-columns:repeat(3,minmax(0,1fr));grid-column:1/-1;margin-bottom:4px">'+
+   [['',t('all')],['new',t('newM')],['used',t('usedM')]].map(function(x){return '<button type="button" role="tab" data-a="hmode" data-v="'+x[0]+'" aria-selected="'+(m===x[0])+'">'+x[1]+'</button>';}).join('')+'</div>';
+  var any=hf.item||hf.small||hf.pmin||hf.pmax;
+  return '<div class="filters" role="group" aria-label="'+cname('menager')+'">'+seg+
+   fcards('hf','item',t('hitem'),EL_ITEMS,function(x){return t('hi_'+x);},t('all'))+
+   (hf.item==='small'?fcards('hf','small',t('smallL'),SMALLS,function(x){return t('sm_'+x);},t('allSmall')):'')+
+   '<div class="field"><label for="hfpmin">'+t('priceMin')+'</label><input id="hfpmin" class="inp" data-hf="pmin" inputmode="numeric" value="'+esc(hf.pmin)+'" placeholder="0"></div>'+
+   '<div class="field"><label for="hfpmax">'+t('priceMax')+'</label><input id="hfpmax" class="inp" data-hf="pmax" inputmode="numeric" value="'+esc(hf.pmax)+'" placeholder="—"></div>'+
+   (any?'<button class="linkbtn" data-a="resethf" style="color:var(--brand);grid-column:1/-1">'+t('reset')+'</button>':'')+'</div>';}
 function homeFilters(){
   var hf=S.hf,m=hf.mode||'';
   function o(v,l,cur){return '<option value="'+v+'"'+(cur===v?' selected':'')+'>'+l+'</option>';}
@@ -1816,12 +1852,14 @@ function homeFields(d,e){
   var O=' <span style="font-weight:400;color:var(--muted);font-size:13px">'+t('optional')+'</span>';
   function sel(id,key,label,options,req){return '<div class="field"><label for="'+id+'">'+label+(req?'':O)+'</label><select id="'+id+'" class="inp" data-f="'+key+'"'+(req?inv(key):'')+'><option value="">'+t('choose')+'</option>'+options+'</select>'+(req?err(key,req):'')+'</div>';}
   function txt(id,key,label,ph,extra){return '<div class="field"><label for="'+id+'">'+label+O+'</label><input id="'+id+'" class="inp" data-f="'+key+'" maxlength="40" value="'+esc(d[key])+'" placeholder="'+ph+'"'+(extra||'')+'></div>';}
+  var men=d.cat==='menager';if(men)d.hsub='electro';else if(d.hsub==='electro')d.hsub='';
   var sb=d.hsub;
-  var h='<div class="carbox"><div class="legend">'+t('homeInfo')+'</div><div class="field"><div class="legend" style="font-size:14px">'+t('hsub')+'</div><div class="row" style="flex-wrap:wrap">'+
+  var h=men?'<div class="carbox"><div class="legend">'+t('homeInfo')+'</div>':'<div class="carbox"><div class="legend">'+t('homeInfo')+'</div><div class="field"><div class="legend" style="font-size:14px">'+t('hsub')+'</div><div class="row" style="flex-wrap:wrap">'+
    HSUBS.map(function(x){return '<button type="button" class="chip" data-a="hsub" data-v="'+x+'" aria-pressed="'+(sb===x)+'">'+t('hs_'+x)+'</button>';}).join('')+'</div>'+err('hsub','errHsub')+'</div>';
   if(!sb)return h+'</div>';
   var rows=[];
   h+=dcards('hitem',t('hitem'),HITEMS[sb],function(x){return t('hi_'+x);},d.hitem,'errHitem');
+  if(men&&d.hitem==='small')h+=dcards('hsmall',t('smallL'),SMALLS,function(x){return t('sm_'+x);},d.hsmall,'');
   rows.push(sel('fhcond','hcond',t('cond'),CONDS.map(function(c){return opt(c,t('c_'+c),d.hcond);}).join(''),'errCond'));
   if(sb==='electro'){
     rows.push(sel('fhbrand','hbrand',t('brand'),HBRANDS.map(function(b){return opt(b,brandName(b),d.hbrand);}).join('')));
@@ -1837,7 +1875,7 @@ function homeFields(d,e){
 
 function homeSpecs(x){
   var n=0;function it(l,v){n++;return '<div><span>'+l+'</span><b>'+v+'</b></div>';}
-  var h=it(t('hsub'),t('hs_'+x.sub))+it(t('hitem'),t('hi_'+x.item))+(x.brand?it(t('brand'),esc(brandName(x.brand))):'')+(x.cap?it(t('cap'),esc(x.cap)):'')+
+  var h=(x.sub==='electro'?'':it(t('hsub'),t('hs_'+x.sub)))+it(t('hitem'),t('hi_'+x.item))+(x.small?it(t('smallL'),t('sm_'+x.small)):'')+(x.brand?it(t('brand'),esc(brandName(x.brand))):'')+(x.cap?it(t('cap'),esc(x.cap)):'')+
    (x.qty?it(t(x.sub==='salon'?'qtyMat':x.sub==='table'?'qtyChair':'qty'),esc(x.qty)):'')+(x.dims?it(t('hdims'),esc(x.dims)):'')+
    (x.mat?it(t('mat'),t('mt2_'+x.mat)):'')+(x.color?it(t('hcolor'),esc(x.color)):'')+it(t('cond'),t('c_'+x.cond));
   return '<h2>'+t('specs')+'</h2><div class="specs">'+h+(n%2?'<div></div>':'')+'</div>'+(x.delivery?'<div class="badges"><span class="badge">'+t('delivery')+'</span></div>':'');}
@@ -2015,9 +2053,9 @@ function terms(){
   BRANDS.forEach(function(b){add(b,'auto');(MODELS[b]||[]).forEach(function(m){add(b+' '+m,'auto');});});
   each(VBRANDS,function(b){add(b,'auto');});
   VKINDS.forEach(function(x){add(t('vk_'+x),'auto');});SERVICES.forEach(function(x){add(t('sv_'+x),'auto');});PARTS.forEach(function(x){add(t('p2_'+x),'auto');});
-  PBRANDS.forEach(function(b){add(b,'multi');});each(MBRANDS,function(b){add(b,'multi');});
-  MTYPES.forEach(function(x){add(t('mt_'+x),'multi');});each(ACCS,function(x){add(t('a_'+x),'multi');});CONSOLES.forEach(function(x){add(x,'multi');});
-  HBRANDS.forEach(function(b){add(b,'maison');});HSUBS.forEach(function(x){add(t('hs_'+x),'maison');});each(HITEMS,function(x){add(t('hi_'+x),'maison');});
+  PBRANDS.forEach(function(b){add(b,'phone');});EL_TYPES.forEach(function(k){(MBRANDS[k]||[]).forEach(function(b){add(b,'multi');});});
+  MTYPES.forEach(function(x){add(t('mt_'+x),PH_TYPES.indexOf(x)>-1?'phone':'multi');});ACCS.acctel.forEach(function(x){add(t('a_'+x),'phone');});ACCS.accpc.forEach(function(x){add(t('a_'+x),'multi');});CONSOLES.forEach(function(x){add(x,'multi');});
+  HBRANDS.forEach(function(b){add(b,'menager');});HSUBS.forEach(function(x){add(t('hs_'+x),'maison');});Object.keys(HITEMS).forEach(function(k){HITEMS[k].forEach(function(x){add(t('hi_'+x),k==='electro'?'menager':'maison');});});SMALLS.forEach(function(x){add(t('sm_'+x),'menager');});
   MOSUBS.forEach(function(x){add(t('ms_'+x),'mode');});each(MOITEMS,function(x){add(t('mi_'+x),'mode');});
   FSUBS.forEach(function(x){add(t('fs_'+x),'fam');});each(FITEMS,function(x){add(t('fi_'+x),'fam');});FROLES.forEach(function(x){add(t('r_'+x),'fam');});
   KINDS.forEach(function(x){add(t('k2_'+x),'immo');});SPECIES.forEach(function(x){add(t('sp_'+x),'anim');});
@@ -2252,7 +2290,7 @@ V.home=function(){
    '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" class="srh">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"><button type="button" class="camq" data-a="visual" aria-label="'+t('imgSearch')+'" title="'+t('imgSearch')+'">'+svg(I.cam,22)+'</button></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
    '</header>'+
    '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles">'+cats+'</div></div>'+(S.cat?'<button class="linkbtn" data-a="cat" data-c="" style="color:var(--brand);align-self:flex-end;font-size:13px">'+t('showAll')+'</button>':'')+
-   (S.cat?refineBtn():'')+(S.cat?typeRow():'')+(S.cat&&S.refOpen?(S.cat==='serv'?servFilters():'')+(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+(S.cat==='tel'?phoneFilters():'')+(S.cat==='multi'?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
+   (S.cat?refineBtn():'')+(S.cat?typeRow():'')+(S.cat&&S.refOpen?(S.cat==='serv'?servFilters():'')+(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+(S.cat==='tel'?phoneFilters():'')+(isMM(S.cat)?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='menager'?menagerFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
    '</div><div class="sec" id="list" style="padding-top:12px">'+listHTML()+'</div><div style="height:16px"></div></div>'+tabs('home');};
 
 V.detail=function(){
@@ -2316,7 +2354,7 @@ V.post=function(){
   return topbar(t(S.editId?'editAd':'post'),S.editId?'myads':'home')+'<form id="pf" class="scroll" novalidate><div class="sec" style="gap:16px">'+prog+
    (S.draftRestored&&!S.editId&&st===1?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><p style="flex:1">'+t('draftBack')+'</p><button type="button" class="linkbtn" data-a="cleardraft" style="color:var(--brand);flex-shrink:0">'+t('draftClear')+'</button></div>':'')+
    step(1,(S.editId?'':'<button type="button" class="impbtn" data-a="goimport">'+svg('<rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 13l2 2 4-4"/>',20)+'<span>'+t('impBtn')+'</span></button>')+'<div class="field"><div class="cattiles" role="group" aria-label="'+t('cat')+'">'+CATS.map(function(c){var on=d.cat===c.id;return '<button type="button" class="ctile" data-a="postcat" data-v="'+c.id+'" aria-pressed="'+on+'"><span class="ic art">'+artSvg(c.id,56)+'</span><span>'+c[S.lang]+'</span></button>';}).join('')+'</div>'+(e.cat?'<div class="err">'+t('errCat')+'</div>':'')+'</div>'+
-     '<div id="catf">'+(d.cat==='serv'?servFields(d,e):'')+(d.cat==='covoit'?covoitFields(d,e):'')+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(d.cat==='multi'?multiFields(d,e):'')+(d.cat==='maison'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>')+
+     '<div id="catf">'+(d.cat==='serv'?servFields(d,e):'')+(d.cat==='covoit'?covoitFields(d,e):'')+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(isMM(d.cat)?multiFields(d,e):'')+(d.cat==='maison'||d.cat==='menager'?homeFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>')+
    step(2,'<div class="field"><label for="ftitle">'+t('title')+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title)+'" placeholder="'+esc(titlePh(d))+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+'</div>'+
      '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div><div class="photos">'+ph+add+'</div><div class="meta">'+t('compress')+'</div></div>'+
      '<div class="field"><label for="fdesc">'+t('desc')+O+'</label><textarea id="fdesc" class="inp" rows="3" data-f="desc" maxlength="1000" placeholder="'+esc(descPh(d))+'">'+esc(d.desc)+'</textarea><div class="meta">'+t('descVoice')+'</div></div>'+
@@ -2356,7 +2394,7 @@ document.addEventListener('change',function(e){if(S.screen!=='post'||!S.draft)re
 document.addEventListener('toggle',function(e){if(e.target&&e.target.id==='moredet')S.detOpen=e.target.open;if(e.target&&e.target.id==='meddet')S.medOpen=e.target.open;},true);
 var TPH={fr:{
  smart:'iPhone 13 128 Go',basic:'Nokia 105 neuf',tab:'Samsung Galaxy Tab A8',tv:'Télévision Samsung 55 pouces',console:'PlayStation 5 avec 2 manettes',laptop:'HP EliteBook i5 16 Go',desktop:'PC de bureau Dell i7 avec écran',acctel:'Écouteurs AirPods Pro',accpc:'Imprimante HP LaserJet',other:'Appareil photo Canon EOS',
- salon:'Salon marocain 6 places',ameub:'Armoire 3 portes en bois',table:'Table à manger 6 chaises',tapis:'Grand tapis 3 × 4 m',electro:'Réfrigérateur LG 300 litres',deco:'Lampe de salon dorée',cuisine:'Gazinière 4 feux avec four',
+ salon:'Salon marocain 6 places',ameub:'Armoire 3 portes en bois',table:'Table à manger 6 chaises',tapis:'Grand tapis 3 × 4 m',electro:'Mixeur Moulinex 2 vitesses',fridge:'Réfrigérateur LG 300 litres',washer:'Machine à laver Samsung 7 kg',clim:'Climatiseur split 12 000 BTU',freezer:'Congélateur coffre 200 L',oven:'Four électrique 45 L',water:'Fontaine à eau chaud / froid',deco:'Lampe de salon dorée',cuisine:'Gazinière 4 feux avec four',
  car:'Toyota Hilux 2015 diesel',bus:'Minibus Toyota Hiace 15 places',truck:'Camion Mercedes 10 tonnes',moto:'Moto Haojue 125',bike:'Vélo VTT adulte',parts:'Moteur Toyota 1KZ',service:'Mécanicien à domicile',
  'sale:house':'Maison 4 chambres à Tevragh Zeina','sale:land':'Terrain 300 m² titré','rent:apt':'Appartement 3 pièces à louer','rent:house':'Maison 3 chambres à louer','rent:shop':'Boutique à louer au marché Capitale','rent:land':'Terrain à louer pour garage',
  trad:'Melhfa voile neuve',clothes:'Costume homme taille L',shoes:'Baskets Nike taille 42',jewelry:'Collier en or 18 carats',watches:'Montre Casio homme',bags:'Sac à main en cuir',
@@ -2376,15 +2414,15 @@ ar:{
  mouton:'كبش للعيد',chevre:'عنزتان حلوبتان',chameau:'ناقة عمرها 4 سنوات',vache:'بقرة حلوب',volaille:'20 دجاجة بلدية',autre:'حمار مع عربة',
  c_autre:'مولد كهربائي 5 كيلوفولت',solar:'ألواح شمسية 4 × 450 واط مع بطارية',gen:'مولد هوندا 5 كيلوفولت',rental:'تأجير تويوتا كورولا مع سائق','rent:room':'غرفة مفروشة للإيجار في لكصر',
  elec:'كهربائي مباني، تركيب وإصلاح',plomb:'سبّاك، إصلاح التسربات',macon:'بنّاء، بناء وتبليط',peint:'صبّاغ مباني',clim:'تركيب وإصلاح المكيفات',repTel:'إصلاح شاشات الهواتف',couture:'خيّاطة ملاحف وفساتين',cours:'دروس رياضيات وفيزياء للثانوي',transport:'ترحيل بشاحنة وعمال',fete:'تأجير خيام وكراسي للأعراس',menage:'تنظيف منازل ومكاتب',autreS:'ترجمة وثائق عربي-فرنسي'}};
-var DPH={fr:{auto:'Ex. : Kilométrage réel, entretien à jour, papiers en règle, aucun accident.',multi:'Ex. : Très bon état, batterie 90 %, avec chargeur et facture.',immo:'Ex. : 3 chambres, salon, cuisine équipée, eau et électricité, proche du goudron.',
+var DPH={fr:{auto:'Ex. : Kilométrage réel, entretien à jour, papiers en règle, aucun accident.',phone:'Ex. : Très bon état, batterie 90 %, avec chargeur et facture.',multi:'Ex. : Très bon état, fonctionne parfaitement, avec facture.',menager:'Ex. : Très bon état, consomme peu, garantie boutique 6 mois.',immo:'Ex. : 3 chambres, salon, cuisine équipée, eau et électricité, proche du goudron.',
   anim:'Ex. : En bonne santé, vacciné, bien nourri. Visible à la maison.',maison:'Ex. : Très bon état, utilisé 1 an, fonctionne parfaitement.',mode:'Ex. : Neuf, jamais porté, taille et couleur disponibles.',
   serv:'Ex. : 10 ans d’expérience, travail propre et rapide, devis gratuit.',fam:'Ex. : Bon état, propre, utilisé quelques mois.',job:'Ex. : Horaires, salaire, expérience demandée…',covoit:'Ex. : Départ devant la station Total, une pause à Boutilimit.',autre:'Ex. : État, accessoires, raison de la vente…'},
- ar:{auto:'مثال: عدّاد حقيقي، صيانة منتظمة، أوراق سليمة، بدون حوادث.',multi:'مثال: حالة جيدة جداً، البطارية 90٪، مع الشاحن والفاتورة.',immo:'مثال: 3 غرف، صالون، مطبخ مجهز، ماء وكهرباء، قريب من الطريق المعبّد.',
+ ar:{auto:'مثال: عدّاد حقيقي، صيانة منتظمة، أوراق سليمة، بدون حوادث.',phone:'مثال: حالة جيدة جداً، البطارية 90٪، مع الشاحن والفاتورة.',multi:'مثال: حالة جيدة جداً، يعمل بشكل ممتاز، مع الفاتورة.',menager:'مثال: حالة جيدة جداً، استهلاك قليل، ضمان المحل 6 أشهر.',immo:'مثال: 3 غرف، صالون، مطبخ مجهز، ماء وكهرباء، قريب من الطريق المعبّد.',
   anim:'مثال: بصحة جيدة، ملقّح، يمكن رؤيته في المنزل.',maison:'مثال: حالة جيدة جداً، استُعمل سنة، يعمل بشكل ممتاز.',mode:'مثال: جديد، لم يُلبس، المقاسات والألوان متوفرة.',
   serv:'مثال: خبرة 10 سنوات، عمل نظيف وسريع، تقدير مجاني.',fam:'مثال: حالة جيدة، نظيف، استُعمل بضعة أشهر.',job:'مثال: أوقات العمل، الراتب، الخبرة المطلوبة…',covoit:'مثال: الانطلاق أمام محطة توتال، توقف في بوتلميت.',autre:'مثال: الحالة، الملحقات، سبب البيع…'}};
 function descPh(d){var L=DPH[S.lang]||DPH.fr;return L[d.cat]||t('descPh');}
 function titlePh(d){var L=TPH[S.lang]||TPH.fr,c=d.cat,v='';
-  if(c==='auto')v=d.vkind;else if(c==='immo')v=d.kind?(d.deal||'sale')+':'+d.kind:'';else if(c==='multi')v=d.mtype;else if(c==='maison')v=d.hsub;
+  if(c==='auto')v=d.vkind;else if(c==='immo')v=d.kind?(d.deal||'sale')+':'+d.kind:'';else if(isMM(c))v=d.mtype;else if(c==='maison')v=d.hsub;else if(c==='menager')v=d.hitem==='small'?'electro':d.hitem;
   else if(c==='mode')v=d.mosub;else if(c==='fam')v=d.fsub;else if(c==='job')v=d.joffer;else if(c==='anim')v=d.species;else if(c==='serv')v=d.ssub;else if(c==='autre')v='c_autre';
   var ex=v&&L[v];if(!ex&&c==='immo'&&d.kind)ex=L['rent:'+d.kind]||L['sale:'+d.kind];
   return ex?(S.lang==='ar'?'مثال: ':'Ex. : ')+ex:t('titlePh');}
@@ -2905,7 +2943,7 @@ var SUBI={
  cvdemand:'<circle cx="9" cy="6" r="2.5"/><path d="M6 21v-6.5L4.5 13V10.5A2.5 2.5 0 0 1 7 8h4a2.5 2.5 0 0 1 2.5 2.5v3M12 21v-6.5"/><path d="M15.5 13.5V10a1.2 1.2 0 0 1 2.4 0v1.5h1.3a1.8 1.8 0 0 1 1.8 2V16a3 3 0 0 1-3 3h-.5a3 3 0 0 1-2.4-1.2l-1.6-2.1"/>'
 };
 /* Illustrations des types (64 × 64), même style que les catégories */
-var ILLBG={auto:'#FDECE6',multi:'#EEEAFB',immo:'#E3F2E8',anim:'#F6ECD9',maison:'#FCF0DA',mode:'#F6E6F0',serv:'#E2F0E8',fam:'#FBE5EE',job:'#E4EBF3',covoit:'#E0F1F5',autre:'#ECEEEC'};
+var ILLBG={auto:'#FDECE6',phone:'#EEEAFB',multi:'#E3EDF9',menager:'#FDEBDD',immo:'#E3F2E8',anim:'#F6ECD9',maison:'#FCF0DA',mode:'#F6E6F0',serv:'#E2F0E8',fam:'#FBE5EE',job:'#E4EBF3',covoit:'#E0F1F5',autre:'#ECEEEC'};
 var iK='#2B2B2B',iG='#C9C9C9',iSKY='#BFE3F2',iSCR='#7FB7F5',iGOLD='#F2B705',iWOOD='#8A5A2B',iSKIN='#E9B98F';
 function iWheel(x,y,r){return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+iK+'"/><circle cx="'+x+'" cy="'+y+'" r="'+(r*0.42)+'" fill="'+iG+'"/>';}
 var ILLT={
@@ -3002,7 +3040,18 @@ var ILLT={
 var ILLT_CAT={};
 ['car','rental','bus','truck','moto','bike','parts','service'].forEach(function(k){ILLT_CAT[k]='auto';});
 ['sale','rent','apt','house','room','shop','land'].forEach(function(k){ILLT_CAT[k]='immo';});
-['smart','basic','tab','tv','console','laptop','desktop','acctel','accpc','solar','gen','other'].forEach(function(k){ILLT_CAT[k]='multi';});
+['tv','console','laptop','desktop','accpc','solar','gen','other'].forEach(function(k){ILLT_CAT[k]='multi';});
+['smart','basic','tab','acctel'].forEach(function(k){ILLT_CAT[k]='phone';});
+['fridge','freezer','clim','fan','washer','cooker','oven','micro','heater','water','small'].forEach(function(k){ILLT_CAT[k]='menager';});
+ILLT.oven='<rect x="8" y="12" width="48" height="40" rx="4" fill="#3A3F44"/><rect x="14" y="22" width="36" height="24" rx="2" fill="#F59E0B"/><rect x="18" y="26" width="28" height="16" rx="1.5" fill="#FCD34D"/><g fill="#C9D3DA"><circle cx="18" cy="17" r="2"/><circle cx="26" cy="17" r="2"/><circle cx="34" cy="17" r="2"/></g><rect x="40" y="15" width="10" height="4" rx="1" fill="#22C55E"/>';
+ILLT.water='<rect x="20" y="26" width="24" height="34" rx="3" fill="#E5E7EB"/><path d="M22 6h20l-2 20H24z" fill="#7FB7F5"/><path d="M24 10h16" stroke="#FFFFFF" stroke-width="2"/><rect x="25" y="36" width="5" height="5" rx="1" fill="#2563EB"/><rect x="34" y="36" width="5" height="5" rx="1" fill="#DC2626"/><rect x="24" y="46" width="16" height="3" rx="1" fill="#9CA3AF"/>';
+ILLT.small='<path d="M22 8h20l-3 26H25z" fill="#BFE3F2" stroke="#7FB7F5" stroke-width="2"/><path d="M28 18l8 6M36 18l-8 6" stroke="#2E7D32" stroke-width="2.5" stroke-linecap="round"/><rect x="20" y="34" width="24" height="22" rx="5" fill="#C2410C"/><circle cx="32" cy="45" r="4" fill="#FDE68A"/>';
+ILL.phone=ILL.multi&&('<rect width="64" height="64" fill="#EEEAFB"/>'+ILLT.smart);
+ILL.menager='<rect width="64" height="64" fill="#FDEBDD"/>'+ILLT.fridge;
+SUBI.oven='<rect x="3" y="4" width="18" height="16" rx="2"/><rect x="6" y="9" width="12" height="8" rx="1"/><path d="M6 6.5h1M9 6.5h1"/>';
+SUBI.water='<path d="M8 2h8l-1 7H9z"/><rect x="7" y="9" width="10" height="13" rx="1.5"/><path d="M10 14h1M13 14h1"/>';
+SUBI.small='<path d="M8 3h8l-1.5 9h-5z"/><rect x="7" y="12" width="10" height="9" rx="2"/><circle cx="12" cy="16.5" r="1.5"/>';
+ILL.multi='<rect width="64" height="64" fill="#E3EDF9"/>'+(ILLT.laptop||'');
 ['salon','ameub','table','tapis','electro','fridge','freezer','clim','fan','washer','cooker','micro','heater','other_i','deco','cuisine'].forEach(function(k){ILLT_CAT[k]='maison';});
 ['trad','clothes','shoes','jewelry','watches','bags'].forEach(function(k){ILLT_CAT[k]='mode';});
 ['bebeEquip','mobEnfant','vetBebe','vetEnfant','vetMat','chausEnfant','bijouxEnfant','accEnfant','jouets','babysit','aideDom'].forEach(function(k){ILLT_CAT[k]='fam';});
@@ -3042,7 +3091,7 @@ function render(keepScroll){
 }
 function go(s){var from=S.screen;if(s==='myads'&&S.user)loadMyStats();if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.confirm=null;render();
   if(!S.popping&&s!==from){try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}}}
-var MAIN_PICK={serv:'[data-k="ssub"],[data-k="soffer"]',covoit:'[data-ck]',auto:'[data-a="vkind"]',immo:'[data-a="redeal"],[data-a="rekind"]',multi:'[data-a="mmtype"]',tel:'[data-k="pdtype"],[data-a="pdtype"]',maison:'[data-a="hsub"],[data-k="hitem"]',mode:'[data-a="mosub"]',fam:'[data-k="fsub"],[data-a="fsub"]',job:'[data-k="joffer"]',anim:'[data-a="species"],[data-k="species"]'};
+var MAIN_PICK={serv:'[data-k="ssub"],[data-k="soffer"]',covoit:'[data-ck]',auto:'[data-a="vkind"]',immo:'[data-a="redeal"],[data-a="rekind"]',multi:'[data-a="mmtype"]',phone:'[data-a="mmtype"]',menager:'[data-k="hitem"],[data-k="hsmall"]',tel:'[data-k="pdtype"],[data-a="pdtype"]',maison:'[data-a="hsub"],[data-k="hitem"]',mode:'[data-a="mosub"]',fam:'[data-k="fsub"],[data-a="fsub"]',job:'[data-k="joffer"]',anim:'[data-a="species"],[data-k="species"]'};
 function splitPostForm(){
   var cf=app.querySelector('#catf'),cm=app.querySelector('#catmore');if(!cf||!cm||!S.draft)return;
   var keep=MAIN_PICK[S.draft.cat]||'__none__',moved=[],legend='';
@@ -3110,7 +3159,7 @@ app.addEventListener('click',function(e){
      api('PUT','me',{name:PR.name.trim(),city:PR.city}).then(function(d){setUser(d.user);return loadAds();}).then(function(){S.profForm=null;toast(t('profSaved'));go('account');}).catch(function(){toast(t('netErr'));});break;
    case 'go-favs':go('favs');break;
    case 'open':S.id=id;(function(){var oa=byId(id);if(oa&&S.user&&oa.owner===S.user.id)loadAdStats(id);else pingAd(id,'view');})();S.seen=[id].concat(S.seen.filter(function(x){return x!==id;})).slice(0,20);save('seen',S.seen);go('detail');break;
-   case 'cat':S.refOpen=false;S.cat=el.getAttribute('data-c');S.showCats=false;render(true);break;
+   case 'cat':S.refOpen=false;var ncat=el.getAttribute('data-c');if(ncat!==S.cat){S.mf.type='';S.mf.brand='';S.mf.storageMin='';S.hf.sub='';S.hf.item='';S.hf.small='';}S.cat=ncat;S.showCats=false;render(true);break;
    case 'showcats':S.showCats=true;render(true);break;
    case 'lang':var osn=S.shopName;S.lang=S.lang==='fr'?'ar':'fr';save('lang',S.lang);applySampleLang();
      for(var wk in AR_WORDS){if(wk===osn||AR_WORDS[wk]===osn)S.shopName=S.lang==='ar'?AR_WORDS[wk]:wk;}render(true);break;
@@ -3197,7 +3246,7 @@ app.addEventListener('click',function(e){
    case 'resetof':S.of={mode:S.of.mode||'',sub:'',pub:'',pmin:'',pmax:''};render(true);break;
    case 'hsub':var hs=el.getAttribute('data-v');if(S.draft.hsub!==hs){S.draft.hsub=hs;S.draft.hitem='';}delete S.errs.hsub;render(true);break;
    case 'hmode':S.hf.mode=el.getAttribute('data-v');render(true);break;
-   case 'resethf':S.hf={mode:S.hf.mode||'',sub:'',item:'',pmin:'',pmax:''};render(true);break;
+   case 'resethf':S.hf={mode:S.hf.mode||'',sub:'',item:'',small:'',pmin:'',pmax:''};render(true);break;
    case 'mmtype':var nt=el.getAttribute('data-v');if(S.draft.mtype!==nt){S.draft.mtype=nt;S.draft.mbrand='';S.draft.mmodel='';S.draft.macc='';}delete S.errs.mtype;render(true);break;
    case 'mmmode':S.mf.mode=el.getAttribute('data-v');render(true);break;
    case 'resetmf':S.mf={mode:S.mf.mode||'',type:'',brand:'',storageMin:'',pmin:'',pmax:''};render(true);break;
@@ -3208,7 +3257,7 @@ app.addEventListener('click',function(e){
    case 'redeal':S.draft.comm='';S.draft.deal=el.getAttribute('data-v');delete S.errs.deal;if(S.draft.kind&&kindsFor(S.draft.deal).indexOf(S.draft.kind)<0){S.draft.kind='';S.draft.eq=[];}render(true);break;
    case 'rekind':var nk=el.getAttribute('data-v');if(S.draft.kind!==nk){S.draft.kind=nk;S.draft.eq=[];}delete S.errs.kind;render(true);break;
    case 'resetcf':S.cf={kind:'',brand:'',model:'',yearMin:'',pmin:'',pmax:''};render(true);break;
-   case 'fpick':var st=el.getAttribute('data-s'),fk=el.getAttribute('data-k');S[st][fk]=el.getAttribute('data-v');
+   case 'fpick':var st=el.getAttribute('data-s'),fk=el.getAttribute('data-k');S[st][fk]=el.getAttribute('data-v');if(st==='hf'&&fk==='item')S.hf.small='';
      if(st==='cf'&&fk==='kind'){S.cf.brand='';S.cf.model='';S.cf.yearMin='';}
      if(st==='mf'&&fk==='type'){S.mf.brand='';S.mf.storageMin='';}
      if(st==='hf'&&fk==='sub')S.hf.item='';
@@ -3544,16 +3593,17 @@ function publish(dry,opt){
     }
   }
   var hom=null;
-  if(d.cat==='maison'){
+  if(d.cat==='menager'){d.hsub='electro';if(!d.hitem)e.hitem=1;}
+  if(d.cat==='maison'||d.cat==='menager'){
     if(!d.hsub)e.hsub=1;
     else{
       hom={sub:d.hsub,item:d.hitem,cond:d.hcond,delivery:!!d.hdeliv};
-      ['hqty','hdims','hmat','hcolor','hbrand','hcap'].forEach(function(k){var v=(d[k]||'').toString().trim();if(v)hom[k.slice(1)]=v;});
+      ['hqty','hdims','hmat','hcolor','hbrand','hcap','hsmall'].forEach(function(k){var v=(d[k]||'').toString().trim();if(v)hom[k.slice(1)]=v;});
     }
   }
   var mmo=null;
-  if(d.cat==='multi'&&isPhone(d.mtype))d.pdtype=d.mtype;
-  if(d.cat==='multi'&&!isPhone(d.mtype)){
+  if(isMM(d.cat)&&isPhone(d.mtype))d.pdtype=d.mtype;
+  if(isMM(d.cat)&&!isPhone(d.mtype)){
     var mt=d.mtype;
     if(!mt)e.mtype=1;
     else{
@@ -3565,7 +3615,7 @@ function publish(dry,opt){
     }
   }
   var dev=null;
-  if(d.cat==='tel'||(d.cat==='multi'&&isPhone(d.mtype))){
+  if(d.cat==='tel'||(isMM(d.cat)&&isPhone(d.mtype))){
     var dt=d.pdtype;
     if(!dt)e.pdtype=1;
     else{
