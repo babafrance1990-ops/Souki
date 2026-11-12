@@ -2116,7 +2116,7 @@ function setUser(u,merge){
   var f=(u.favs||[]).slice();
   if(merge){S.favs.forEach(function(x){if(f.indexOf(x)<0)f.push(x);});S.favs=f;saveFavs();}else{S.favs=f;save('favs',S.favs);}
   refreshMine();}
-function clearSession(){TOKEN='';save('token','');S.user=null;save('user',null);S.mine=[];S.convs=S.convs.filter(function(c){return !c.srv;});}
+function clearSession(){TOKEN='';save('token','');S.user=null;save('user',null);S.mine=[];S.favs=[];save('favs',S.favs);S.searches=[];save('searches',S.searches);S.myStats=null;S.adStats=null;S.convs=S.convs.filter(function(c){return !c.srv;});}
 var convSig='';
 function loadConvs(){
   if(!S.user)return Promise.resolve();
