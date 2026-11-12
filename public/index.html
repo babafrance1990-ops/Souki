@@ -634,7 +634,7 @@ var TX={
   mi_sandales:'Sandales',mi_babouches:'Babouches',mi_baskets:'Baskets',mi_ville:'Chaussures de ville',mi_talons:'Talons',
   mi_collier:'Collier',mi_bracelet:'Bracelet',mi_bague:'Bague',mi_boucles:'Boucles d’oreilles',mi_parure:'Parure',
   mi_montreH:'Montre homme',mi_montreF:'Montre femme',mi_connectee:'Montre connectée',
-  mi_valise:'Valise',mi_sacVoyage:'Sac de voyage',mi_sacMain:'Sac à main',mi_sacDos:'Sac à dos',
+  mi_valise:'Valise',mi_sacVoyage:'Sac de voyage',mi_sacMain:'Sac à main femme',mi_sacDos:'Sac à dos',
   mpub:'Pour',pu_f:'Femme',pu_m:'Homme',pu_k:'Enfant',pu_x:'Tout le monde',allPublic:'Tout le monde',
   csize:'Taille',shoeSize:'Pointure',sz_unique:'Taille unique',fabric:'Tissu / matière',fabricPh:'Ex. : voile, bazin',
   metal:'Métal',me_or:'Or',me_argent:'Argent',me_plaque:'Plaqué',me_fantaisie:'Fantaisie',weight:'Poids (grammes)',handmade:'Fait main (artisanal)',mbrandPh:'Ex. : Casio, Nike',
@@ -765,7 +765,7 @@ var TX={
   mi_sandales:'نعال',mi_babouches:'نعل دراعة',mi_baskets:'حذاء رياضي',mi_ville:'حذاء رسمي',mi_talons:'كعب عالٍ',
   mi_collier:'قلادة',mi_bracelet:'سوار',mi_bague:'خاتم',mi_boucles:'أقراط',mi_parure:'طقم مجوهرات',
   mi_montreH:'ساعة رجالية',mi_montreF:'ساعة نسائية',mi_connectee:'ساعة ذكية',
-  mi_valise:'حقيبة سفر',mi_sacVoyage:'حقيبة رحلات',mi_sacMain:'حقيبة يد',mi_sacDos:'حقيبة ظهر',
+  mi_valise:'حقيبة سفر',mi_sacVoyage:'حقيبة رحلات',mi_sacMain:'حقيبة يد نسائية',mi_sacDos:'حقيبة ظهر',
   mpub:'لمن',pu_f:'نساء',pu_m:'رجال',pu_k:'أطفال',pu_x:'للجميع',allPublic:'الجميع',
   csize:'المقاس',shoeSize:'مقاس الحذاء',sz_unique:'مقاس واحد',fabric:'القماش / المادة',fabricPh:'مثال: فوال، بازان',
   metal:'المعدن',me_or:'ذهب',me_argent:'فضة',me_plaque:'مطلي',me_fantaisie:'إكسسوار',weight:'الوزن (غرام)',handmade:'صناعة يدوية',mbrandPh:'مثال: Casio، Nike',
@@ -1901,7 +1901,7 @@ var MOSUBS=['tradF','tradM','clothesF','clothesM','shoesF','shoesM','bags','watc
 var MOITEMS={tradF:['melhfa','rembaya','body','foulard','tenueT','other'],tradM:['daraa','sarwal','cheche','other'],
   clothesF:['robe','abaya','ensemble','pantalon','jupe','tshirt','veste','other'],clothesM:['chemise','pantalon','polo','costume','veste','survet','other'],
   shoesF:['talons','sandales','baskets','ballerines','other'],shoesM:['babouches','baskets','ville','sandales','other'],glasses:['soleil','vue','other'],perfume:['parfum','encens','beaute','other'],jewelry:['collier','bracelet','bague','boucles','parure','other'],
-  watches:['montreH','montreF','connectee','other'],bags:['valise','sacVoyage','sacMain','sacDos','other']};
+  watches:['montreH','montreF','connectee','other'],bags:['sacMain','valise','sacVoyage','sacDos','other']};
 var MOPUB=['f','m','k','x'];
 function moKind(sb){return /^trad|^clothes/.test(sb||'')?'cloth':/^shoes/.test(sb||'')?'shoe':sb;}
 var MO_PUBSUBS=['bags','watches','glasses','perfume'];
