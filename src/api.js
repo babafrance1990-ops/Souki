@@ -267,12 +267,15 @@ export async function onRequest(ctx) {
       await db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind(who, Date.now()).run();
       if (!env.AI) return json({ items: [] });
       const schema = String(b.schema || '').slice(0, 3000);
-      const sys = 'Tu lis des petites annonces de Mauritanie (français, arabe, hassanya). Tu réponds UNIQUEMENT avec du JSON valide, sans texte autour.';
+      const isAr = (text.match(/[\u0600-\u06FF]/g) || []).length > (text.match(/[A-Za-z]/g) || []).length;
+      const lang = isAr ? 'ARABE (écris le titre et la description en arabe, avec l\'alphabet arabe)' : 'FRANÇAIS';
+      const sys = 'Tu lis des petites annonces de Mauritanie (français, arabe, hassanya). Tu réponds UNIQUEMENT avec du JSON valide, sans texte autour. Tu ne traduis JAMAIS : le titre et la description restent dans la langue du texte d\'origine.';
       const ask = (b.multi
         ? 'Le texte est une liste de produits d\'un commerçant. Crée un élément par produit.'
         : 'Le texte est UNE seule annonce. Crée un seul élément.') +
         '\nCatégories et types autorisés (cat: types) :\n' + schema +
-        '\nFormat : {"items":[{"title":"titre court et clair (max 60 caractères, dans la langue du texte)","cat":"id de catégorie","type":"id de type ou vide","deal":"sale ou rent (immobilier seulement)","price":nombre ou null,"unit":"new ou old (old si ancienne ouguiya, UM, ou montant très élevé en ouguiya)","city":"ville en français ou vide","desc":"description reprise du texte, sans numéro de téléphone"}]}' +
+        '\nLangue du texte : ' + lang + '. Le titre et la description doivent être dans cette langue, sans traduction.' +
+        '\nFormat : {"items":[{"title":"titre court et clair (max 60 caractères, même langue que le texte)","cat":"id de catégorie","type":"id de type ou vide","deal":"sale ou rent (immobilier seulement)","price":nombre ou null,"unit":"new ou old (old si ancienne ouguiya, UM, ou montant très élevé en ouguiya)","city":"ville en français ou vide","desc":"description reprise du texte, sans numéro de téléphone"}]}' +
         '\nTexte :\n' + text;
       const models = ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct'];
       for (const m of models) {

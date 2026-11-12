@@ -1007,12 +1007,16 @@ function normItem(x,fb){
   var ti=String(x.title||fb.title||'').replace(/\s+/g,' ').trim().slice(0,70);
   var de=String(x.desc||fb.desc||'').replace(/(\+?222)?[\s.]*[234]\d([\s.]?\d{2}){3}/g,'').trim().slice(0,1000);
   return {item:(fb.cat==='maison'&&c==='maison'&&ty==='electro'?fb.item:'')||'',cat:c,type:ty,deal:x.deal==='rent'||(!x.deal&&fb.deal==='rent')?'rent':'sale',title:ti,price:pr,unit:un,city:ci,desc:de,photos:[]};}
+function isArTxt(x){x=String(x||'');return (x.match(/[\u0600-\u06FF]/g)||[]).length>(x.match(/[A-Za-z]/g)||[]).length;}
+function keepLang(it,src,fb){if(!src||!fb)return it;var ar=isArTxt(src);
+  if(ar&&it.title&&!isArTxt(it.title))it.title=fb.title||it.title;if(ar&&it.desc&&!isArTxt(it.desc))it.desc=fb.desc||'';
+  if(!ar&&it.title&&isArTxt(it.title)&&fb.title)it.title=fb.title;return it;}
 function aiParse(text,multi){
-  var fb=hparse(text,multi);
+  var fb=hparse(text,multi),lines=multi?String(text).split(/\n+/).map(function(x){return x.trim();}).filter(function(x){return x.length>2;}):[text];
   return api('POST','ai/parse',{text:text,multi:!!multi,schema:iSchema()}).then(function(r){
     var it=r&&r.items&&r.items.length?r.items:null;if(!it)return fb.map(function(x){return normItem({},x);});
-    if(!multi)return [normItem(it[0],fb[0])];
-    return it.map(function(x,i){return normItem(x,fb[i]||hparse1(x.title||''));});
+    if(!multi)return [keepLang(normItem(it[0],fb[0]),text,normItem({},fb[0]))];
+    return it.map(function(x,i){var f=fb[i]||hparse1(x.title||'');return keepLang(normItem(x,f),lines[i]||'',normItem({},f));});
   }).catch(function(){return fb.map(function(x){return normItem({},x);});});}
 function itemToDraft(it,base){
   var d=Object.assign(newDraft(),base||{});d.cat=it.cat;d.title=it.title;d.desc=it.desc||'';d.price=it.price?String(it.price):'';d.punit=it.unit==='old'?'old':'new';
