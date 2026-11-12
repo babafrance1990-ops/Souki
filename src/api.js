@@ -257,6 +257,37 @@ export async function onRequest(ctx) {
     const me = await currentUser(db, req);
     if (!me) return fail('auth', 401);
 
+    if (parts[0] === 'ai' && parts[1] === 'parse' && method === 'POST') {
+      const b = await readBody(req);
+      const text = String(b.text || '').slice(0, 4000).trim();
+      if (!text) return json({ items: [] });
+      const who = 'ai:' + me.id, since = Date.now() - 86400000;
+      const used = await db.prepare('SELECT COUNT(*) AS n FROM imgsearch WHERE who = ? AND t > ?').bind(who, since).first();
+      if (used && used.n >= 60 && !isAdmin(env, me)) return json({ items: [], limit: true });
+      await db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind(who, Date.now()).run();
+      if (!env.AI) return json({ items: [] });
+      const schema = String(b.schema || '').slice(0, 3000);
+      const sys = 'Tu lis des petites annonces de Mauritanie (français, arabe, hassanya). Tu réponds UNIQUEMENT avec du JSON valide, sans texte autour.';
+      const ask = (b.multi
+        ? 'Le texte est une liste de produits d\'un commerçant. Crée un élément par produit.'
+        : 'Le texte est UNE seule annonce. Crée un seul élément.') +
+        '\nCatégories et types autorisés (cat: types) :\n' + schema +
+        '\nFormat : {"items":[{"title":"titre court et clair (max 60 caractères, dans la langue du texte)","cat":"id de catégorie","type":"id de type ou vide","deal":"sale ou rent (immobilier seulement)","price":nombre ou null,"unit":"new ou old (old si ancienne ouguiya, UM, ou montant très élevé en ouguiya)","city":"ville en français ou vide","desc":"description reprise du texte, sans numéro de téléphone"}]}' +
+        '\nTexte :\n' + text;
+      const models = ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct'];
+      for (const m of models) {
+        try {
+          const r = await env.AI.run(m, { messages: [{ role: 'system', content: sys }, { role: 'user', content: ask }], max_tokens: 2000, temperature: 0.1 });
+          let out = r && (r.response !== undefined ? r.response : r);
+          if (typeof out !== 'string') out = JSON.stringify(out);
+          const a = out.indexOf('{'), z = out.lastIndexOf('}');
+          if (a < 0 || z < a) continue;
+          const j = JSON.parse(out.slice(a, z + 1));
+          if (j && Array.isArray(j.items)) return json({ items: j.items.slice(0, 40) });
+        } catch (e) { /* modèle suivant */ }
+      }
+      return json({ items: [] });
+    }
     if (parts[0] === 'me' && parts[1] === 'adstats' && method === 'GET') {
       const { results } = await db.prepare('SELECT id, COALESCE(views, 0) AS views, COALESCE(contacts, 0) AS contacts FROM ads WHERE user_id = ?').bind(me.id).all();
       const out = {}; for (const r of results) out[r.id] = { views: r.views, contacts: r.contacts };
@@ -312,7 +343,7 @@ export async function onRequest(ctx) {
         const ad = b.ad || {};
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
         const n = await db.prepare('SELECT COUNT(*) AS n FROM ads WHERE user_id = ? AND created > ?').bind(me.id, Date.now() - 86400000).first();
-        if (n && n.n >= 30) return fail('too_many', 429);
+        if (n && n.n >= 60) return fail('too_many', 429);
         const id = uid('a');
         const photos = [];
         for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 4)) {
@@ -420,6 +451,18 @@ export async function onRequest(ctx) {
     // ---------- Administration ----------
     if (parts[0] === 'admin') {
       if (!isAdmin(env, me)) return fail('forbidden', 403);
+      if (parts[1] === 'users' && !parts[2] && method === 'POST') {
+        const b = await readBody(req);
+        const phone = String(b.phone || '').replace(/\D/g, '').slice(-8);
+        const name = String(b.name || '').trim().slice(0, 30);
+        if (!/^\d{8}$/.test(phone)) return fail('phone');
+        if (!name) return fail('name');
+        if (await db.prepare('SELECT id FROM users WHERE phone = ?').bind(phone).first()) return fail('exists', 409);
+        const pass = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
+        const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+        await db.prepare('INSERT INTO users (id, phone, name, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?)').bind(uid('u'), phone, name, await hashPass(pass, salt), salt, Date.now()).run();
+        return json({ phone, name, pass });
+      }
       if (parts[1] === 'overview' && method === 'GET') {
         const day = Date.now() - 86400000;
         const c = await db.prepare(`SELECT (SELECT COUNT(*) FROM users) AS users, (SELECT COUNT(*) FROM users WHERE created > ?) AS users24,
