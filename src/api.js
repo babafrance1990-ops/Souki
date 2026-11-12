@@ -496,7 +496,7 @@ export async function onRequest(ctx) {
         if (n && n.n >= 60) return fail('too_many', 429);
         const id = uid('a');
         const photos = [];
-        for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 4)) {
+        for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6)) {
           const u = await storeMedia(db, me.id, id, p, 1500000);
           if (u) photos.push(u);
         }
@@ -527,7 +527,7 @@ export async function onRequest(ctx) {
         const ad = b.ad || {};
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
         const keep = [], photos = [];
-        for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 4)) {
+        for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6)) {
           const m = /^\/api\/media\/(\w+)$/.exec(p || '');
           if (m) {
             const own = await db.prepare('SELECT id FROM media WHERE id = ? AND ad_id = ?').bind(m[1], row.id).first();
