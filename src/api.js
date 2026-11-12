@@ -15,10 +15,11 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS reviews (target_id TEXT NOT NULL, author_id TEXT NOT NULL, stars INTEGER NOT NULL, txt TEXT, t INTEGER NOT NULL, PRIMARY KEY (target_id, author_id))`,
   `CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, ad_id TEXT, mime TEXT NOT NULL, size INTEGER NOT NULL, n INTEGER NOT NULL, created INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS video_chunks (vid TEXT NOT NULL, idx INTEGER NOT NULL, bytes BLOB NOT NULL, PRIMARY KEY (vid, idx))`,
+  `CREATE TABLE IF NOT EXISTS ad_contacts (ad_id TEXT NOT NULL, user_id TEXT NOT NULL, kind TEXT NOT NULL, t INTEGER NOT NULL, PRIMARY KEY (ad_id, user_id, kind))`,
   `CREATE TABLE IF NOT EXISTS imgsearch (who TEXT NOT NULL, t INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -202,7 +203,27 @@ export async function onRequest(ctx) {
       const before = +url.searchParams.get('before') || 9e15;
       const { results } = await db.prepare('SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE COALESCE(u.blocked, 0) = 0 AND a.created < ? ORDER BY a.created DESC LIMIT ?').bind(before, limit + 1).all();
       const more = results.length > limit;
-      return json({ ads: results.slice(0, limit).map(adOut), more });
+      const ads = results.slice(0, limit).map(adOut);
+      try {
+        const { results: rv } = await db.prepare('SELECT target_id, AVG(stars) AS avg, COUNT(*) AS n FROM reviews GROUP BY target_id').all();
+        const R = {}; for (const r of rv) R[r.target_id] = r;
+        for (const a of ads) { const r = R[a.owner]; if (r) { a.sr = Math.round(r.avg * 10) / 10; a.sn = r.n; } }
+      } catch (e) { /* pas d'avis */ }
+      return json({ ads, more });
+    }
+
+    // ---------- Vues et contacts (ouverts à tous, même sans compte) ----------
+    if (parts[0] === 'ads' && parts[1] && (parts[2] === 'view' || parts[2] === 'contact') && method === 'POST') {
+      const row = await db.prepare('SELECT id, user_id FROM ads WHERE id = ?').bind(parts[1]).first();
+      if (!row) return fail('not_found', 404);
+      const viewer = await currentUser(db, req);
+      if (viewer && viewer.id === row.user_id) return json({ ok: true });
+      if (parts[2] === 'view') { await db.prepare('UPDATE ads SET views = COALESCE(views, 0) + 1 WHERE id = ?').bind(row.id).run(); return json({ ok: true }); }
+      const b = await readBody(req);
+      const kind = ['wa', 'call', 'msg'].includes(b.kind) ? b.kind : 'call';
+      await db.prepare('UPDATE ads SET contacts = COALESCE(contacts, 0) + 1 WHERE id = ?').bind(row.id).run();
+      if (viewer) await db.prepare('INSERT OR REPLACE INTO ad_contacts (ad_id, user_id, kind, t) VALUES (?, ?, ?, ?)').bind(row.id, viewer.id, kind, Date.now()).run();
+      return json({ ok: true });
     }
 
     // ---------- Profil public ----------
@@ -236,6 +257,17 @@ export async function onRequest(ctx) {
     const me = await currentUser(db, req);
     if (!me) return fail('auth', 401);
 
+    if (parts[0] === 'me' && parts[1] === 'adstats' && method === 'GET') {
+      const { results } = await db.prepare('SELECT id, COALESCE(views, 0) AS views, COALESCE(contacts, 0) AS contacts FROM ads WHERE user_id = ?').bind(me.id).all();
+      const out = {}; for (const r of results) out[r.id] = { views: r.views, contacts: r.contacts };
+      return json({ stats: out });
+    }
+    if (parts[0] === 'ads' && parts[1] && parts[2] === 'stats' && method === 'GET') {
+      const row = await db.prepare('SELECT id, user_id, COALESCE(views, 0) AS views, COALESCE(contacts, 0) AS contacts FROM ads WHERE id = ?').bind(parts[1]).first();
+      if (!row || row.user_id !== me.id) return fail('forbidden', 403);
+      const { results } = await db.prepare('SELECT c.kind, c.t, u.id AS uid, u.name, u.avatar FROM ad_contacts c JOIN users u ON u.id = c.user_id WHERE c.ad_id = ? ORDER BY c.t DESC LIMIT 100').bind(row.id).all();
+      return json({ views: row.views, contacts: row.contacts, people: results.map((r) => ({ kind: r.kind, t: r.t, id: r.uid, name: r.name, avatar: r.avatar || '' })) });
+    }
     if (parts[0] === 'me' && parts[1] === 'following' && method === 'GET') {
       const { results } = await db.prepare(`SELECT u.id, u.name, u.city, u.avatar, u.shop, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id AND a.status = 'online') AS ads
         FROM follows f JOIN users u ON u.id = f.target_id WHERE f.follower_id = ? AND COALESCE(u.blocked, 0) = 0 ORDER BY f.t DESC LIMIT 200`).bind(me.id).all();
@@ -477,6 +509,7 @@ export async function onRequest(ctx) {
         const ad = await db.prepare('SELECT * FROM ads WHERE id = ?').bind(String(b.adId || '')).first();
         if (!ad) return fail('not_found', 404);
         if (ad.user_id === me.id) return fail('own_ad');
+        try { await db.prepare('INSERT OR REPLACE INTO ad_contacts (ad_id, user_id, kind, t) VALUES (?, ?, ?, ?)').bind(ad.id, me.id, 'msg', Date.now()).run(); } catch (e) { /* ignore */ }
         let c = await db.prepare('SELECT id FROM convs WHERE ad_id = ? AND buyer_id = ?').bind(ad.id, me.id).first();
         if (!c) {
           c = { id: uid('c') };
