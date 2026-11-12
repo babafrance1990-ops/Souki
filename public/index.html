@@ -322,7 +322,9 @@ html,body{overflow-x:hidden;max-width:100%}
 .pinbox{width:52px;height:60px;border-bottom:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:var(--fg)}
 .pinbox.cur{border-color:var(--brand)}.pinbox.on{border-color:var(--fg)}
 .pinrow.shake{animation:pshake .35s}@keyframes pshake{0%,100%{transform:none}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
-.lgkb{position:sticky;bottom:0;z-index:3;margin:4px -16px -16px;padding:4px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);box-shadow:0 -6px 16px rgba(0,0,0,.08);border-radius:18px 18px 0 0;animation:kbup .18s ease-out}
+.lgkb{position:absolute;left:0;right:0;bottom:0;z-index:5;padding:4px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg);box-shadow:0 -6px 16px rgba(0,0,0,.08);border-radius:18px 18px 0 0}
+.lgkb.kbanim{animation:kbup .18s ease-out}
+.lgscreen.kbpad{padding-bottom:340px}
 @keyframes kbup{from{transform:translateY(40%);opacity:.3}}
 .lgkbhide{display:block;margin:0 auto 2px;border:0;background:none;color:var(--muted);padding:2px 20px;cursor:pointer}
 .pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
@@ -2461,13 +2463,14 @@ V.login=function(){
     (reg?'':'<button type="button" class="linkbtn lgsmall" data-a="forgot" style="color:var(--brand)">'+t('forgot')+'</button>')+'</div>'+
     (S.forgot?'<div class="tip" style="background:var(--tint);color:var(--fg);flex-direction:column;align-items:stretch;gap:10px"><p style="margin:0">'+t(S.wa?'forgotWa':S.support?'forgotTxt':'forgotNo')+'</p>'+
       (S.wa?'':S.support?'<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/'+esc(S.support)+'">'+svg(I.msg,18)+'WhatsApp</a>':'')+'</div>':'');
-  var keys=(L.old||!L.active)?'':'<div class="lgkb"><button type="button" class="lgkbhide" data-a="lgkbhide" aria-label="'+t('close')+'">'+svg('<path d="M6 9l6 6 6-6"/>',22)+'</button><div class="pinpad" dir="ltr">'+['1','2','3','4','5','6','7','8','9','','0','del'].map(function(k){
+  var kbOn=!(L.old||!L.active),kbAnim=kbOn&&!S._kbWas;S._kbWas=kbOn;
+  var keys=!kbOn?'':'<div class="lgkb'+(kbAnim?' kbanim':'')+'"><button type="button" class="lgkbhide" data-a="lgkbhide" aria-label="'+t('close')+'">'+svg('<path d="M6 9l6 6 6-6"/>',22)+'</button><div class="pinpad" dir="ltr">'+['1','2','3','4','5','6','7','8','9','','0','del'].map(function(k){
       if(!k)return '<span></span>';
       if(k==='del')return '<button type="button" class="pk pkdel" data-a="pk" data-v="del" aria-label="'+t('lgDel')+'">'+svg('<path d="M21 5H9l-6 7 6 7h12z"/><path d="M12 9l6 6M18 9l-6 6"/>',26)+'</button>';
       return '<button type="button" class="pk" data-a="pk" data-v="'+k+'">'+k+'<small>'+({'2':'ABC','3':'DEF','4':'GHI','5':'JKL','6':'MNO','7':'PQRS','8':'TUV','9':'WXYZ'}[k]||'&nbsp;')+'</small></button>';}).join('')+'</div></div>';
   var wa=S.wa?(S.waJob?waWaitBox():'<button type="button" class="btn wa wide" data-a="walogin">'+svg(I.msg,20)+t('waLogin')+'</button>'):'';
-  return '<form id="lform" class="scroll lgscreen" autocomplete="on" novalidate><button type="button" class="icon lgclose" data-a="go" data-s="home" aria-label="'+t('back')+'">'+svg('<path d="M6 6l12 12M18 6 6 18"/>',22)+'</button>'+
-    '<div class="sec lgsec">'+siteLogo()+(S.after?'<p class="meta" style="margin:0;text-align:center">'+t('needLogin')+'</p>':'')+tabs+phoneF+nameF+codeF+err+(S.busy&&!L.old?'<p class="meta" style="text-align:center;margin:0">'+t('sending')+'</p>':'')+links+keys+wa+'</div></form>';};
+  return '<form id="lform" class="scroll lgscreen'+(kbOn?' kbpad':'')+'" autocomplete="on" novalidate><button type="button" class="icon lgclose" data-a="go" data-s="home" aria-label="'+t('back')+'">'+svg('<path d="M6 6l12 12M18 6 6 18"/>',22)+'</button>'+
+    '<div class="sec lgsec">'+siteLogo()+(S.after?'<p class="meta" style="margin:0;text-align:center">'+t('needLogin')+'</p>':'')+tabs+phoneF+nameF+codeF+err+(S.busy&&!L.old?'<p class="meta" style="text-align:center;margin:0">'+t('sending')+'</p>':'')+links+wa+'</div></form>'+keys;};
 document.addEventListener('submit',function(e){if(e.target&&e.target.id==='lform'){e.preventDefault();if(S.login.old)lgOld();}},true);
 document.addEventListener('focusin',function(e){if(S.screen==='login'&&e.target&&e.target.id==='lname'&&S.login.active){S.login.active=null;render(true);var n=app.querySelector('#lname');if(n){n.focus();try{n.setSelectionRange(n.value.length,n.value.length);}catch(x){}}}});
 document.addEventListener('keydown',function(e){if(S.screen!=='login'||S.login.old)return;var tg=e.target;if(tg&&tg.id==='lname')return;
@@ -2476,7 +2479,7 @@ function lgReset(){S.login={phone:'',pin:'',pin1:'',name:'',pass:'',err:'',info:
 function lgSync(){var L=S.login;if(L.exists===null||L.exists===undefined)return;var want=L.exists?'login':'register';
   if(L.mode!==want){L.info=t(L.exists?'lgToLog':'lgToReg');L.mode=want;L.pin='';L.pin1='';L.old=false;}}
 function lgCheck(){var L=S.login;L.checking=true;L.exists=null;render(true);
-  L.chk=api('POST','auth/check',{phone:L.phone}).then(function(r){L.checking=false;if(r.blocked){L.err=t('e_blocked');}L.exists=!!r.exists;lgSync();render(true);
+  L.chk=api('POST','auth/check',{phone:L.phone}).then(function(r){L.checking=false;if(r.blocked){L.err=t('e_blocked');}L.exists=!!r.exists;lgSync();render(true);lgScroll();
     if(!r.exists&&!(L.name||'').trim()){L.active=null;render(true);var n=app.querySelector('#lname');if(n)n.focus();}return r.exists;})
   .catch(function(){L.checking=false;L.err=t('netErr');render(true);});}
 function lgShake(msg){var L=S.login;L.err=msg;L.pin='';L.shake=true;render(true);setTimeout(function(){L.shake=false;},400);try{navigator.vibrate&&navigator.vibrate(120);}catch(e){}}
@@ -2486,7 +2489,9 @@ function lgErr(e){S.busy=false;var L=S.login;var code=e&&e.code;
   if(code==='exists'){L.exists=true;L.pin1='';L.mode='login';lgShake(t('e_exists'));return;}
   if(code==='nouser'){L.exists=false;L.mode='register';L.info=t('lgToReg');L.err='';L.pin='';render(true);return;}
   lgShake(t({badpass:'e_badpass',locked:'e_locked',blocked:'e_blocked',pin_format:'e_pin_format',pin_weak:'e_pin_weak',phone:'errPhone',name:'errName'}[code]||'netErr'));}
-function pinKey(k){var L=S.login;if(S.busy)return;if(!L.active)L.active=(L.phone||'').length<8?'phone':'pin';
+function lgScroll(){var f=app.querySelector('.lgf.act'),k=app.querySelector('.lgkb'),sc=app.querySelector('.lgscreen');if(!f||!k||!sc)return;var fr=f.getBoundingClientRect(),kr=k.getBoundingClientRect();
+  if(fr.bottom>kr.top-12)sc.scrollTop+=fr.bottom-kr.top+20;else if(fr.top<sc.getBoundingClientRect().top)sc.scrollTop-=sc.getBoundingClientRect().top-fr.top+12;}
+function pinKey(k){var L=S.login;if(S.busy)return;setTimeout(lgScroll,0);if(!L.active)L.active=(L.phone||'').length<8?'phone':'pin';
   if(L.active==='phone'){var ph=L.phone||'';
     if(k==='del'){L.phone=ph.slice(0,-1);L.exists=null;L.err='';L.info='';L.pin='';L.pin1='';render(true);return;}
     if(ph.length>=8)return;L.phone=ph+k;L.err='';
@@ -3355,7 +3360,7 @@ app.addEventListener('click',function(e){
    case 'logout':api('POST','auth/logout').catch(function(){});clearSession();render();break;
    case 'lmode':break;
    case 'pk':pinKey(el.getAttribute('data-v'));break;
-   case 'lgact':S.login.active=el.getAttribute('data-v');if(S.login.active==='pin'&&(S.login.phone||'').length<8)S.login.active='phone';if(S.login.active==='phone'&&S.login.phone.length===8){S.login.phone='';S.login.exists=null;S.login.pin='';S.login.pin1='';}var ae=document.activeElement;if(ae&&ae.blur)ae.blur();render(true);break;
+   case 'lgact':S.login.active=el.getAttribute('data-v');if(S.login.active==='pin'&&(S.login.phone||'').length<8)S.login.active='phone';if(S.login.active==='phone'&&S.login.phone.length===8){S.login.phone='';S.login.exists=null;S.login.pin='';S.login.pin1='';}var ae=document.activeElement;if(ae&&ae.blur)ae.blur();render(true);var fa=app.querySelector('.lgf.act');if(fa&&fa.scrollIntoView)fa.scrollIntoView({block:'center'});lgScroll();break;
    case 'lgmode':(function(L){var m=el.getAttribute('data-v');if(L.mode===m)return;L.mode=m;L.pin='';L.pin1='';L.err='';L.info='';L.old=false;
      if(L.exists===true||L.exists===false){var want=L.exists?'login':'register';if(want!==m){L.info=t(L.exists?'lgToLog':'lgToReg');L.mode=want;}}
      render(true);if(L.mode==='register'&&!(L.name||'').trim()&&L.phone.length===8){L.active=null;render(true);var n=app.querySelector('#lname');if(n)n.focus();}})(S.login);break;
