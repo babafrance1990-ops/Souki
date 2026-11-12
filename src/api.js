@@ -122,6 +122,46 @@ async function dropVideo(db, url) {
 }
 async function readBody(req) { try { return await req.json(); } catch (e) { return {}; } }
 
+
+// ---------- Boutiques ----------
+// La fiche complète est dans users.shop ; les annonces n'en gardent qu'un résumé (nom, marché, badge, lien).
+function shopSlug(name) {
+  const base = String(name || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+    .replace(/[^a-z0-9؀-ۿ]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  return base || 'boutique';
+}
+async function cleanShop(db, b, prevJson, ownerId) {
+  if (!b) return null;
+  const prev = prevJson ? JSON.parse(prevJson) : null;
+  const s = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+  const name = s(b.name, 60);
+  if (!name) return null;
+  const same = prev && prev.name === name;
+  const o = { name, market: s(b.market, 100), desc: s(b.desc, 400), addr: s(b.addr, 160), hours: s(b.hours, 80),
+    deliv: !!b.deliv, delivNote: s(b.delivNote, 120), wa: String(b.wa || '').replace(/\D/g, '').slice(-8),
+    verified: !!(same && prev.verified), slug: same && prev.slug ? prev.slug : '' };
+  if (!o.slug) {
+    const base = shopSlug(name);
+    for (let i = 1; i < 50; i++) {
+      const cand = i === 1 ? base : base + '-' + i;
+      const hit = await db.prepare('SELECT id FROM users WHERE shop LIKE ? AND id != ?').bind('%"slug":"' + cand + '"%', ownerId).first();
+      if (!hit) { o.slug = cand; break; }
+    }
+  }
+  return JSON.stringify(o);
+}
+function adShop(shopJson) {
+  if (!shopJson) return null;
+  const x = JSON.parse(shopJson);
+  return { name: x.name, market: x.market || '', verified: !!x.verified, slug: x.slug || '' };
+}
+async function syncShopAds(db, userId, name, shopJson) {
+  const { results } = await db.prepare('SELECT id, data FROM ads WHERE user_id = ?').bind(userId).all();
+  const sh = adShop(shopJson);
+  const st = results.map((r) => { const a = JSON.parse(r.data); if (name) a.seller = name; if (sh) a.shop = sh; else delete a.shop; return db.prepare('UPDATE ads SET data = ? WHERE id = ?').bind(JSON.stringify(a), r.id); });
+  if (st.length) await db.batch(st);
+}
+
 export async function onRequest(ctx) {
   const { request: req, env } = ctx;
   const db = env.DB;
@@ -322,6 +362,11 @@ export async function onRequest(ctx) {
     }
 
     // ---------- Profil public ----------
+    if (parts[0] === 'shops' && parts[1] && method === 'GET') {
+      const slug = decodeURIComponent(parts[1]).slice(0, 60);
+      const u = await db.prepare('SELECT id FROM users WHERE shop LIKE ? AND COALESCE(blocked, 0) = 0').bind('%"slug":"' + slug.replace(/["%_]/g, '') + '"%').first();
+      return u ? json({ id: u.id }) : fail('notfound', 404);
+    }
     if (parts[0] === 'users' && parts[1] && method === 'GET') {
       const viewer = await currentUser(db, req);
       const u = await db.prepare('SELECT * FROM users WHERE id = ? AND COALESCE(blocked, 0) = 0').bind(parts[1]).first();
@@ -336,7 +381,7 @@ export async function onRequest(ctx) {
           (SELECT COUNT(*) FROM convs c WHERE c.seller_id = ? AND EXISTS (SELECT 1 FROM messages m WHERE m.conv_id = c.id AND m.sender_id = c.seller_id)) AS answered`)
         .bind(u.id, u.id, u.id, u.id, u.id).first();
       const out = { id: u.id, name: u.name, city: u.city || '', since: u.created, lastSeen: u.last_seen || 0, avatar: u.avatar || '',
-        shop: u.shop ? JSON.parse(u.shop) : null, followers: agg.followers || 0, rating: { n: agg.nrev || 0, avg: agg.avg ? Math.round(agg.avg * 10) / 10 : 0 },
+        shop: u.shop ? Object.assign(JSON.parse(u.shop), { wa: JSON.parse(u.shop).wa || u.phone }) : null, followers: agg.followers || 0, rating: { n: agg.nrev || 0, avg: agg.avg ? Math.round(agg.avg * 10) / 10 : 0 },
         reactive: (agg.asked || 0) >= 3 && (agg.answered || 0) / agg.asked >= 0.8, following: false, canReview: false, myReview: null };
       if (viewer && viewer.id !== u.id) {
         out.following = !!(await db.prepare('SELECT 1 AS x FROM follows WHERE follower_id = ? AND target_id = ?').bind(viewer.id, u.id).first());
@@ -418,7 +463,7 @@ export async function onRequest(ctx) {
         const name = b.name !== undefined ? String(b.name).trim().slice(0, 30) : me.name;
         if (!name) return fail('name');
         const city = b.city !== undefined ? String(b.city).slice(0, 60) : me.city;
-        const shop = b.shop !== undefined ? (b.shop ? JSON.stringify({ name: String(b.shop.name || '').slice(0, 60), market: String(b.shop.market || '').slice(0, 100) }) : null) : me.shop;
+        const shop = b.shop !== undefined ? await cleanShop(db, b.shop, me.shop, me.id) : me.shop;
         const favs = Array.isArray(b.favs) ? JSON.stringify(b.favs.map(String).slice(0, 500)) : me.favs;
         if (Array.isArray(b.searches)) {
           const clean = b.searches.slice(0, 50).map((x) => ({ q: String(x.q || '').slice(0, 80), cat: String(x.cat || '').slice(0, 20), city: String(x.city || '').slice(0, 60), hood: String(x.hood || '').slice(0, 60),
@@ -435,9 +480,7 @@ export async function onRequest(ctx) {
         }
         await db.prepare('UPDATE users SET name = ?, city = ?, shop = ?, favs = ? WHERE id = ?').bind(name, city, shop, favs, me.id).run();
         if (name !== me.name || shop !== me.shop) {
-          const { results } = await db.prepare('SELECT id, data FROM ads WHERE user_id = ?').bind(me.id).all();
-          const st = results.map((r) => { const a = JSON.parse(r.data); a.seller = name; if (shop) a.shop = JSON.parse(shop); else delete a.shop; return db.prepare('UPDATE ads SET data = ? WHERE id = ?').bind(JSON.stringify(a), r.id); });
-          if (st.length) await db.batch(st);
+          await syncShopAds(db, me.id, name, shop);
         }
         const u = await db.prepare('SELECT * FROM users WHERE id = ?').bind(me.id).first();
         return json({ user: publicUser(u, env) });
@@ -464,7 +507,7 @@ export async function onRequest(ctx) {
         if (!ad.video) delete ad.video;
         delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample; delete ad.photosSaved;
         ad.seller = me.name; ad.phone = fmtPhone(me.phone);
-        if (me.shop) ad.shop = JSON.parse(me.shop); else delete ad.shop;
+        if (me.shop) ad.shop = adShop(me.shop); else delete ad.shop;
         const created = Date.now();
         await db.prepare('INSERT INTO ads (id, user_id, data, status, created) VALUES (?, ?, ?, ?, ?)').bind(id, me.id, JSON.stringify(ad), 'online', created).run();
         return json({ ad: adOut({ id, user_id: me.id, data: JSON.stringify(ad), status: 'online', created }) });
@@ -508,7 +551,7 @@ export async function onRequest(ctx) {
         if (drop.length) await db.batch(drop);
         delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample;
         ad.seller = me.name; ad.phone = fmtPhone(me.phone);
-        if (me.shop) ad.shop = JSON.parse(me.shop); else delete ad.shop;
+        if (me.shop) ad.shop = adShop(me.shop); else delete ad.shop;
         ad.edited = Date.now();
         await db.prepare('UPDATE ads SET data = ? WHERE id = ?').bind(JSON.stringify(ad), row.id).run();
         return json({ ad: adOut({ ...row, data: JSON.stringify(ad) }) });
@@ -571,6 +614,11 @@ export async function onRequest(ctx) {
         await db.prepare('INSERT INTO users (id, phone, name, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?)').bind(uid('u'), phone, name, await hashPass(pass, salt), salt, Date.now()).run();
         return json({ phone, name, pass });
       }
+      if (parts[1] === 'shops' && method === 'GET') {
+        const { results } = await db.prepare(`SELECT u.id, u.phone, u.name, u.shop, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id AND a.status = 'online') AS ads
+          FROM users u WHERE u.shop IS NOT NULL AND u.shop != '' ORDER BY u.created DESC LIMIT 200`).all();
+        return json({ shops: results.map((u) => ({ id: u.id, phone: fmtPhone(u.phone), name: u.name, ads: u.ads, shop: JSON.parse(u.shop) })) });
+      }
       if (parts[1] === 'overview' && method === 'GET') {
         const day = Date.now() - 86400000;
         const c = await db.prepare(`SELECT (SELECT COUNT(*) FROM users) AS users, (SELECT COUNT(*) FROM users WHERE created > ?) AS users24,
@@ -589,6 +637,14 @@ export async function onRequest(ctx) {
       const target = parts[1] === 'users' && parts[2] ? await db.prepare('SELECT * FROM users WHERE id = ?').bind(parts[2]).first() : null;
       if (target && method === 'POST') {
         const b = await readBody(req);
+        if (parts[3] === 'shopverify') {
+          if (!target.shop) return fail('noshop');
+          const sh = JSON.parse(target.shop); sh.verified = !!b.verified;
+          const js = JSON.stringify(sh);
+          await db.prepare('UPDATE users SET shop = ? WHERE id = ?').bind(js, target.id).run();
+          await syncShopAds(db, target.id, null, js);
+          return json({ ok: true, verified: sh.verified });
+        }
         if (parts[3] === 'password') {
           const pass = String(b.password || '');
           if (!/^\d{4}$/.test(pass) && pass.length < 6) return fail('pin_format');
