@@ -15,11 +15,12 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS reviews (target_id TEXT NOT NULL, author_id TEXT NOT NULL, stars INTEGER NOT NULL, txt TEXT, t INTEGER NOT NULL, PRIMARY KEY (target_id, author_id))`,
   `CREATE TABLE IF NOT EXISTS videos (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, ad_id TEXT, mime TEXT NOT NULL, size INTEGER NOT NULL, n INTEGER NOT NULL, created INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS video_chunks (vid TEXT NOT NULL, idx INTEGER NOT NULL, bytes BLOB NOT NULL, PRIMARY KEY (vid, idx))`,
+  `CREATE TABLE IF NOT EXISTS wa_codes (code TEXT PRIMARY KEY, phone TEXT NOT NULL, purpose TEXT NOT NULL, nonce TEXT NOT NULL, created INTEGER NOT NULL, done INTEGER DEFAULT 0)`,
   `CREATE TABLE IF NOT EXISTS ad_contacts (ad_id TEXT NOT NULL, user_id TEXT NOT NULL, kind TEXT NOT NULL, t INTEGER NOT NULL, PRIMARY KEY (ad_id, user_id, kind))`,
   `CREATE TABLE IF NOT EXISTS imgsearch (who TEXT NOT NULL, t INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -49,11 +50,31 @@ function adminList(env) {
   const raw = String(env.ADMIN_PHONES || '') + ',' + String(env.SUPPORT_WHATSAPP || '');
   return raw.split(/[,;]+/).map((x) => x.replace(/\D/g, '').slice(-8)).filter((x) => x.length === 8);
 }
+const WEAK_PINS = ['0000', '1111', '2222', '3333', '4444', '5555', '6666', '7777', '8888', '9999', '1234', '4321', '0123', '1212', '1122', '6969', '2580'];
+function pinOk(p) { return /^\d{4}$/.test(p) && !WEAK_PINS.includes(p); }
+function waOn(env) { return !!(env.WA_NUMBER && env.WA_VERIFY_TOKEN); }
+async function waReply(env, to, text) {
+  if (!env.WA_TOKEN || !env.WA_PHONE_ID) return;
+  try {
+    await fetch('https://graph.facebook.com/v21.0/' + env.WA_PHONE_ID + '/messages', {
+      method: 'POST', headers: { authorization: 'Bearer ' + env.WA_TOKEN, 'content-type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body: text } }),
+    });
+  } catch (e) { /* tant pis */ }
+}
+async function waSigOk(env, raw, sig) {
+  if (!env.WA_APP_SECRET) return true;
+  if (!sig || !sig.startsWith('sha256=')) return false;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.WA_APP_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(raw)));
+  const hex = [...mac].map((b) => b.toString(16).padStart(2, '0')).join('');
+  return sameStr(hex, sig.slice(7));
+}
 function isAdmin(env, u) {
   return !!u && adminList(env).includes(String(u.phone || '').replace(/\D/g, '').slice(-8));
 }
 function publicUser(u, env) {
-  return { admin: isAdmin(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]') };
+  return { verified: !!u.verified, admin: isAdmin(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]') };
 }
 async function newSession(db, userId) {
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -148,7 +169,8 @@ export async function onRequest(ctx) {
       if (parts[1] === 'register' && method === 'POST') {
         const name = String(b.name || '').trim().slice(0, 30);
         if (!/^\d{8}$/.test(phone)) return fail('phone');
-        if (pass.length < 6) return fail('pass_short');
+        if (!/^\d{4}$/.test(pass)) return fail('pin_format');
+        if (!pinOk(pass)) return fail('pin_weak');
         if (!name) return fail('name');
         const exists = await db.prepare('SELECT id FROM users WHERE phone = ?').bind(phone).first();
         if (exists) return fail('exists', 409);
@@ -164,11 +186,12 @@ export async function onRequest(ctx) {
         if (u.blocked) return fail('blocked', 403);
         if (u.lock_until > Date.now()) return fail('locked', 429);
         if (!sameStr(await hashPass(pass, u.salt), u.pass_hash)) {
-          const fails = (u.fails || 0) + 1;
-          await db.prepare('UPDATE users SET fails = ?, lock_until = ? WHERE id = ?').bind(fails >= 5 ? 0 : fails, fails >= 5 ? Date.now() + 15 * 60000 : 0, u.id).run();
+          const fails = (u.fails || 0) + 1, lockn = (u.lockn || 0) + (fails >= 5 ? 1 : 0);
+          const wait = Math.min(24 * 3600000, 15 * 60000 * Math.pow(4, Math.max(0, lockn - 1)));
+          await db.prepare('UPDATE users SET fails = ?, lock_until = ?, lockn = ? WHERE id = ?').bind(fails >= 5 ? 0 : fails, fails >= 5 ? Date.now() + wait : 0, lockn, u.id).run();
           return fail('badpass', 401);
         }
-        await db.prepare('UPDATE users SET fails = 0, lock_until = 0 WHERE id = ?').bind(u.id).run();
+        await db.prepare('UPDATE users SET fails = 0, lock_until = 0, lockn = 0 WHERE id = ?').bind(u.id).run();
         return json({ token: await newSession(db, u.id), user: publicUser(u, env) });
       }
       if (parts[1] === 'logout' && method === 'POST') {
@@ -179,8 +202,69 @@ export async function onRequest(ctx) {
       return fail('not_found', 404);
     }
 
+    // ---------- WhatsApp : webhook Meta, vérification du numéro, connexion ----------
+    if (parts[0] === 'wa' && parts[1] === 'webhook') {
+      if (method === 'GET') {
+        if (url.searchParams.get('hub.mode') === 'subscribe' && env.WA_VERIFY_TOKEN && url.searchParams.get('hub.verify_token') === env.WA_VERIFY_TOKEN)
+          return new Response(url.searchParams.get('hub.challenge') || '', { status: 200 });
+        return new Response('forbidden', { status: 403 });
+      }
+      if (method === 'POST') {
+        const raw = await req.text();
+        if (!(await waSigOk(env, raw, req.headers.get('x-hub-signature-256')))) return new Response('bad signature', { status: 401 });
+        let body = {}; try { body = JSON.parse(raw); } catch (e) { /* vide */ }
+        for (const en of body.entry || []) for (const ch of en.changes || []) for (const m of (ch.value && ch.value.messages) || []) {
+          const from = String(m.from || '').replace(/\D/g, '').slice(-8);
+          const txt = String((m.text && m.text.body) || (m.button && m.button.text) || '');
+          const mm = txt.match(/(?:code|رمز|الرمز)\D{0,3}(\d{6})/i) || txt.match(/(\d{6})/);
+          if (!mm) { await waReply(env, m.from, 'Bonjour 👋 Pour vérifier votre numéro ou vous connecter, utilisez le bouton WhatsApp dans l’application Vends-moi.'); continue; }
+          const row = await db.prepare('SELECT * FROM wa_codes WHERE code = ? AND done = 0 AND created > ?').bind(mm[1], Date.now() - 15 * 60000).first();
+          if (!row || row.phone !== from) { await waReply(env, m.from, 'Ce code ne correspond pas à votre numéro ou a expiré. Recommencez depuis l’application.'); continue; }
+          await db.prepare('UPDATE wa_codes SET done = 1 WHERE code = ?').bind(row.code).run();
+          await db.prepare('UPDATE users SET verified = 1 WHERE phone = ?').bind(from).run();
+          await waReply(env, m.from, row.purpose === 'login' ? '✅ C’est bon ! Retournez dans Vends-moi, vous êtes connecté.' : '✅ Votre numéro est vérifié. Merci !');
+        }
+        return json({ ok: true });
+      }
+    }
+    if (parts[0] === 'wa' && parts[1] === 'start' && method === 'POST') {
+      if (!waOn(env)) return fail('wa_off', 503);
+      const b = await readBody(req);
+      const viewer = await currentUser(db, req);
+      const purpose = b.purpose === 'login' ? 'login' : 'verify';
+      let phone = '';
+      if (purpose === 'verify') { if (!viewer) return fail('auth', 401); phone = viewer.phone; }
+      else {
+        phone = String(b.phone || '').replace(/\D/g, '').slice(-8);
+        if (!/^\d{8}$/.test(phone)) return fail('phone');
+        const u = await db.prepare('SELECT id, blocked FROM users WHERE phone = ?').bind(phone).first();
+        if (!u) return fail('nouser', 404);
+        if (u.blocked) return fail('blocked', 403);
+      }
+      const recent = await db.prepare('SELECT COUNT(*) AS n FROM wa_codes WHERE phone = ? AND created > ?').bind(phone, Date.now() - 3600000).first();
+      if (recent && recent.n >= 8) return fail('too_many', 429);
+      let code = '';
+      for (let i = 0; i < 5; i++) { code = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000)); if (!(await db.prepare('SELECT code FROM wa_codes WHERE code = ?').bind(code).first())) break; }
+      const nonce = crypto.randomUUID();
+      await db.prepare('INSERT INTO wa_codes (code, phone, purpose, nonce, created) VALUES (?, ?, ?, ?, ?)').bind(code, phone, purpose, nonce, Date.now()).run();
+      return json({ code, nonce, wa: String(env.WA_NUMBER).replace(/\D/g, '') });
+    }
+    if (parts[0] === 'wa' && parts[1] === 'status' && method === 'POST') {
+      const b = await readBody(req);
+      const row = await db.prepare('SELECT * FROM wa_codes WHERE code = ? AND nonce = ?').bind(String(b.code || ''), String(b.nonce || '')).first();
+      if (!row) return fail('not_found', 404);
+      if (!row.done) return json({ done: false, expired: row.created < Date.now() - 15 * 60000 });
+      const u = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(row.phone).first();
+      if (!u) return fail('nouser', 404);
+      if (row.purpose === 'login') {
+        await db.prepare('DELETE FROM wa_codes WHERE code = ?').bind(row.code).run();
+        await db.prepare('UPDATE users SET fails = 0, lock_until = 0, lockn = 0 WHERE id = ?').bind(u.id).run();
+        return json({ done: true, token: await newSession(db, u.id), user: publicUser(u, env) });
+      }
+      return json({ done: true, user: publicUser(u, env) });
+    }
     if (parts[0] === 'config' && method === 'GET') {
-      return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, ''), admins: adminList(env).length });
+      return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, ''), admins: adminList(env).length, wa: waOn(env) ? String(env.WA_NUMBER).replace(/\D/g, '') : '' });
     }
 
     // ---------- Recherche par photo (ouverte à tous, 10 par jour et par personne) ----------
@@ -212,6 +296,8 @@ export async function onRequest(ctx) {
         const { results: rv } = await db.prepare('SELECT target_id, AVG(stars) AS avg, COUNT(*) AS n FROM reviews GROUP BY target_id').all();
         const R = {}; for (const r of rv) R[r.target_id] = r;
         for (const a of ads) { const r = R[a.owner]; if (r) { a.sr = Math.round(r.avg * 10) / 10; a.sn = r.n; } }
+        const { results: vr } = await db.prepare('SELECT id FROM users WHERE verified = 1').all();
+        const VS = new Set(vr.map((x) => x.id)); for (const a of ads) if (VS.has(a.owner)) a.sv = 1;
       } catch (e) { /* pas d'avis */ }
       return json({ ads, more });
     }
@@ -294,6 +380,15 @@ export async function onRequest(ctx) {
         } catch (e) { /* modèle suivant */ }
       }
       return json({ items: [] });
+    }
+    if (parts[0] === 'me' && parts[1] === 'pin' && method === 'POST') {
+      const b = await readBody(req);
+      const pin = String(b.pin || '');
+      if (!/^\d{4}$/.test(pin)) return fail('pin_format');
+      if (!pinOk(pin)) return fail('pin_weak');
+      const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+      await db.prepare('UPDATE users SET pass_hash = ?, salt = ?, fails = 0, lock_until = 0, lockn = 0 WHERE id = ?').bind(await hashPass(pin, salt), salt, me.id).run();
+      return json({ ok: true });
     }
     if (parts[0] === 'me' && parts[1] === 'adstats' && method === 'GET') {
       const { results } = await db.prepare('SELECT id, COALESCE(views, 0) AS views, COALESCE(contacts, 0) AS contacts FROM ads WHERE user_id = ?').bind(me.id).all();
@@ -465,7 +560,8 @@ export async function onRequest(ctx) {
         if (!/^\d{8}$/.test(phone)) return fail('phone');
         if (!name) return fail('name');
         if (await db.prepare('SELECT id FROM users WHERE phone = ?').bind(phone).first()) return fail('exists', 409);
-        const pass = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
+        let pass = '';
+        do { pass = String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, '0'); } while (!pinOk(pass));
         const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
         await db.prepare('INSERT INTO users (id, phone, name, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?)').bind(uid('u'), phone, name, await hashPass(pass, salt), salt, Date.now()).run();
         return json({ phone, name, pass });
@@ -490,7 +586,7 @@ export async function onRequest(ctx) {
         const b = await readBody(req);
         if (parts[3] === 'password') {
           const pass = String(b.password || '');
-          if (pass.length < 6) return fail('pass_short');
+          if (!/^\d{4}$/.test(pass) && pass.length < 6) return fail('pin_format');
           const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
           await db.batch([
             db.prepare('UPDATE users SET pass_hash = ?, salt = ?, fails = 0, lock_until = 0 WHERE id = ?').bind(await hashPass(pass, salt), salt, target.id),
