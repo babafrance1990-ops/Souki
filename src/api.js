@@ -44,9 +44,13 @@ async function hashPass(pass, saltB64) {
 }
 function sameStr(a, b) { if (a.length !== b.length) return false; let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i); return r === 0; }
 
+function adminList(env) {
+  // numéros administrateurs : ADMIN_PHONES (séparés par des virgules), sinon le numéro du support WhatsApp ; on garde les 8 derniers chiffres (+222 / 00222 acceptés)
+  const raw = String(env.ADMIN_PHONES || '') + ',' + String(env.SUPPORT_WHATSAPP || '');
+  return raw.split(/[,;]+/).map((x) => x.replace(/\D/g, '').slice(-8)).filter((x) => x.length === 8);
+}
 function isAdmin(env, u) {
-  const list = String(env.ADMIN_PHONES || '').split(',').map((x) => x.replace(/\D/g, '')).filter(Boolean);
-  return !!u && list.includes(u.phone);
+  return !!u && adminList(env).includes(String(u.phone || '').replace(/\D/g, '').slice(-8));
 }
 function publicUser(u, env) {
   return { admin: isAdmin(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]') };
@@ -176,7 +180,7 @@ export async function onRequest(ctx) {
     }
 
     if (parts[0] === 'config' && method === 'GET') {
-      return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, '') });
+      return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, ''), admins: adminList(env).length });
     }
 
     // ---------- Recherche par photo (ouverte à tous, 10 par jour et par personne) ----------
