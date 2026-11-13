@@ -397,6 +397,44 @@ export async function onRequest(ctx) {
     const me = await currentUser(db, req);
     if (!me) return fail('auth', 401);
 
+    // Lecture d'une capture d'écran ou d'images tirées d'une vidéo : on renvoie le texte de l'annonce.
+    if (parts[0] === 'ai' && parts[1] === 'read' && method === 'POST') {
+      const b = await readBody(req);
+      const img = String(b.img || '');
+      const m = /^data:image\/(jpeg|png|webp);base64,(.+)$/.exec(img);
+      if (!m) return fail('invalid');
+      if (m[2].length > 1600000) return fail('too_big', 413);
+      const who = 'ai:' + me.id, since = Date.now() - 86400000;
+      const used = await db.prepare('SELECT COUNT(*) AS n FROM imgsearch WHERE who = ? AND t > ?').bind(who, since).first();
+      if (used && used.n >= 60 && !isAdmin(env, me)) return json({ text: '', limit: true });
+      await db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind(who, Date.now()).run();
+      if (!env.AI) return json({ text: '' });
+      const video = !!b.video;
+      const sys = 'Tu lis des captures d\'écran de petites annonces de Mauritanie (Facebook, WhatsApp, TikTok, Instagram). Réponds seulement avec le texte demandé, sans commentaire.';
+      const ask = (video ? 'Cette image réunit plusieurs moments d\'une vidéo d\'annonce. ' : '') +
+        'Recopie exactement le texte de l\'annonce visible : titre, prix, description, ville ou quartier, numéro de téléphone. ' +
+        'Garde la langue d\'origine (arabe, hassanya ou français) : ne traduis rien. ' +
+        'Ignore les menus et boutons de l\'application (J\'aime, Commenter, Partager, heure, batterie, nombre de vues, noms des commentateurs). ' +
+        'S\'il n\'y a presque pas de texte, décris en une ou deux phrases en français l\'objet à vendre (type, marque visible, couleur, état).';
+      const vision = '@cf/meta/llama-3.2-11b-vision-instruct';
+      const run = () => env.AI.run(vision, { messages: [{ role: 'system', content: sys }, { role: 'user', content: ask }], image: img, max_tokens: 900, temperature: 0.1 });
+      let out = '';
+      try {
+        let r;
+        try { r = await run(); } catch (e) {
+          // Le modèle Llama demande une seule fois l'acceptation de sa licence.
+          if (/agree|licen/i.test(String(e && e.message))) { await env.AI.run(vision, { prompt: 'agree' }); r = await run(); } else throw e;
+        }
+        out = r && (r.response !== undefined ? r.response : r.description || r);
+      } catch (e) {
+        try {
+          const r2 = await env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', { image: [...unb64(m[2])], prompt: ask, max_tokens: 600 });
+          out = r2 && (r2.description || r2.response || '');
+        } catch (e2) { return fail('img_busy', 503); }
+      }
+      if (typeof out !== 'string') out = JSON.stringify(out);
+      return json({ text: out.trim().slice(0, 4000) });
+    }
     if (parts[0] === 'ai' && parts[1] === 'parse' && method === 'POST') {
       const b = await readBody(req);
       const text = String(b.text || '').slice(0, 4000).trim();
