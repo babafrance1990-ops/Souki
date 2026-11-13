@@ -709,6 +709,25 @@ export async function onRequest(ctx) {
         await db.prepare('INSERT INTO users (id, phone, name, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?)').bind(uid('u'), phone, name, await hashPass(pass, salt), salt, Date.now()).run();
         return json({ phone, name, pass });
       }
+      if (parts[1] === 'owners' && method === 'GET') {
+        const { results } = await db.prepare(`SELECT u.id, u.name, u.phone, COUNT(a.id) AS n FROM ads a JOIN users u ON u.id = a.user_id GROUP BY u.id ORDER BY n DESC LIMIT 500`).all();
+        return json({ owners: results.map((u) => ({ id: u.id, name: u.name, phone: fmtPhone(u.phone), n: u.n })) });
+      }
+      if (parts[1] === 'purge' && method === 'POST') {
+        const b = await readBody(req);
+        const keep = (Array.isArray(b.keep) ? b.keep : []).map(String).slice(0, 500);
+        if (b.confirm !== 'SUPPRIMER') return fail('confirm');
+        const { results } = await db.prepare('SELECT id, user_id, data FROM ads').all();
+        const gone = results.filter((r) => !keep.includes(r.user_id));
+        for (const r of gone) {
+          let vd = null; try { vd = JSON.parse(r.data).video; } catch (e) { /* ignore */ }
+          if (vd) await dropVideo(db, vd);
+          const { results: med } = await db.prepare('SELECT id FROM media WHERE ad_id = ?').bind(r.id).all();
+          await db.batch([db.prepare('DELETE FROM ads WHERE id = ?').bind(r.id), db.prepare('DELETE FROM reports WHERE ad_id = ?').bind(r.id)]);
+          await dropMedia(db, med.map((o) => o.id));
+        }
+        return json({ ok: true, deleted: gone.length, kept: results.length - gone.length });
+      }
       if (parts[1] === 'shops' && method === 'GET') {
         const { results } = await db.prepare(`SELECT u.id, u.phone, u.name, u.shop, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id AND a.status = 'online') AS ads
           FROM users u WHERE u.shop IS NOT NULL AND u.shop != '' ORDER BY u.created DESC LIMIT 200`).all();
