@@ -419,14 +419,21 @@ export async function onRequest(ctx) {
         'If there is almost no text, describe the item for sale in one or two short sentences ' + (ar ? 'IN ARABIC' : 'in French') + ' (kind, visible brand, colour, condition).';
       const pick = (r) => { if (!r) return ''; if (typeof r === 'string') return r; if (r.response !== undefined) return r.response;
         if (r.choices && r.choices[0] && r.choices[0].message) return r.choices[0].message.content || ''; return r.description || ''; };
-      let out = '';
-      // 1) Gemma 3 : multilingue, lit bien l'arabe
-      try {
-        const r = await env.AI.run('@cf/google/gemma-3-12b-it', { messages: [{ role: 'system', content: sys }, { role: 'user', content: [{ type: 'text', text: ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 900, temperature: 0.1 });
-        out = pick(r);
-      } catch (e) { out = ''; }
-      // 2) Llama 3.2 Vision en secours (licence acceptée une seule fois)
-      if (!String(out || '').trim()) {
+      let out = '', usedModel = '';
+      const errs = [];
+      const hasAr = (x) => /[؀-ۿ]/.test(String(x || ''));
+      // Modèles multilingues d'abord (ils lisent l'arabe), sous deux formes d'appel possibles.
+      const tries = [
+        ['gemma-a', '@cf/google/gemma-3-12b-it', { messages: [{ role: 'user', content: [{ type: 'text', text: sys + '\n\n' + ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 900, temperature: 0.1 }],
+        ['gemma-b', '@cf/google/gemma-3-12b-it', { messages: [{ role: 'user', content: sys + '\n\n' + ask }], image: img, max_tokens: 900, temperature: 0.1 }],
+        ['mistral', '@cf/mistralai/mistral-small-3.1-24b-instruct', { messages: [{ role: 'user', content: [{ type: 'text', text: sys + '\n\n' + ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 900, temperature: 0.1 }],
+      ];
+      for (const [tag, model, input] of tries) {
+        try { const r = await env.AI.run(model, input); const o = String(pick(r) || '').trim(); if (o) { out = o; usedModel = tag; break; } errs.push(tag + ': vide'); }
+        catch (e) { errs.push(tag + ': ' + String(e && e.message || e).slice(0, 160)); }
+      }
+      // Llama 3.2 Vision en dernier secours : il ne lit bien que l'anglais.
+      if (!out) {
         const vision = '@cf/meta/llama-3.2-11b-vision-instruct';
         const run = () => env.AI.run(vision, { messages: [{ role: 'system', content: sys }, { role: 'user', content: ask }], image: img, max_tokens: 900, temperature: 0.1 });
         try {
@@ -434,11 +441,13 @@ export async function onRequest(ctx) {
           try { r = await run(); } catch (e) {
             if (/agree|licen/i.test(String(e && e.message))) { await env.AI.run(vision, { prompt: 'agree' }); r = await run(); } else throw e;
           }
-          out = pick(r);
-        } catch (e) { return fail('img_busy', 503); }
+          out = String(pick(r) || '').trim(); usedModel = 'llama';
+        } catch (e) { errs.push('llama: ' + String(e && e.message || e).slice(0, 160)); }
       }
-      if (typeof out !== 'string') out = JSON.stringify(out);
-      return json({ text: out.trim().slice(0, 4000) });
+      if (!out) return json({ text: '', err: 'busy', dbg: isAdmin(env, me) ? errs : undefined });
+      const res = { text: out.slice(0, 4000), model: usedModel, warnLang: ar && usedModel === 'llama' && !hasAr(out) };
+      if (isAdmin(env, me)) res.dbg = errs;
+      return json(res);
     }
     if (parts[0] === 'ai' && parts[1] === 'parse' && method === 'POST') {
       const b = await readBody(req);
