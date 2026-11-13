@@ -139,7 +139,7 @@ async function cleanShop(db, b, prevJson, ownerId) {
   const same = prev && prev.name === name;
   const o = { name, market: s(b.market, 100), desc: s(b.desc, 400), addr: s(b.addr, 160), hours: s(b.hours, 80),
     deliv: !!b.deliv, delivNote: s(b.delivNote, 120), wa: String(b.wa || '').replace(/\D/g, '').slice(-8),
-    verified: !!(same && prev.verified), slug: same && prev.slug ? prev.slug : '' };
+    agency: !!b.agency, verified: !!(same && prev.verified && !!prev.agency === !!b.agency), slug: same && prev.slug ? prev.slug : '' };
   if (!o.slug) {
     const base = shopSlug(name);
     for (let i = 1; i < 50; i++) {
@@ -150,10 +150,22 @@ async function cleanShop(db, b, prevJson, ownerId) {
   }
   return JSON.stringify(o);
 }
+function cleanF(f) {
+  if (!f || typeof f !== 'object' || Array.isArray(f)) return null;
+  const o = {};
+  for (const k of Object.keys(f).slice(0, 25)) {
+    if (!/^[a-zA-Z]{1,20}$/.test(k)) continue;
+    const v = f[k];
+    if (typeof v === 'boolean') o[k] = v;
+    else if (Array.isArray(v)) o[k] = v.slice(0, 15).map((z) => String(z).slice(0, 40));
+    else if (v != null) o[k] = String(v).slice(0, 40);
+  }
+  return Object.keys(o).length ? o : null;
+}
 function adShop(shopJson) {
   if (!shopJson) return null;
   const x = JSON.parse(shopJson);
-  return { name: x.name, market: x.market || '', verified: !!x.verified, slug: x.slug || '' };
+  return { name: x.name, market: x.market || '', verified: !!x.verified, agency: !!x.agency, slug: x.slug || '' };
 }
 async function syncShopAds(db, userId, name, shopJson) {
   const { results } = await db.prepare('SELECT id, data FROM ads WHERE user_id = ?').bind(userId).all();
@@ -504,7 +516,7 @@ export async function onRequest(ctx) {
         if (Array.isArray(b.searches)) {
           const clean = b.searches.slice(0, 50).map((x) => ({ q: String(x.q || '').slice(0, 80), cat: String(x.cat || '').slice(0, 20), city: String(x.city || '').slice(0, 60), hood: String(x.hood || '').slice(0, 60),
             pmin: String(x.pmin || '').replace(/\D/g, '').slice(0, 12), pmax: String(x.pmax || '').replace(/\D/g, '').slice(0, 12), seller: x.seller === 'part' || x.seller === 'pro' ? x.seller : '', tonly: !!x.tonly,
-            t: +x.t || Date.now(), seen: +x.seen || Date.now(), alert: x.alert !== false }));
+            t: +x.t || Date.now(), seen: +x.seen || Date.now(), alert: x.alert !== false, ...(cleanF(x.f) ? { f: cleanF(x.f) } : {}) }));
           await db.prepare('UPDATE users SET searches = ? WHERE id = ?').bind(JSON.stringify(clean), me.id).run();
         }
         if (b.avatar !== undefined) {
