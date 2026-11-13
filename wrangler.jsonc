@@ -2,6 +2,11 @@
   "name": "souki",
   "main": "src/worker.js",
   "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "bi3li.net", "custom_domain": true },
+    { "pattern": "www.bi3li.net", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
