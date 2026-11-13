@@ -397,88 +397,72 @@ export async function onRequest(ctx) {
     const me = await currentUser(db, req);
     if (!me) return fail('auth', 401);
 
-    // Lecture d'une capture d'écran ou d'images tirées d'une vidéo : on renvoie le texte de l'annonce.
+    // ---------- IA : import d'annonces (texte collé ou capture d'écran) ----------
+    // Quota par jour : 20 lectures pour un particulier, 60 pour une boutique, sans limite pour l'admin.
+    const aiMax = () => (isAdmin(env, me) ? 9999 : me.shop ? 60 : 20);
+    const aiUsed = async () => { const r = await db.prepare('SELECT COUNT(*) AS n FROM imgsearch WHERE who = ? AND t > ?').bind('ai:' + me.id, Date.now() - 86400000).first(); return (r && r.n) || 0; };
+    const aiTake = () => db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind('ai:' + me.id, Date.now()).run();
+    const aiJson = (out) => { if (out && typeof out === 'object' && !Array.isArray(out)) return out; out = String(out || ''); const a = out.indexOf('{'), z = out.lastIndexOf('}'); if (a < 0 || z < a) return null; try { return JSON.parse(out.slice(a, z + 1)); } catch (e) { return null; } };
+    const aiPick = (r) => { if (!r) return ''; if (typeof r === 'string') return r; if (r.response !== undefined) return r.response;
+      if (r.choices && r.choices[0] && r.choices[0].message) return r.choices[0].message.content || ''; return r.description || ''; };
+    const FORMAT = '{"text":"…","items":[{"title":"short clear title, max 60 characters, SAME language as the ad","cat":"category id","type":"type id or empty","deal":"sale or rent (real estate only)","price":number in MRU or 0,"desc":"description, SAME language as the ad","city":"city","hood":"neighbourhood or empty","phone":"8 digits or empty"}]}';
+    if (parts[0] === 'ai' && parts[1] === 'quota' && method === 'GET') {
+      const mx = aiMax(); return json({ max: mx, left: Math.max(0, mx - await aiUsed()) });
+    }
     if (parts[0] === 'ai' && parts[1] === 'read' && method === 'POST') {
       const b = await readBody(req);
       const img = String(b.img || '');
       const m = /^data:image\/(jpeg|png|webp);base64,(.+)$/.exec(img);
       if (!m) return fail('invalid');
       if (m[2].length > 1600000) return fail('too_big', 413);
-      const who = 'ai:' + me.id, since = Date.now() - 86400000;
-      const used = await db.prepare('SELECT COUNT(*) AS n FROM imgsearch WHERE who = ? AND t > ?').bind(who, since).first();
-      if (used && used.n >= 60 && !isAdmin(env, me)) return json({ text: '', limit: true });
-      await db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind(who, Date.now()).run();
+      const mx = aiMax(), n = await aiUsed();
+      if (n >= mx) return json({ text: '', limit: true, left: 0 });
+      await aiTake();
       if (!env.AI) return json({ text: '' });
-      const video = !!b.video, ar = b.lang === 'ar';
-      // Consignes en anglais (mieux suivies par les modèles), mais le texte lu reste dans sa langue d'origine.
-      const sys = 'You read screenshots of classified ads from Mauritania (Facebook, WhatsApp, TikTok, Instagram). The ads are usually written in Arabic (Hassaniya) or French. You are a transcriber, never a translator.';
-      const ask = (video ? 'This image puts together several frames of an ad video. ' : '') +
-        'Copy the text of the ad exactly as it is written in the image: title, price, description, city or neighbourhood, phone number. ' +
-        'IMPORTANT: keep the original language and script. Arabic text must stay in Arabic letters. French text stays in French. Do NOT translate anything, do NOT transliterate. ' +
-        'Ignore the app interface (Like, Comment, Share, time, battery, view counts, commenter names). Output only the ad text, nothing else. ' +
-        'If there is almost no text, describe the item for sale in one or two short sentences ' + (ar ? 'IN ARABIC' : 'in French') + ' (kind, visible brand, colour, condition).';
-      const pick = (r) => { if (!r) return ''; if (typeof r === 'string') return r; if (r.response !== undefined) return r.response;
-        if (r.choices && r.choices[0] && r.choices[0].message) return r.choices[0].message.content || ''; return r.description || ''; };
-      let out = '', usedModel = '';
-      const errs = [];
-      const hasAr = (x) => /[؀-ۿ]/.test(String(x || ''));
-      // Modèles multilingues d'abord (ils lisent l'arabe), sous deux formes d'appel possibles.
+      const ar = b.lang === 'ar', schema = String(b.schema || '').slice(0, 3000);
+      // Un seul appel : l'IA lit l'image ET remplit les champs (moitié moins cher que deux appels).
+      const ask = 'This is a screenshot of a classified ad from Mauritania (Facebook, WhatsApp, TikTok or Instagram), usually in Arabic (Hassaniya) or French.\n' +
+        '1) In "text", copy the ad text exactly as written: keep the original language and script. Arabic stays in Arabic letters. Never translate, never transliterate. Ignore the app interface (Like, Comment, Share, time, battery, views, commenter names).\n' +
+        '2) In "items", create ONE item from this ad. Title and description in the SAME language as the ad text, without translation. If there is almost no text, describe the visible item ' + (ar ? 'in Arabic' : 'in French') + '.\n' +
+        'Allowed categories and types (cat: types):\n' + schema + '\nAnswer ONLY with valid JSON, nothing else:\n' + FORMAT;
       const tries = [
-        ['gemma-a', '@cf/google/gemma-3-12b-it', { messages: [{ role: 'user', content: [{ type: 'text', text: sys + '\n\n' + ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 900, temperature: 0.1 }],
-        ['gemma-b', '@cf/google/gemma-3-12b-it', { messages: [{ role: 'user', content: sys + '\n\n' + ask }], image: img, max_tokens: 900, temperature: 0.1 }],
-        ['mistral', '@cf/mistralai/mistral-small-3.1-24b-instruct', { messages: [{ role: 'user', content: [{ type: 'text', text: sys + '\n\n' + ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 900, temperature: 0.1 }],
+        ['gemma', '@cf/google/gemma-3-12b-it', { messages: [{ role: 'user', content: [{ type: 'text', text: ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 1200, temperature: 0.1 }],
+        ['gemma-b', '@cf/google/gemma-3-12b-it', { messages: [{ role: 'user', content: ask }], image: img, max_tokens: 1200, temperature: 0.1 }],
+        ['mistral', '@cf/mistralai/mistral-small-3.1-24b-instruct', { messages: [{ role: 'user', content: [{ type: 'text', text: ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 1200, temperature: 0.1 }],
       ];
+      const errs = [];
       for (const [tag, model, input] of tries) {
-        try { const r = await env.AI.run(model, input); const o = String(pick(r) || '').trim(); if (o) { out = o; usedModel = tag; break; } errs.push(tag + ': vide'); }
-        catch (e) { errs.push(tag + ': ' + String(e && e.message || e).slice(0, 160)); }
-      }
-      // Llama 3.2 Vision en dernier secours : il ne lit bien que l'anglais.
-      if (!out) {
-        const vision = '@cf/meta/llama-3.2-11b-vision-instruct';
-        const run = () => env.AI.run(vision, { messages: [{ role: 'system', content: sys }, { role: 'user', content: ask }], image: img, max_tokens: 900, temperature: 0.1 });
         try {
-          let r;
-          try { r = await run(); } catch (e) {
-            if (/agree|licen/i.test(String(e && e.message))) { await env.AI.run(vision, { prompt: 'agree' }); r = await run(); } else throw e;
-          }
-          out = String(pick(r) || '').trim(); usedModel = 'llama';
-        } catch (e) { errs.push('llama: ' + String(e && e.message || e).slice(0, 160)); }
+          const raw = aiPick(await env.AI.run(model, input));
+          const j = aiJson(raw);
+          const text = j && typeof j.text === 'string' ? j.text.trim() : String(raw || '').trim();
+          if (!text && !(j && j.items && j.items.length)) { errs.push(tag + ': vide'); continue; }
+          const res = { text: text.slice(0, 4000), items: j && Array.isArray(j.items) ? j.items.slice(0, 1) : [], model: tag, left: Math.max(0, mx - n - 1) };
+          if (isAdmin(env, me)) res.dbg = errs;
+          return json(res);
+        } catch (e) { errs.push(tag + ': ' + String(e && e.message || e).slice(0, 160)); }
       }
-      if (!out) return json({ text: '', err: 'busy', dbg: isAdmin(env, me) ? errs : undefined });
-      const res = { text: out.slice(0, 4000), model: usedModel, warnLang: ar && usedModel === 'llama' && !hasAr(out) };
-      if (isAdmin(env, me)) res.dbg = errs;
-      return json(res);
+      return json({ text: '', err: 'busy', dbg: isAdmin(env, me) ? errs : undefined });
     }
     if (parts[0] === 'ai' && parts[1] === 'parse' && method === 'POST') {
       const b = await readBody(req);
       const text = String(b.text || '').slice(0, 4000).trim();
       if (!text) return json({ items: [] });
-      const who = 'ai:' + me.id, since = Date.now() - 86400000;
-      const used = await db.prepare('SELECT COUNT(*) AS n FROM imgsearch WHERE who = ? AND t > ?').bind(who, since).first();
-      if (used && used.n >= 60 && !isAdmin(env, me)) return json({ items: [], limit: true });
-      await db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind(who, Date.now()).run();
+      const mx = aiMax(), n = await aiUsed();
+      if (n >= mx) return json({ items: [], limit: true, left: 0 });
+      await aiTake();
       if (!env.AI) return json({ items: [] });
       const schema = String(b.schema || '').slice(0, 3000);
-      const isAr = (text.match(/[\u0600-\u06FF]/g) || []).length > (text.match(/[A-Za-z]/g) || []).length;
-      const lang = isAr ? 'ARABE (écris le titre et la description en arabe, avec l\'alphabet arabe)' : 'FRANÇAIS';
-      const sys = 'Tu lis des petites annonces de Mauritanie (français, arabe, hassanya). Tu réponds UNIQUEMENT avec du JSON valide, sans texte autour. Tu ne traduis JAMAIS : le titre et la description restent dans la langue du texte d\'origine.';
-      const ask = (b.multi
-        ? 'Le texte est une liste de produits d\'un commerçant. Crée un élément par produit.'
-        : 'Le texte est UNE seule annonce. Crée un seul élément.') +
-        '\nCatégories et types autorisés (cat: types) :\n' + schema +
-        '\nLangue du texte : ' + lang + '. Le titre et la description doivent être dans cette langue, sans traduction.' +
-        '\nFormat : {"items":[{"title":"titre court et clair (max 60 caractères, même langue que le texte)","cat":"id de catégorie","type":"id de type ou vide","deal":"sale ou rent (immobilier seulement)","price":nombre ou null,"unit":"new ou old (old si ancienne ouguiya, UM, ou montant très élevé en ouguiya)","city":"ville en français ou vide","desc":"description reprise du texte, sans numéro de téléphone"}]}' +
-        '\nTexte :\n' + text;
-      const models = ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct'];
-      for (const m of models) {
+      const isAr = (text.match(/[؀-ۿ]/g) || []).length > (text.match(/[A-Za-z]/g) || []).length;
+      const ask = 'You read classified ads from Mauritania (French, Arabic, Hassaniya). Never translate: titles and descriptions stay in the language of the text (' + (isAr ? 'ARABIC, in Arabic letters' : 'FRENCH') + ').\n' +
+        (b.multi ? 'The text is a list of products from a shop. Create one item per product.' : 'The text is ONE ad. Create one item.') +
+        '\nAllowed categories and types (cat: types):\n' + schema + '\nAnswer ONLY with valid JSON:\n' + FORMAT.replace('"text":"…",', '') + '\nText:\n' + text;
+      // Gemma 3 d'abord (multilingue et moins cher), Llama en secours.
+      const models = ['@cf/google/gemma-3-12b-it', '@cf/meta/llama-3.3-70b-instruct-fp8-fast', '@cf/meta/llama-3.1-8b-instruct'];
+      for (const mdl of models) {
         try {
-          const r = await env.AI.run(m, { messages: [{ role: 'system', content: sys }, { role: 'user', content: ask }], max_tokens: 2000, temperature: 0.1 });
-          let out = r && (r.response !== undefined ? r.response : r);
-          if (typeof out !== 'string') out = JSON.stringify(out);
-          const a = out.indexOf('{'), z = out.lastIndexOf('}');
-          if (a < 0 || z < a) continue;
-          const j = JSON.parse(out.slice(a, z + 1));
-          if (j && Array.isArray(j.items)) return json({ items: j.items.slice(0, 40) });
+          const j = aiJson(aiPick(await env.AI.run(mdl, { messages: [{ role: 'user', content: ask }], max_tokens: 2000, temperature: 0.1 })));
+          if (j && Array.isArray(j.items) && j.items.length) return json({ items: j.items.slice(0, 40), left: Math.max(0, mx - n - 1) });
         } catch (e) { /* modèle suivant */ }
       }
       return json({ items: [] });
