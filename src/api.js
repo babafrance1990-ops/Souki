@@ -95,6 +95,15 @@ function adOut(row) {
   return a;
 }
 
+// Stockage des fichiers : Cloudflare R2 (binding "MEDIA") quand il existe, sinon dans la base D1 comme avant.
+// Les adresses restent les mêmes (/api/media/ID, /api/videos/ID) : rien ne change pour les annonces existantes.
+let R2 = null;
+async function r2del(keys) { if (R2 && keys.length) { try { await R2.delete(keys); } catch (e) { /* objet déjà absent */ } } }
+async function dropMedia(db, ids) {
+  if (!ids.length) return;
+  await db.batch(ids.map((id) => db.prepare('DELETE FROM media WHERE id = ?').bind(id)));
+  await r2del(ids.map((id) => 'm/' + id));
+}
 // Sauvegarde les photos / le message vocal envoyés en "data:" et les remplace par une URL /api/media/...
 async function storeMedia(db, userId, adId, dataUrl, maxBytes) {
   const m = /^data:([\w.+\/-]+)(?:;[^,]*)?;base64,(.+)$/.exec(dataUrl || '');
@@ -102,7 +111,12 @@ async function storeMedia(db, userId, adId, dataUrl, maxBytes) {
   const bytes = unb64(m[2]);
   if (bytes.length > maxBytes) throw new Error('too_big');
   const id = uid('f');
-  await db.prepare('INSERT INTO media (id, ad_id, user_id, mime, bytes, created) VALUES (?, ?, ?, ?, ?, ?)').bind(id, adId, userId, m[1], bytes.buffer, Date.now()).run();
+  if (R2) {
+    await R2.put('m/' + id, bytes, { httpMetadata: { contentType: m[1], cacheControl: 'public, max-age=31536000, immutable' } });
+    await db.prepare('INSERT INTO media (id, ad_id, user_id, mime, bytes, created) VALUES (?, ?, ?, ?, zeroblob(0), ?)').bind(id, adId, userId, m[1], Date.now()).run();
+  } else {
+    await db.prepare('INSERT INTO media (id, ad_id, user_id, mime, bytes, created) VALUES (?, ?, ?, ?, ?, ?)').bind(id, adId, userId, m[1], bytes.buffer, Date.now()).run();
+  }
   return '/api/media/' + id;
 }
 
@@ -118,7 +132,17 @@ async function claimVideo(db, userId, adId, url) {
 }
 async function dropVideo(db, url) {
   const m = /^\/api\/videos\/(\w+)$/.exec(url || '');
-  if (m) await db.batch([db.prepare('DELETE FROM video_chunks WHERE vid = ?').bind(m[1]), db.prepare('DELETE FROM videos WHERE id = ?').bind(m[1])]);
+  if (m) { await db.batch([db.prepare('DELETE FROM video_chunks WHERE vid = ?').bind(m[1]), db.prepare('DELETE FROM videos WHERE id = ?').bind(m[1])]); await r2del(['v/' + m[1]]); }
+}
+// Quand tous les morceaux d'une vidéo sont arrivés, on la range en un seul fichier dans R2 (n = 0 veut dire « dans R2 »).
+async function videoToR2(db, v) {
+  if (!R2 || !v.n) return;
+  const { results } = await db.prepare('SELECT idx, bytes FROM video_chunks WHERE vid = ? ORDER BY idx').bind(v.id).all();
+  if (results.length !== v.n) return;
+  const out = new Uint8Array(v.size); let pos = 0;
+  for (const c of results) { const b = new Uint8Array(c.bytes); out.set(b.subarray(0, Math.min(b.length, v.size - pos)), pos); pos += b.length; }
+  await R2.put('v/' + v.id, out, { httpMetadata: { contentType: v.mime } });
+  await db.batch([db.prepare('UPDATE videos SET n = 0 WHERE id = ?').bind(v.id), db.prepare('DELETE FROM video_chunks WHERE vid = ?').bind(v.id)]);
 }
 async function readBody(req) { try { return await req.json(); } catch (e) { return {}; } }
 
@@ -177,17 +201,32 @@ async function syncShopAds(db, userId, name, shopJson) {
 export async function onRequest(ctx) {
   const { request: req, env } = ctx;
   const db = env.DB;
+  R2 = env.MEDIA || null;
+  const later = (p) => { if (ctx.ctx && ctx.ctx.waitUntil) ctx.ctx.waitUntil(p.catch(() => {})); else return p.catch(() => {}); };
   if (!db) return fail('no_database', 500);
   await ensureSchema(db);
   const url = new URL(req.url);
   const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
   const method = req.method;
   try {
+    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-13-r2' });
+
     // ---------- Médias (photos, vocal) ----------
     if (parts[0] === 'media' && parts[1] && method === 'GET') {
-      const r = await db.prepare('SELECT mime, bytes FROM media WHERE id = ?').bind(parts[1]).first();
+      const id = parts[1];
+      const r = await db.prepare('SELECT mime, length(bytes) AS n FROM media WHERE id = ?').bind(id).first();
       if (!r) return new Response('Not found', { status: 404 });
-      return new Response(new Uint8Array(r.bytes), { headers: { 'content-type': r.mime, 'cache-control': 'public, max-age=31536000, immutable' } });
+      const hdr = { 'content-type': r.mime, 'cache-control': 'public, max-age=31536000, immutable' };
+      if (!r.n) {
+        const o = R2 ? await R2.get('m/' + id) : null;
+        if (!o) return new Response('Not found', { status: 404 });
+        return new Response(o.body, { headers: hdr });
+      }
+      const full = await db.prepare('SELECT bytes FROM media WHERE id = ?').bind(id).first();
+      const bytes = new Uint8Array(full.bytes);
+      // ancienne photo encore dans la base : on la déplace dans R2 au passage
+      if (R2) await later((async () => { await R2.put('m/' + id, bytes, { httpMetadata: { contentType: r.mime } }); await db.prepare('UPDATE media SET bytes = zeroblob(0) WHERE id = ?').bind(id).run(); })());
+      return new Response(bytes, { headers: hdr });
     }
 
     // ---------- Vidéos (lecture publique, par plages pour l'iPhone) ----------
@@ -199,6 +238,13 @@ export async function onRequest(ctx) {
       const rg = /bytes=(\d*)-(\d*)/.exec(req.headers.get('range') || '');
       if (rg) { partial = true; if (rg[1]) start = +rg[1]; if (rg[2]) end = Math.min(+rg[2], total - 1); if (!rg[1] && rg[2]) { start = Math.max(0, total - +rg[2]); end = total - 1; } }
       if (start > end || start >= total) return new Response(null, { status: 416, headers: { 'content-range': 'bytes */' + total } });
+      if (v.n === 0) {
+        const o = R2 ? await R2.get('v/' + v.id, { range: { offset: start, length: end - start + 1 } }) : null;
+        if (!o) return new Response('Not found', { status: 404 });
+        const h2 = { 'content-type': v.mime, 'accept-ranges': 'bytes', 'cache-control': 'public, max-age=31536000, immutable', 'content-length': String(end - start + 1) };
+        if (partial || end - start + 1 < total) { h2['content-range'] = 'bytes ' + start + '-' + end + '/' + total; return new Response(o.body, { status: 206, headers: h2 }); }
+        return new Response(o.body, { status: 200, headers: h2 });
+      }
       end = Math.min(end, start + 3 * CH - 1);
       const first = Math.floor(start / CH), last = Math.floor(end / CH);
       const { results } = await db.prepare('SELECT idx, bytes FROM video_chunks WHERE vid = ? AND idx BETWEEN ? AND ? ORDER BY idx').bind(v.id, first, last).all();
@@ -523,7 +569,7 @@ export async function onRequest(ctx) {
           let av = '';
           if (b.avatar) av = (await storeMedia(db, me.id, null, b.avatar, 600000)) || '';
           const old = /^\/api\/media\/(\w+)$/.exec(me.avatar || '');
-          if (old) await db.prepare('DELETE FROM media WHERE id = ?').bind(old[1]).run();
+          if (old) await dropMedia(db, [old[1]]);
           await db.prepare('UPDATE users SET avatar = ? WHERE id = ?').bind(av, me.id).run();
         }
         await db.prepare('UPDATE users SET name = ?, city = ?, shop = ?, favs = ? WHERE id = ?').bind(name, city, shop, favs, me.id).run();
@@ -595,8 +641,7 @@ export async function onRequest(ctx) {
         if (!ad.video) delete ad.video;
         if (oldVid && oldVid !== ad.video) await dropVideo(db, oldVid);
         const { results: old } = await db.prepare('SELECT id FROM media WHERE ad_id = ?').bind(row.id).all();
-        const drop = old.filter((o) => !keep.includes(o.id)).map((o) => db.prepare('DELETE FROM media WHERE id = ?').bind(o.id));
-        if (drop.length) await db.batch(drop);
+        await dropMedia(db, old.filter((o) => !keep.includes(o.id)).map((o) => o.id));
         delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample;
         ad.seller = me.name; ad.phone = fmtPhone(me.phone);
         if (me.shop) ad.shop = adShop(me.shop); else delete ad.shop;
@@ -620,7 +665,9 @@ export async function onRequest(ctx) {
       if (!parts[2] && method === 'DELETE') {
         const vd = JSON.parse(row.data).video;
         if (vd) await dropVideo(db, vd);
-        await db.batch([db.prepare('DELETE FROM ads WHERE id = ?').bind(row.id), db.prepare('DELETE FROM media WHERE ad_id = ?').bind(row.id), db.prepare('DELETE FROM reports WHERE ad_id = ?').bind(row.id)]);
+        const { results: med } = await db.prepare('SELECT id FROM media WHERE ad_id = ?').bind(row.id).all();
+        await db.batch([db.prepare('DELETE FROM ads WHERE id = ?').bind(row.id), db.prepare('DELETE FROM reports WHERE ad_id = ?').bind(row.id)]);
+        await dropMedia(db, med.map((o) => o.id));
         return json({ ok: true });
       }
     }
@@ -740,6 +787,7 @@ export async function onRequest(ctx) {
         const bytes = new Uint8Array(await req.arrayBuffer());
         if (!bytes.length || bytes.length > 1500000) return fail('invalid');
         await db.prepare('INSERT OR REPLACE INTO video_chunks (vid, idx, bytes) VALUES (?, ?, ?)').bind(v.id, idx, bytes.buffer).run();
+        if (R2) { const cnt = await db.prepare('SELECT COUNT(*) AS n FROM video_chunks WHERE vid = ?').bind(v.id).first(); if (cnt && cnt.n === v.n) await videoToR2(db, v); }
         return json({ ok: true });
       }
     }
