@@ -801,7 +801,7 @@ var TX={
   hi_lit:'سرير',hi_armoire:'خزانة ملابس',hi_buffet:'خزانة / بوفيه',hi_canape:'كنبة / كرسي',hi_meubleTv:'طاولة تلفاز',hi_etagere:'رفوف',
   hi_tableChaises:'طاولة مع كراسي',hi_tableManger:'طاولة طعام',hi_chaises:'كراسي',hi_tableBasse:'طاولة صغيرة',hi_bureau:'مكتب',
   hi_tapis:'سجاد',hi_natte:'حصير',hi_moquette:'موكيت',
-  hi_fridge:'ثلاجة',hi_freezer:'مجمد',hi_clim:'مكيف',hi_fan:'مروحة',hi_washer:'غسالة',hi_cooker:'طباخة / موقد غاز',hi_micro:'ميكروويف',hi_heater:'سخان ماء',
+  hi_fridge:'ثلاجة (فريكو)',hi_freezer:'كونجيلاتير',hi_clim:'مكيف (كليم)',hi_fan:'مروحة',hi_washer:'غسالة',hi_cooker:'طباخة / موقد غاز',hi_micro:'ميكروويف',hi_heater:'سخان ماء',
   hi_rideaux:'ستائر',hi_lampe:'مصباح / ثريا',hi_miroir:'مرآة',hi_tableau:'لوحة / إطار',hi_vase:'مزهرية / تحفة',
   hi_theSet:'طقم شاي كامل',hi_theiere:'إبريق شاي',hi_plateau:'صينية',hi_vaisselle:'أواني',hi_marmites:'قدور',hi_gaz:'قنينة غاز / موقد',
   qty:'الكمية',qtyMat:'عدد الفرش',qtyChair:'عدد الكراسي',pcsMat:'فرش',pcsChair:'كراسي',hdims:'المقاسات',hdimsPh:'مثال: 3 م × 4 م',
@@ -1064,7 +1064,7 @@ var IKW={
  serv:{elec:'electricien|electricite|كهربائي',plomb:'plombier|plomberie|سباك',macon:'macon|maconnerie|carrelage|بناء',peint:'peintre|peinture|صباغ',clim:'reparation clim|installation clim|frigoriste|تبريد',repTel:'reparation telephone|reparation ecran|اصلاح الهواتف',couture:'couture|couturier|tailleur|خياط',cours:'cours|professeur|soutien scolaire|دروس|استاذ',transport:'demenagement|transport de|ترحيل|نقل',fete:'location tente|chaises pour mariage|sono|خيمة|عرس',menage:'menage|nettoyage|تنظيف'}};
 function inorm(x){return ' '+String(x||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[ً-ْـ]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^a-z0-9؀-ۿ]+/g,' ')+' ';}
 function ihit(n,list){var sc=0;list.split('|').forEach(function(w){var low=w.charAt(0)==='~';w=inorm(low?w.slice(1):w).trim();if(w&&n.indexOf(' '+w)>-1)sc+=low?0.5:(w.length>4?2:1);});return sc;}
-var IKW_ITEM={fridge:'frigo|frigidaire|refrigerateur|ثلاجة|تلاجة|tallaja',freezer:'congelateur|مجمد|فريزر',clim:'climatiseur|clim|split|مكيف',fan:'ventilateur|مروحة',washer:'machine a laver|lave linge|غسالة',oven:'four |four electrique|فرن',cooker:'cuisiniere|gaziniere|طباخة',water:'fontaine|distributeur d eau|مبرد ماء',small:'mixeur|blender|bouilloire|aspirateur|fer a repasser|robot|cafetiere|friteuse|خلاط|مكواة|مكنسة|غلاية',micro:'micro onde|ميكروويف',heater:'chauffe eau|سخان'};
+var IKW_ITEM={fridge:'frigo|frigidaire|refrigerateur|ثلاجة|تلاجة|فريكو|فريگو|tallaja',freezer:'congelateur|مجمد|فريزر|كونجيلاتير|كونجلاتير',clim:'climatiseur|clim|split|مكيف|كليم',fan:'ventilateur|مروحة',washer:'machine a laver|lave linge|غسالة',oven:'four |four electrique|فرن',cooker:'cuisiniere|gaziniere|طباخة',water:'fontaine|distributeur d eau|مبرد ماء',small:'mixeur|blender|bouilloire|aspirateur|fer a repasser|robot|cafetiere|friteuse|خلاط|مكواة|مكنسة|غلاية',micro:'micro onde|ميكروويف',heater:'chauffe eau|سخان'};
 function cityValues(){var o=[];WILAYAS.forEach(function(w){w.cities.forEach(function(c){o.push(c);});});return o;}
 function hparse1(line){
   var n=inorm(line),best=null,bs=0,bt='';
@@ -1793,7 +1793,7 @@ var BSUBS=['parfum','makeup','soins','cheveux','meches','henne','rasage','appbea
 var PH_TYPES=['smart','basic','tab','acctel'],EL_TYPES=['laptop','desktop','tv','console','accpc','solar','gen','other'];
 function mtypes(c){return c==='phone'?PH_TYPES:EL_TYPES;}
 function isMM(c){return c==='multi'||c==='phone';}
-var EL_ITEMS=['fridge','washer','clim','freezer','oven','cooker','micro','fan','heater','water','small','other_i'];
+var EL_ITEMS=['fridge','washer','clim','freezer','oven','cooker','micro','fan','heater','small','other_i'];
 var SMALLS=['blender','robot','juicer','kettle','iron','vacuum','airfryer','coffee','hair','other'];
 /* anciennes annonces : les téléphones passent dans « Téléphones », l'électroménager dans « Électroménager » */
 function catNorm(a){if(!a||a._cn===a.cat)return a;
@@ -1894,7 +1894,7 @@ var HSUBS=['salon','ameub','table','tapis','deco','cuisine'];
 var SSUBS=['elec','plomb','macon','peint','clim','repTel','couture','cours','transport','fete','menage','autreS'];
 var HITEMS={salon:['salonComplet','jalsa','tarkiya','salonEuro','coussins','housses','other_i'],ameub:['chambre','lit','armoire','buffet','canape','meubleTv','etagere','other_i'],
   table:['tableChaises','tableManger','chaises','tableBasse','bureau','other_i'],tapis:['tapis','moquette','natte','other_i'],
-  electro:['fridge','washer','clim','freezer','oven','cooker','micro','fan','heater','water','small','other_i'],deco:['rideaux','lampe','miroir','tableau','vase','other_i'],
+  electro:['fridge','washer','clim','freezer','oven','cooker','micro','fan','heater','small','other_i'],deco:['rideaux','lampe','miroir','tableau','vase','other_i'],
   cuisine:['theSet','theiere','plateau','vaisselle','marmites','gaz','other_i']};
 var HBRANDS=['LG','Samsung','Hisense','Midea','Haier','Beko','Whirlpool','Condor','Autre'];
 function homeMeta(a){var h=a.home,p=[h.small?t('sm_'+h.small):t('hi_'+h.item)];
