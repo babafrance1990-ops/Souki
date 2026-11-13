@@ -1120,7 +1120,7 @@ function impImg(file){if(!file||!/^image\//.test(file.type)||!S.imp||S.imp.busy)
     var th=document.createElement('canvas'),ts=112/Math.max(cv.width,cv.height);th.width=Math.round(cv.width*ts);th.height=Math.round(cv.height*ts);th.getContext('2d').drawImage(cv,0,0,th.width,th.height);
     IM.thumb=th.toDataURL('image/jpeg',0.7);impRead(url,false);};img.src=rd.result;};rd.readAsDataURL(file);}
 function impRead(url,video){var IM=S.imp;IM.reading=video?'v':'i';IM.busy=true;render(true);
-  api('POST','ai/read',{img:url,video:video}).then(function(d){IM.reading='';IM.busy=false;
+  api('POST','ai/read',{img:url,video:video,lang:S.lang}).then(function(d){IM.reading='';IM.busy=false;
     if(d.limit){render(true);toast(t('impLimit'));return;}
     var tx=(d.text||'').trim();if(!tx){render(true);toast(t('impReadNone'));return;}
     IM.text=(IM.text.trim()?IM.text.trim()+'\n':'')+tx;render(true);impGo();})

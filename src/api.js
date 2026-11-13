@@ -409,28 +409,33 @@ export async function onRequest(ctx) {
       if (used && used.n >= 60 && !isAdmin(env, me)) return json({ text: '', limit: true });
       await db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind(who, Date.now()).run();
       if (!env.AI) return json({ text: '' });
-      const video = !!b.video;
-      const sys = 'Tu lis des captures d\'écran de petites annonces de Mauritanie (Facebook, WhatsApp, TikTok, Instagram). Réponds seulement avec le texte demandé, sans commentaire.';
-      const ask = (video ? 'Cette image réunit plusieurs moments d\'une vidéo d\'annonce. ' : '') +
-        'Recopie exactement le texte de l\'annonce visible : titre, prix, description, ville ou quartier, numéro de téléphone. ' +
-        'Garde la langue d\'origine (arabe, hassanya ou français) : ne traduis rien. ' +
-        'Ignore les menus et boutons de l\'application (J\'aime, Commenter, Partager, heure, batterie, nombre de vues, noms des commentateurs). ' +
-        'S\'il n\'y a presque pas de texte, décris en une ou deux phrases en français l\'objet à vendre (type, marque visible, couleur, état).';
-      const vision = '@cf/meta/llama-3.2-11b-vision-instruct';
-      const run = () => env.AI.run(vision, { messages: [{ role: 'system', content: sys }, { role: 'user', content: ask }], image: img, max_tokens: 900, temperature: 0.1 });
+      const video = !!b.video, ar = b.lang === 'ar';
+      // Consignes en anglais (mieux suivies par les modèles), mais le texte lu reste dans sa langue d'origine.
+      const sys = 'You read screenshots of classified ads from Mauritania (Facebook, WhatsApp, TikTok, Instagram). The ads are usually written in Arabic (Hassaniya) or French. You are a transcriber, never a translator.';
+      const ask = (video ? 'This image puts together several frames of an ad video. ' : '') +
+        'Copy the text of the ad exactly as it is written in the image: title, price, description, city or neighbourhood, phone number. ' +
+        'IMPORTANT: keep the original language and script. Arabic text must stay in Arabic letters. French text stays in French. Do NOT translate anything, do NOT transliterate. ' +
+        'Ignore the app interface (Like, Comment, Share, time, battery, view counts, commenter names). Output only the ad text, nothing else. ' +
+        'If there is almost no text, describe the item for sale in one or two short sentences ' + (ar ? 'IN ARABIC' : 'in French') + ' (kind, visible brand, colour, condition).';
+      const pick = (r) => { if (!r) return ''; if (typeof r === 'string') return r; if (r.response !== undefined) return r.response;
+        if (r.choices && r.choices[0] && r.choices[0].message) return r.choices[0].message.content || ''; return r.description || ''; };
       let out = '';
+      // 1) Gemma 3 : multilingue, lit bien l'arabe
       try {
-        let r;
-        try { r = await run(); } catch (e) {
-          // Le modèle Llama demande une seule fois l'acceptation de sa licence.
-          if (/agree|licen/i.test(String(e && e.message))) { await env.AI.run(vision, { prompt: 'agree' }); r = await run(); } else throw e;
-        }
-        out = r && (r.response !== undefined ? r.response : r.description || r);
-      } catch (e) {
+        const r = await env.AI.run('@cf/google/gemma-3-12b-it', { messages: [{ role: 'system', content: sys }, { role: 'user', content: [{ type: 'text', text: ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 900, temperature: 0.1 });
+        out = pick(r);
+      } catch (e) { out = ''; }
+      // 2) Llama 3.2 Vision en secours (licence acceptée une seule fois)
+      if (!String(out || '').trim()) {
+        const vision = '@cf/meta/llama-3.2-11b-vision-instruct';
+        const run = () => env.AI.run(vision, { messages: [{ role: 'system', content: sys }, { role: 'user', content: ask }], image: img, max_tokens: 900, temperature: 0.1 });
         try {
-          const r2 = await env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', { image: [...unb64(m[2])], prompt: ask, max_tokens: 600 });
-          out = r2 && (r2.description || r2.response || '');
-        } catch (e2) { return fail('img_busy', 503); }
+          let r;
+          try { r = await run(); } catch (e) {
+            if (/agree|licen/i.test(String(e && e.message))) { await env.AI.run(vision, { prompt: 'agree' }); r = await run(); } else throw e;
+          }
+          out = pick(r);
+        } catch (e) { return fail('img_busy', 503); }
       }
       if (typeof out !== 'string') out = JSON.stringify(out);
       return json({ text: out.trim().slice(0, 4000) });
