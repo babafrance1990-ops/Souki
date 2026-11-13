@@ -742,7 +742,7 @@ export async function onRequest(ctx) {
         }
         if (parts[3] === 'password') {
           const pass = String(b.password || '');
-          if (!/^\d{4}$/.test(pass) && pass.length < 6) return fail('pin_format');
+          if (!/^\d{4}$/.test(pass)) return fail('pin_format');
           const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
           await db.batch([
             db.prepare('UPDATE users SET pass_hash = ?, salt = ?, fails = 0, lock_until = 0 WHERE id = ?').bind(await hashPass(pass, salt), salt, target.id),
