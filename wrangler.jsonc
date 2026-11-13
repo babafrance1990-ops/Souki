@@ -14,11 +14,6 @@
     "ADMIN_PHONES": "37264646",
     "SUPPORT_WHATSAPP": "22237264646"
   },
-  "r2_buckets": [
-    {
-      "binding": "MEDIA"
-    }
-  ],
   "d1_databases": [
     {
       "binding": "DB",
