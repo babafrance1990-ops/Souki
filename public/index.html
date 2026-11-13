@@ -146,6 +146,20 @@ nav.tabs{position:relative;z-index:10;display:grid;grid-template-columns:repeat(
 .icon.solid{background:var(--surface);color:var(--fg);box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .hero{position:relative;aspect-ratio:4/3;max-width:100%;background:var(--ph);display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden}
 .hero img{width:100%;height:100%;object-fit:cover}
+.gal{display:flex;width:100%;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.gal::-webkit-scrollbar{display:none}
+.gal img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:center;scroll-snap-stop:always;cursor:zoom-in}
+.gdots{position:absolute;bottom:16px;left:0;right:0;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.gdots i{width:7px;height:7px;border-radius:4px;background:rgba(255,255,255,.6);box-shadow:0 0 3px rgba(0,0,0,.45);transition:width .2s}
+.gdots i.on{background:#fff;width:20px}
+.garr{position:absolute;top:50%;margin-top:-21px;width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.88);color:#222;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);z-index:2}
+.garr.p{inset-inline-start:10px}.garr.n{inset-inline-end:10px}
+@media (hover:none){.garr{display:none}}
+.adviewer{position:fixed;inset:0;z-index:80;background:#000;display:flex;flex-direction:column}
+.adviewer .gal{flex:1;height:auto}
+.adviewer .gal img{object-fit:contain;cursor:default}
+.adviewer .vtop{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px;padding-top:max(14px,env(safe-area-inset-top));color:#fff;font-weight:700;z-index:2;pointer-events:none}
+.adviewer .vtop button{pointer-events:auto}
 .hero .tl{position:absolute;top:12px;inset-inline-start:12px}
 .hero .tr{position:absolute;top:12px;inset-inline-end:12px;display:flex;gap:8px}
 .badges{display:flex;flex-wrap:wrap;gap:8px}
@@ -2530,10 +2544,25 @@ V.home=function(){
    (S.cat?refineBtn():'')+(S.cat?typeRow():'')+(S.cat&&S.refOpen?(S.cat==='serv'?servFilters():'')+(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+xfHTML()+(S.cat==='tel'?phoneFilters():'')+(isMM(S.cat)?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='menager'?menagerFilters():'')+(S.cat==='beaute'?beautyFilters():'')+(S.cat==='equip'?equipFilters():'')+(S.cat==='alim'?alimFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
    '</div><div class="sec" id="list" style="padding-top:12px">'+listHTML()+'</div><div style="height:16px"></div></div>'+tabs('home');};
 
+function adViewerHTML(a){var v=S.adView;if(!v||v.id!==a.id||!a.photos||!a.photos.length)return '';
+  return '<div class="adviewer" role="dialog" aria-modal="true"><div class="vtop"><span id="vcount" style="direction:ltr;background:rgba(0,0,0,.45);padding:6px 12px;border-radius:14px">'+(v.i+1)+' / '+a.photos.length+'</span>'+
+    '<button type="button" class="icon solid" data-a="adviewclose" aria-label="'+t('close')+'">'+svg(I.close,22)+'</button></div>'+
+    '<div class="gal" id="vgal">'+a.photos.map(function(p){return '<img alt="" src="'+p+'">';}).join('')+'</div></div>';}
+function galIdx(g){return Math.round(Math.abs(g.scrollLeft)/Math.max(1,g.clientWidth));}
+function galSet(g,i,smooth){var x=i*g.clientWidth*(getComputedStyle(g).direction==='rtl'?-1:1);if(smooth)g.scrollTo({left:x,behavior:'smooth'});else g.scrollLeft=x;}
+function galSync(){var g=app.querySelector('#gal');if(g){var i=galIdx(g),id=g.getAttribute('data-id');S.galI=S.galI||{};S.galI[id]=i;
+    var n=app.querySelector('#galn');if(n)n.textContent=(i+1)+' / '+g.children.length;
+    var ds=app.querySelectorAll('#gdots i');for(var k=0;k<ds.length;k++)ds[k].className=k===i?'on':'';}
+  var vg=app.querySelector('#vgal');if(vg&&S.adView){S.adView.i=galIdx(vg);var vc=app.querySelector('#vcount');if(vc)vc.textContent=(S.adView.i+1)+' / '+vg.children.length;}}
+app.addEventListener('scroll',function(e){if(e.target&&(e.target.id==='gal'||e.target.id==='vgal'))galSync();},true);
 V.detail=function(){
   var a=byId(S.id);if(!a){S.screen='home';return V.home();}
   var hasPh=a.photos&&a.photos.length,showPh=hasPh&&(!S.eco||S.showPh===a.id);
-  var photos=showPh?'<img alt="" src="'+a.photos[0]+'">':(artSvg(a.dev?'tel':a.cat,140)||'<span style="color:'+cat(a.cat).c+'">'+svg(ICONS[a.dev?'tel':a.cat],96,1.3)+'</span>')+
+  var np=hasPh?a.photos.length:0,gi=Math.min((S.galI&&S.galI[a.id])||0,np-1);
+  var photos=showPh?(np>1?'<div class="gal" id="gal" data-id="'+a.id+'">'+a.photos.map(function(p,i){return '<img alt="" src="'+p+'" data-a="adview" data-i="'+i+'"'+(i?' loading="lazy"':'')+'>';}).join('')+'</div>'+
+      '<button type="button" class="garr p" data-a="galmove" data-v="-1" aria-label="'+t('back')+'">'+svg(S.lang==='ar'?I.chev:I.back,22)+'</button><button type="button" class="garr n" data-a="galmove" data-v="1" aria-label="'+t('next')+'">'+svg(S.lang==='ar'?I.back:I.chev,22)+'</button>'+
+      '<div class="gdots" id="gdots">'+a.photos.map(function(p,i){return '<i'+(i===gi?' class="on"':'')+'></i>';}).join('')+'</div>'
+      :'<img alt="" src="'+a.photos[0]+'" data-a="adview" data-i="0" style="cursor:zoom-in">'):(artSvg(a.dev?'tel':a.cat,140)||'<span style="color:'+cat(a.cat).c+'">'+svg(ICONS[a.dev?'tel':a.cat],96,1.3)+'</span>')+
     (hasPh?'<button class="btn small" data-a="showph" data-id="'+a.id+'" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);height:40px">'+svg(I.cam,16)+t('ecoShow')+'</button>':'');
   var mineAd=!a.sample&&!!S.user&&a.owner===S.user.id;
   var ee=normE(a.estate),rentA=ee&&ee.deal==='rent';
@@ -2552,7 +2581,7 @@ V.detail=function(){
    (a.shop&&a.owner?'<button class="btn wide" data-a="shop" data-v="'+esc(a.owner)+'" data-n="'+esc(a.shop.name)+'">'+svg(I.shop2,18)+t('seeShop')+'</button>':'');
   return '<div class="scroll"><div class="hero">'+photos+'<div class="tl" style="display:flex;gap:8px"><button class="icon solid" data-a="go" data-s="'+S.prev+'" aria-label="'+t('back')+'">'+svg(S.lang==='ar'?I.chev:I.back,22)+'</button>'+homeLogo()+'</div>'+
    '<div class="tr"><button class="icon solid" data-a="fav" data-id="'+a.id+'" aria-pressed="'+isFav(a.id)+'" aria-label="'+t('favs')+'"><span style="color:'+(isFav(a.id)?'var(--brand)':'inherit')+'">'+svg(I.fav.replace('<path','<path fill="'+(isFav(a.id)?'currentColor':'none')+'"'),22)+'</span></button></div>'+
-   (a.sample?'<span class="tag" style="top:auto;bottom:10px">'+t('example')+'</span>':'')+(showPh&&a.photos.length>1?'<span class="tag" style="top:auto;bottom:10px;inset-inline-start:auto;inset-inline-end:10px">1 / '+a.photos.length+'</span>':'')+'</div>'+
+   (a.sample?'<span class="tag" style="top:auto;bottom:10px">'+t('example')+'</span>':'')+(showPh&&a.photos.length>1?'<span class="tag" id="galn" style="top:auto;bottom:10px;inset-inline-start:auto;inset-inline-end:10px;direction:ltr">'+(gi+1)+' / '+a.photos.length+'</span>':'')+'</div>'+adViewerHTML(a)+
    '<div class="sec">'+pubBox+(S.user&&a.owner===S.user.id?statsBox(a):'')+(a.video?'<div class="vidbox"><video controls playsinline preload="none" src="'+esc(a.video)+'"></video><span class="meta">'+svg(I.video,14)+' '+t('vidTag')+'</span></div>':'')+'<h1>'+esc(a.title)+'</h1><div><div class="price" style="font-size:26px">'+priceStr(a)+'</div><div class="meta">'+(a.punit==='old'?'<b style="color:var(--fg)">'+t('u_old')+'</b> · '+t('eqNew').replace('{v}',num(a.price)):'<b style="color:var(--fg)">'+t('newOug')+'</b> · '+t('eqOld').replace('{v}',num(a.price*10)))+(rentA?t('perMonth'):'')+'</div></div>'+
    '<div><div class="row meta" style="font-size:14px">'+svg(I.pin,16)+esc(loc)+' · '+ago(a.t)+'</div>'+(a.near?'<div class="meta" style="font-size:14px;padding-inline-start:24px">'+t('nearShow')+' : <b style="color:var(--fg)">'+esc(a.near)+'</b></div>':'')+'</div>'+
    '<div class="badges"><span class="badge">'+cname(a.cat)+'</span>'+(a.nego?'<span class="badge" style="color:var(--brand)">'+t('negoB')+'</span>':'')+(a.status==='sold'?'<span class="badge" style="color:var(--danger)">'+t('sold')+'</span>':'')+'</div>'+
@@ -3440,12 +3469,13 @@ function render(keepScroll){
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
   if(S.screen==='post'){splitPostForm();subIcons();saveDraftSoon();}
+  if(S.screen==='detail'){var g0=app.querySelector('#gal');if(g0&&S.galI&&S.galI[S.id])galSet(g0,S.galI[S.id],false);var vg0=app.querySelector('#vgal');if(vg0&&S.adView)galSet(vg0,S.adView.i,false);}
   if(S.screen==='detail'||S.screen==='shop')tidySpecs();
   var ms=app.querySelector('#moresent');if(ms&&'IntersectionObserver' in window){var io=new IntersectionObserver(function(en){if(en[0].isIntersecting){io.disconnect();S.shown=(S.shown||20)+20;render(true);}},{rootMargin:'300px'});io.observe(ms);}
   var ns=app.querySelector('.scroll');if(ns)ns.scrollTop=S.screen==='chat'?ns.scrollHeight:top;
   var ci2=app.querySelector('#chatin');if(ci2){ci2.value=cv;if(cfoc)ci2.focus();}
 }
-function go(s){var from=S.screen;if(s==='myads'&&S.user)loadMyStats();if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.confirm=null;render();
+function go(s){S.adView=null;var from=S.screen;if(s==='myads'&&S.user)loadMyStats();if(s==='detail'&&S.screen!=='shop')S.prev=S.screen;S.screen=s;S.confirm=null;render();
   if(!S.popping&&s!==from){try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}}}
 var MAIN_PICK={alim:'[data-k="lsub"]',equip:'[data-k="qsub"]',beaute:'[data-k="bsub"]',serv:'[data-k="ssub"],[data-k="soffer"]',covoit:'[data-ck]',auto:'[data-a="vkind"]',immo:'[data-a="redeal"],[data-a="rekind"]',multi:'[data-a="mmtype"]',phone:'[data-a="mmtype"]',menager:'[data-k="hitem"],[data-k="hsmall"]',tel:'[data-k="pdtype"],[data-a="pdtype"]',maison:'[data-a="hsub"],[data-k="hitem"]',mode:'[data-a="mosub"],[data-k="moitem"]',fam:'[data-k="fsub"],[data-a="fsub"]',job:'[data-k="joffer"]',anim:'[data-a="species"],[data-k="species"]'};
 function splitPostForm(){
@@ -3572,6 +3602,9 @@ app.addEventListener('click',function(e){
    case 'avdel':api('PUT','me',{avatar:''}).then(function(d){setUser(d.user);render(true);}).catch(function(){toast(t('netErr'));});break;
    case 'chatplus':S.chatMenu=!S.chatMenu;render(true);break;
    case 'viewimg':S.viewImg=el.getAttribute('data-src');render(true);break;
+   case 'adview':S.adView={id:S.id,i:+el.getAttribute('data-i')||0};render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(er){}break;
+   case 'adviewclose':var av=S.adView;S.adView=null;if(av){S.galI=S.galI||{};S.galI[av.id]=av.i;}render(true);break;
+   case 'galmove':var gm=app.querySelector('#gal');if(gm)galSet(gm,Math.max(0,Math.min(gm.children.length-1,galIdx(gm)+(+el.getAttribute('data-v')))),true);break;
    case 'closeimg':S.viewImg=null;render(true);break;
    case 'sftog':S.sf[el.getAttribute('data-k')]=!S.sf[el.getAttribute('data-k')];render(true);break;
    case 'visual':S.vimg=null;S.vbusy=false;S.vex=false;go('visual');break;
@@ -4169,6 +4202,7 @@ app.addEventListener('click',function(e){
 window.addEventListener('popstate',function(){
   S.popping=true;
   try{if(S.screen==='post'&&(S.pstep||1)>1){S.errs={};S.pstep--;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
+    if(S.adView){var av2=S.adView;S.adView=null;S.galI=S.galI||{};S.galI[av2.id]=av2.i;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
     if(S.viewImg){S.viewImg=null;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
     if(S.sheet){S.sheet=null;render(true);}else if(S.fsheet){S.fsheet=false;render(true);}
     else{var b=backButton();if(b)b.click();else if(S.screen!=='home')go('home');}}finally{S.popping=false;}});
@@ -4179,7 +4213,7 @@ window.addEventListener('popstate',function(){
   var SAFE={home:1,favs:1,msgs:1,account:1,myads:1,user:1,detail:1,searches:1};
   var sx=0,sy=0,dx=0,dy=0,t0=0,state=0,under=null,w=0,rtl=false; // state: 0 rien, 1 en attente, 2 glissement, -1 annulé
   function scrollsX(el){for(var n=el;n&&n!==app;n=n.parentElement){
-      if(n.matches&&n.matches('input,textarea,select,video,audio,.hrow,.mchips,.photos,.cattiles,.vbar'))return true;
+      if(n.matches&&n.matches('input,textarea,select,video,audio,.hrow,.mchips,.photos,.cattiles,.vbar,.gal'))return true;
       var cs=getComputedStyle(n);if((cs.overflowX==='auto'||cs.overflowX==='scroll')&&n.scrollWidth>n.clientWidth+2)return true;}return false;}
   function makeUnder(){
     var b=backButton();if(!b)return;var target=b.getAttribute('data-s')||'home',html='';
@@ -4191,7 +4225,7 @@ window.addEventListener('popstate',function(){
   function paint(d){var p=Math.min(1,d/w);app.style.transform='translateX('+(rtl?-d:d)+'px)';
     if(under){under.firstChild.style.transform='translateX('+(rtl?1:-1)*(1-p)*w*0.3+'px)';under.lastChild.style.opacity=String(0.35*(1-p));}}
   app.addEventListener('touchstart',function(e){
-    state=0;if(e.touches.length!==1||S.sheet||S.fsheet||S.viewImg||S.langPick||!backButton())return;
+    state=0;if(e.touches.length!==1||S.sheet||S.fsheet||S.viewImg||S.adView||S.langPick||!backButton())return;
     var x=e.touches[0].clientX,r=app.getBoundingClientRect();rtl=S.lang==='ar';w=r.width;
     if(iosBrowser&&!rtl&&x-r.left<24)return; // bord gauche de Safari (français) : laissé au geste de Safari
     if(scrollsX(e.target))return;
