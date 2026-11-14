@@ -4509,7 +4509,10 @@ function rcSetItem(it,tx){var F=S.rc.form,fb=hparse(tx||(it&&it.title)||'',false
   /* titre et description : on garde le texte du vendeur tel quel (hassaniya), l'IA ne sert qu'à la catégorie, au prix, à la ville et au numéro */
   if(String(tx||'').trim()){var raw=rcRaw(tx);if(raw.title)n.title=raw.title;n.desc=raw.desc;}
   F.item=n;
-  var ph=String((it&&it.phone)||'').replace(/\D/g,'').slice(-8);if(!/^[234]\d{7}$/.test(ph))ph=rcPhoneFrom(tx);if(ph&&!F.phone)F.phone=ph;}
+  var ph=String((it&&it.phone)||'').replace(/\D/g,'').slice(-8);if(!/^[234]\d{7}$/.test(ph))ph=rcPhoneFrom(tx);if(ph&&!F.phone)F.phone=ph;
+  /* nom du vendeur : le petit nom sous le nom du groupe Facebook ; le nom du groupe va dans la note */
+  var sl=String((it&&it.seller)||'').replace(/\s+/g,' ').trim().slice(0,30),gr=String((it&&it.group)||'').replace(/\s+/g,' ').trim().slice(0,80);
+  if(sl&&gr&&sl===gr)sl='';if(sl&&!F.name.trim())F.name=sl;if(gr&&!F.note.trim())F.note=(S.lang==='ar'?'المجموعة: ':'Groupe : ')+gr;}
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='rcshot'){rcShot(e.target.files&&e.target.files[0]);e.target.value='';}
   var k=e.target&&e.target.getAttribute&&e.target.getAttribute('data-rcf');if(k&&S.rc&&e.target.tagName==='SELECT')S.rc.form[k]=e.target.value;},true);
 document.addEventListener('input',function(e){var el=e.target;if(!el.getAttribute||!S.rc)return;var k=el.getAttribute('data-rcf');
