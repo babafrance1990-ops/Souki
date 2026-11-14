@@ -4346,7 +4346,7 @@ var RX={fr:{
   rcEmpty:'Aucun vendeur pour l’instant. Commencez par une capture d’écran.',rcDup:'Ce numéro est déjà dans la liste ({s}).',rcIsUser:'Déjà inscrit sur Bi3li',
   st_new:'À contacter',st_contacted:'Contacté',st_accepted:'D’accord',st_refused:'Refusé',st_published:'Publié',st_relance:'À relancer',
   f_all:'Tous',rcToday:'Messages envoyés aujourd’hui : {n} / 30',rcTodayTip:'Pour protéger votre numéro WhatsApp, n’envoyez pas plus de 30 messages par jour, et jamais deux fois le même jour à la même personne.',
-  rcMsg1:'Envoyer le 1er message',rcMsg2:'Relancer',rcYes:'Il est d’accord',rcNo:'Il refuse',rcPrep:'Préparer et publier l’annonce',rcSee:'Voir l’annonce',rcDel:'Retirer de la liste',rcDelSure:'Confirmer : retirer',rcBack:'Remettre « à contacter »',
+  rcMsg1:'Envoyer le 1er message',rcMsg1b:'Renvoyer le 1er message',rcMsg2:'Relancer',rcYes:'Il est d’accord',rcNo:'Il refuse',rcPrep:'Préparer et publier l’annonce',rcSee:'Voir l’annonce',rcDel:'Retirer de la liste',rcDelSure:'Confirmer : retirer',rcBack:'Remettre « à contacter »',
   rcTries:'{n} message(s) · dernier {d}',rcMaxTries:'Déjà 3 messages sans réponse : n’insistez plus, marquez « Refusé ».',rcLang:'Langue du message',
   rcFor:'Annonce pour le vendeur : {n} · +222 {p}',rcForCancel:'Annuler',rcDone:'Annonce publiée pour {n} !',rcCreds:'Compte créé : {p} · code {w}',rcExisted:'Ajoutée à son compte existant ({p}).',
   rcSendCreds:'Envoyer ses accès sur WhatsApp',rcOk:'C’est fait',rcErrPhone:'Numéro invalide (8 chiffres, commence par 2, 3 ou 4).',rcErrName:'Indiquez le nom du vendeur.',rcSaved:'Vendeur enregistré',
@@ -4364,7 +4364,7 @@ ar:{
   rcEmpty:'لا يوجد بائعون بعد. ابدأ بلقطة شاشة.',rcDup:'هذا الرقم موجود في القائمة ({s}).',rcIsUser:'مسجل في بيعلي',
   st_new:'للتواصل',st_contacted:'تم التواصل',st_accepted:'موافق',st_refused:'رفض',st_published:'تم النشر',st_relance:'للتذكير',
   f_all:'الكل',rcToday:'الرسائل المرسلة اليوم: {n} / 30',rcTodayTip:'لحماية رقم واتساب، لا ترسل أكثر من 30 رسالة في اليوم، ولا ترسل مرتين لنفس الشخص في نفس اليوم.',
-  rcMsg1:'إرسال الرسالة الأولى',rcMsg2:'تذكير',rcYes:'وافق',rcNo:'رفض',rcPrep:'تجهيز الإعلان ونشره',rcSee:'عرض الإعلان',rcDel:'حذف من القائمة',rcDelSure:'تأكيد الحذف',rcBack:'إرجاع إلى «للتواصل»',
+  rcMsg1:'إرسال الرسالة الأولى',rcMsg1b:'إعادة إرسال الرسالة الأولى',rcMsg2:'تذكير',rcYes:'وافق',rcNo:'رفض',rcPrep:'تجهيز الإعلان ونشره',rcSee:'عرض الإعلان',rcDel:'حذف من القائمة',rcDelSure:'تأكيد الحذف',rcBack:'إرجاع إلى «للتواصل»',
   rcTries:'{n} رسالة · آخرها {d}',rcMaxTries:'3 رسائل بدون رد: لا تلح، ضع «رفض».',rcLang:'لغة الرسالة',
   rcFor:'إعلان للبائع: {n} · ‎+222 {p}',rcForCancel:'إلغاء',rcDone:'تم نشر الإعلان لـ {n}!',rcCreds:'تم إنشاء الحساب: {p} · الرقم السري {w}',rcExisted:'أضيف إلى حسابه الموجود ({p}).',
   rcSendCreds:'أرسل له بيانات الدخول على واتساب',rcOk:'تم',rcErrPhone:'رقم غير صحيح (8 أرقام، يبدأ بـ 2 أو 3 أو 4).',rcErrName:'اكتب اسم البائع.',rcSaved:'تم حفظ البائع',
@@ -4403,7 +4403,7 @@ function rcCard(p){
   var b=[],wa=function(kind,label,primary){return '<a class="btn small'+(primary?' wa':'')+'" style="text-decoration:none" target="_blank" rel="noopener" data-a="rcsent" data-id="'+p.id+'" href="'+esc(rcWa(p.phone,rcMsg(p,kind)))+'">'+svg(I.msg,16)+label+'</a>';};
   var langSw='<button class="btn small" data-a="rclang" data-id="'+p.id+'" title="'+rt('rcLang')+'">'+(L==='ar'?'FR':'ع')+'</button>';
   if(st==='new'){b.push(wa('m1',rt('rcMsg1'),true));b.push(langSw);}
-  if(st==='contacted'||st==='relance'){if(p.tries<3)b.push(wa('m2',rt('rcMsg2'),st==='relance'));b.push(langSw);b.push('<button class="btn small primary" data-a="rcset" data-v="accepted" data-id="'+p.id+'">'+svg(I.check,16)+rt('rcYes')+'</button>');b.push('<button class="btn small" data-a="rcset" data-v="refused" data-id="'+p.id+'">'+rt('rcNo')+'</button>');}
+  if(st==='contacted'||st==='relance'){b.push('<a class="btn small" style="text-decoration:none" target="_blank" rel="noopener" data-a="rcresend" data-id="'+p.id+'" href="'+esc(rcWa(p.phone,rcMsg(p,'m1')))+'">'+svg(I.msg,16)+rt('rcMsg1b')+'</a>');if(p.tries<3)b.push(wa('m2',rt('rcMsg2'),st==='relance'));b.push(langSw);b.push('<button class="btn small primary" data-a="rcset" data-v="accepted" data-id="'+p.id+'">'+svg(I.check,16)+rt('rcYes')+'</button>');b.push('<button class="btn small" data-a="rcset" data-v="refused" data-id="'+p.id+'">'+rt('rcNo')+'</button>');}
   if(st==='accepted'){b.push('<button class="btn small primary" data-a="rcprep" data-id="'+p.id+'">'+svg(I.plus,16)+rt('rcPrep')+'</button>');b.push('<button class="btn small" data-a="rcset" data-v="refused" data-id="'+p.id+'">'+rt('rcNo')+'</button>');}
   if(st==='published'&&p.adId)b.push('<button class="btn small" data-a="open" data-id="'+esc(p.adId)+'">'+svg(I.eye||I.list,16)+rt('rcSee')+'</button>');
   if(st==='refused')b.push('<button class="btn small" data-a="rcset" data-v="new" data-id="'+p.id+'">'+rt('rcBack')+'</button>');
@@ -4533,6 +4533,7 @@ app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(
     case 'rcset':if(p)rcUpd(p.id,{status:el.getAttribute('data-v')});break;
     case 'rcprep':if(p)rcPrep(p);break;
     case 'rcresok':R.res=null;render(true);break;
+    case 'rcresend':break;
     case 'rcphrm':R.form.photos.splice(+el.getAttribute('data-i'),1);render(true);break;
     case 'rccancel':S.draft=null;save('draft',null);go('recruit');break;
     case 'rcdel':if(!p)break;if(R.del!==p.id){R.del=p.id;render(true);break;}R.del=null;
