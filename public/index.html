@@ -4388,7 +4388,7 @@ function rcLangOf(p){if(S.rc.lang[p.id])return S.rc.lang[p.id];var src=(p.txt||'
 function rcMsg(p,kind,extra){var L=rcLangOf(p),k=kind,ttl=(p.item&&p.item.title)||rtl(L,'anAd');extra=extra||{};
   if(kind==='m3'&&extra.existed)k='m3b';
   var nm=p.name?(L==='ar'?' '+p.name:' '+p.name):'';
-  return rtl(L,k).replace('{n}',nm).replace('{t}',ttl).replace('{s}',rtl(L,'src_'+(p.src||'fb'))).replace('{u}',location.origin).replace('{l}',extra.link||'').replace('{p}',(extra.phone||p.phone).replace(/(\d{2})(?=\d)/g,'$1 ')).replace('{w}',extra.pass||'');}
+  return rtl(L,k).replace('{n}',nm).replace('{t}',ttl).replace('{s}',rtl(L,'src_'+(p.src||'fb'))).replace('{u}',location.origin).replace('{l}',extra.link||'').replace('{p}',L==='ar'?'\u200E'+String(extra.phone||p.phone).replace(/\D/g,'')+'\u200E':String(extra.phone||p.phone).replace(/(\d{2})(?=\d)/g,'$1 ')).replace('{w}',extra.pass||'');}
 function rcWa(phone,msg){return 'https://wa.me/222'+String(phone).replace(/\D/g,'').slice(-8)+'?text='+encodeURIComponent(msg);}
 function rcUpd(id,body,quiet){return api('PUT','admin/prospects/'+id,body).then(function(d){S.rc.list=S.rc.list.map(function(x){return x.id===id?d.prospect:x;});if(!quiet)render(true);return d.prospect;}).catch(function(){toast(t('netErr'));});}
 function rcCard(p){
