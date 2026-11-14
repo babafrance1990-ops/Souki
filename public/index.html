@@ -2806,9 +2806,10 @@ V.login=function(){
       (stage==='new'?'<div class="lgstep">'+t('lgStep1')+'</div>':'')+
       (stage==='confirm'?'<div class="lgconf" role="status"><b>'+svg(I.check,18,2.5)+' '+t('lgConfMsg')+'</b><div class="lgstep" style="margin:6px 0 0">'+t('lgStep2')+' · '+t('lgYourCode')+' <span dir="ltr" style="font-weight:900;letter-spacing:4px">'+(L.hidePin?'••••':L.pin1.split('').join(' '))+'</span></div></div>':'')+
       '<button type="button" class="pinrow'+(L.shake?' shake':'')+(stage==='confirm'&&!pin.length?' pinflash':'')+'" data-a="lgact" data-v="pin" dir="ltr" aria-label="'+t('lgCodeL')+'">'+boxes+'</button>'+(stage==='new'?'<div class="meta">'+t('lgNewP')+'</div>':'')+'</div>';
-    if(stage==='ready')codeF='<div class="lgf act"><div class="lgready"><div class="lgl" style="justify-content:center">'+svg(I.check,20,2.5)+' '+t('lgYourCode')+' <span dir="ltr" style="font-size:30px;font-weight:900;letter-spacing:8px;color:var(--fg)">'+L.ready.split('').join('')+'</span></div>'+
-      '<button type="button" class="btn primary wide lgbig lgcreate" data-a="lgcreate"'+(S.busy?' disabled':'')+'>'+svg(I.check,22,2.5)+'<span>'+(S.busy?t('sending'):t('lgThisCode').replace('{c}','<bdi dir="ltr" style="white-space:nowrap">'+L.ready.split('').join(' ')+'</bdi>'))+'</span></button>'+
-      '<p class="lgkeep">'+t('lgKeep')+'</p><p class="meta" style="margin:0;text-align:center">'+t('lgForgotLater')+'</p>'+
+    if(stage==='ready')codeF='<div class="lgf act"><div class="lgready"><div class="lgl" style="justify-content:center;flex-wrap:wrap">'+svg(I.check,20,2.5)+' '+t('lgYourCode')+' <span dir="ltr" style="font-size:30px;font-weight:900;letter-spacing:8px;color:var(--fg)">'+L.ready+'</span></div>'+
+      '<p class="lgkeep">'+t('lgKeep')+'</p>'+
+      '<button type="button" class="btn primary wide lgbig lgcreate" data-a="lgcreate"'+(S.busy?' disabled':'')+'>'+svg(I.check,22,2.5)+'<span>'+(S.busy?t('sending'):t('lgCreate'))+'</span></button>'+
+      '<p class="meta" style="margin:0;text-align:center">'+t('lgForgotLater')+'</p>'+
       '<button type="button" class="linkbtn lgsmall" data-a="lgrepin" style="align-self:center;color:var(--brand)">'+t('lgChangePin')+'</button></div></div>';}
   var err=L.err?'<div class="err" role="alert" style="text-align:center">'+L.err+'</div>':'';
   var links='<div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px">'+'<span></span>'+
