@@ -170,6 +170,11 @@ nav.tabs{position:relative;z-index:10;display:grid;grid-template-columns:repeat(
 .adviewer .zw{flex:0 0 100%;width:100%;height:100%;overflow:hidden;scroll-snap-align:center;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;touch-action:pan-x}
 .adviewer .zw.zoomed{touch-action:none;cursor:grab}
 .adviewer .zimg{flex:none;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;transform-origin:center center;will-change:transform;user-select:none;-webkit-user-select:none}
+.adlist .bar,.adviewer .bar{flex:none;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.adlist .albody{padding-bottom:12px}
+.adviewer .bar{background:rgba(0,0,0,.6);border-top-color:rgba(255,255,255,.15)}
+.adviewer .bar .btn:not(.wa){background:rgba(255,255,255,.14);color:#fff;border-color:transparent}
+.sheet-wrap.ontop{position:fixed;z-index:95}
 .adviewer .zhint{position:absolute;left:0;right:0;bottom:max(18px,env(safe-area-inset-bottom));text-align:center;color:#fff;font-size:14px;opacity:.85;pointer-events:none;animation:fadeout 1s 3s both}
 @keyframes fadeout{from{opacity:.85}to{opacity:0}}
 .adviewer .vtop{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:14px;padding-top:max(14px,env(safe-area-inset-top));color:#fff;font-weight:700;z-index:2;pointer-events:none}
@@ -2589,14 +2594,17 @@ V.home=function(){
    (S.cat?refineBtn():'')+(S.cat?typeRow():'')+(S.cat&&S.refOpen?(S.cat==='serv'?servFilters():'')+(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+xfHTML()+(S.cat==='tel'?phoneFilters():'')+(isMM(S.cat)?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='menager'?menagerFilters():'')+(S.cat==='beaute'?beautyFilters():'')+(S.cat==='equip'?equipFilters():'')+(S.cat==='alim'?alimFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
    '</div><div class="sec" id="list" style="padding-top:12px">'+listHTML()+'</div><div style="height:16px"></div></div>'+tabs('home');};
 
+// Boutons WhatsApp / Appel / Message aussi en bas de la galerie, pour contacter le vendeur sans fermer les photos
+function ovBar(a){if(a.sample||(S.user&&a.owner===S.user.id))return '';
+  return '<div class="bar"><button class="btn wa" data-a="contact" data-k="wa">'+svg(I.msg,20)+'WhatsApp</button><button class="btn" data-a="contact" data-k="call">'+svg(I.phone,20)+t('call')+'</button><button class="btn" data-a="chat">'+svg(I.msg,20)+t('message')+'</button></div>';}
 function adListHTML(a){var L=S.adList;if(!L||L.id!==a.id||!a.photos||a.photos.length<2)return '';
   return '<div class="adlist" role="dialog" aria-modal="true"><div class="altop"><button type="button" class="icon" data-a="adlistclose" aria-label="'+t('close')+'">'+svg(I.close,22)+'</button><b>'+t('photosN').replace('{n}',a.photos.length)+'</b><span style="width:44px"></span></div>'+
-    '<div class="albody" id="albody">'+a.photos.map(function(p,i){return '<button type="button" class="alimg" data-a="adview" data-i="'+i+'" aria-label="'+t('zoomHint')+'"><img alt="" src="'+p+'" loading="'+(i<3?'eager':'lazy')+'"><span class="aln">'+(i+1)+' / '+a.photos.length+'</span></button>';}).join('')+'</div></div>';}
+    '<div class="albody" id="albody">'+a.photos.map(function(p,i){return '<button type="button" class="alimg" data-a="adview" data-i="'+i+'" aria-label="'+t('zoomHint')+'"><img alt="" src="'+p+'" loading="'+(i<3?'eager':'lazy')+'"><span class="aln">'+(i+1)+' / '+a.photos.length+'</span></button>';}).join('')+'</div>'+ovBar(a)+'</div>';}
 function adViewerHTML(a){var v=S.adView;if(!v||v.id!==a.id||!a.photos||!a.photos.length)return '';
   return '<div class="adviewer" role="dialog" aria-modal="true"><div class="vtop"><span id="vcount" style="direction:ltr;background:rgba(0,0,0,.45);padding:6px 12px;border-radius:14px">'+(v.i+1)+' / '+a.photos.length+'</span>'+
     '<button type="button" class="icon solid" data-a="adviewclose" aria-label="'+t('close')+'">'+svg(I.close,22)+'</button></div>'+
     '<div class="gal" id="vgal">'+a.photos.map(function(p){return '<div class="zw"><img class="zimg" alt="" src="'+p+'" draggable="false"></div>';}).join('')+'</div>'+
-    '<div class="zhint">'+svg(I.search,16)+' '+t('zoomHint')+'</div></div>';}
+    ovBar(a)+'<div class="zhint"'+(ovBar(a)?' style="bottom:calc(96px + env(safe-area-inset-bottom))"':'')+'>'+svg(I.search,16)+' '+t('zoomHint')+'</div></div>';}
 /* zoom des photos en plein écran : pincer, toucher deux fois, molette ou double-clic sur ordinateur */
 var ZM={el:null,s:1,x:0,y:0,t0:null,last:0,lx:0,ly:0};
 function zApply(z){var w=z.el.parentNode,W=w.clientWidth,H=w.clientHeight,iw=z.el.clientWidth,ih=z.el.clientHeight;
@@ -3278,7 +3286,7 @@ function sheetHTML(){
   var dg=String(a&&a.phone||'').replace(/\D/g,'');
   var content=S.sheet==='call'?'<div class="quote" dir="ltr" style="font-size:20px;font-weight:800;text-align:center">+222 '+esc(a.phone||'')+'</div>'+(dg?'<a class="btn wide primary" style="text-decoration:none" href="tel:+222'+dg+'">'+svg(I.phone,20)+t('callNow')+'</a>':'')
     :'<div class="quote" id="qtxt" style="white-space:pre-wrap;overflow-wrap:anywhere" translate="no">'+esc(txt)+'</div>'+(S.sheet==='wa'&&dg?'<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/222'+dg+'?text='+encodeURIComponent(txt)+'">'+svg(I.msg,20)+t('openWa')+'</a>':'')+'<button class="btn wide" data-a="copy">'+t('copy')+'</button>';
-  return '<div class="sheet-wrap" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+t('message')+'" data-stop="1"><p>'+info+'</p>'+content+'<button class="btn wide" data-a="closesheet">'+t('close')+'</button></div></div>';}
+  return '<div class="sheet-wrap'+(S.adList||S.adView?' ontop':'')+'" data-a="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+t('message')+'" data-stop="1"><p>'+info+'</p>'+content+'<button class="btn wide" data-a="closesheet">'+t('close')+'</button></div></div>';}
 
 var toastTimer;
 function toast(msg){var old=app.querySelector('.toast');if(old)old.remove();var d=document.createElement('div');d.className='toast';d.setAttribute('role','status');d.textContent=msg;app.appendChild(d);clearTimeout(toastTimer);toastTimer=setTimeout(function(){d.remove();},2200);}
@@ -4606,6 +4614,7 @@ app.addEventListener('click',function(e){
 window.addEventListener('popstate',function(){
   S.popping=true;
   try{if(S.screen==='post'&&(S.pstep||1)>1){S.errs={};S.pstep--;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
+    if(S.sheet&&(S.adList||S.adView)){S.sheet=null;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
     if(!S.adView&&S.adList){S.adList=null;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
     if(S.adView){var av2=S.adView;S.adView=null;S.galI=S.galI||{};S.galI[av2.id]=av2.i;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
     if(S.viewImg){S.viewImg=null;render(true);try{history.pushState({souki:1,d:((history.state&&history.state.d)||0)+1},'');}catch(e){}return;}
