@@ -545,6 +545,27 @@ export async function onRequest(ctx) {
       }
       return json({ text: '', err: 'busy', dbg: isAdmin(env, me) ? errs : undefined });
     }
+    // Agent recruteur : recopier les lignes du haut d'une publication (nom du groupe, nom de la personne) — réservé à l'administrateur
+    if (parts[0] === 'ai' && parts[1] === 'who' && method === 'POST') {
+      if (!isAdmin(env, me)) return fail('forbidden', 403);
+      const b = await readBody(req), img = String(b.img || '');
+      if (!/^data:image\/(jpeg|png|webp);base64,/.test(img) || img.length > 900000) return fail('invalid');
+      if (!env.AI) return json({ lines: [] });
+      const ask = 'This image is the TOP of a social media post (Facebook, WhatsApp or TikTok), cut from a phone screenshot. ' +
+        'Copy every line of text you see, from top to bottom, exactly as written (Arabic stays in Arabic letters, Latin stays Latin, never translate). ' +
+        'Ignore icons, the phone status bar (clock, battery, signal) and buttons. Answer ONLY with JSON: {"lines":["line 1","line 2", ...]}';
+      const tries = [
+        ['mistral', '@cf/mistralai/mistral-small-3.1-24b-instruct', { messages: [{ role: 'user', content: [{ type: 'text', text: ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 400, temperature: 0 }],
+        ['gemma', '@cf/google/gemma-3-12b-it', { messages: [{ role: 'user', content: [{ type: 'text', text: ask }, { type: 'image_url', image_url: { url: img } }] }], max_tokens: 400, temperature: 0 }],
+      ];
+      for (const [tag, model, input] of tries) {
+        try {
+          const j = aiJson(aiPick(await env.AI.run(model, input)));
+          if (j && Array.isArray(j.lines) && j.lines.length) return json({ lines: j.lines.slice(0, 8).map((x) => String(x).slice(0, 120)), model: tag });
+        } catch (e) { /* modèle suivant */ }
+      }
+      return json({ lines: [] });
+    }
     if (parts[0] === 'ai' && parts[1] === 'parse' && method === 'POST') {
       const b = await readBody(req);
       const text = String(b.text || '').slice(0, 4000).trim();
