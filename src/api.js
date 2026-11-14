@@ -1,5 +1,5 @@
 import { recognise } from './vision.js';
-// Vends-moi API — Cloudflare Pages Function, base de données D1 (binding "DB").
+// Bi3li API — Cloudflare Pages Function, base de données D1 (binding "DB").
 // Toutes les routes /api/* passent ici.
 
 const SCHEMA = [
@@ -320,12 +320,12 @@ export async function onRequest(ctx) {
           const from = String(m.from || '').replace(/\D/g, '').slice(-8);
           const txt = String((m.text && m.text.body) || (m.button && m.button.text) || '');
           const mm = txt.match(/(?:code|رمز|الرمز)\D{0,3}(\d{6})/i) || txt.match(/(\d{6})/);
-          if (!mm) { await waReply(env, m.from, 'Bonjour 👋 Pour vérifier votre numéro ou vous connecter, utilisez le bouton WhatsApp dans l’application Vends-moi.'); continue; }
+          if (!mm) { await waReply(env, m.from, 'Bonjour 👋 Pour vérifier votre numéro ou vous connecter, utilisez le bouton WhatsApp dans l’application Bi3li.'); continue; }
           const row = await db.prepare('SELECT * FROM wa_codes WHERE code = ? AND done = 0 AND created > ?').bind(mm[1], Date.now() - 15 * 60000).first();
           if (!row || row.phone !== from) { await waReply(env, m.from, 'Ce code ne correspond pas à votre numéro ou a expiré. Recommencez depuis l’application.'); continue; }
           await db.prepare('UPDATE wa_codes SET done = 1 WHERE code = ?').bind(row.code).run();
           await db.prepare('UPDATE users SET verified = 1 WHERE phone = ?').bind(from).run();
-          await waReply(env, m.from, row.purpose === 'login' ? '✅ C’est bon ! Retournez dans Vends-moi, vous êtes connecté.' : '✅ Votre numéro est vérifié. Merci !');
+          await waReply(env, m.from, row.purpose === 'login' ? '✅ C’est bon ! Retournez dans Bi3li, vous êtes connecté.' : '✅ Votre numéro est vérifié. Merci !');
         }
         return json({ ok: true });
       }

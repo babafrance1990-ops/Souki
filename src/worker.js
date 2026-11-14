@@ -1,4 +1,4 @@
-// Point d'entrée Cloudflare Worker : /api/* → serveur Vends-moi, le reste → fichiers du dossier public/.
+// Point d'entrée Cloudflare Worker : /api/* → serveur Bi3li, le reste → fichiers du dossier public/.
 // Pour un lien d'annonce (/?annonce=ID), on ajoute l'aperçu (photo, titre, prix) affiché par WhatsApp.
 import { onRequest } from './api.js';
 
@@ -15,7 +15,7 @@ async function withAdPreview(request, env, url, id) {
     const img = a.photos && a.photos[0] ? url.origin + a.photos[0] : url.origin + '/icon-512.png';
     const place = [a.hood, a.city].filter(Boolean).join(', ');
     const desc = (place ? place + ' · ' : '') + String(a.desc || '').slice(0, 140);
-    const tags = '<meta property="og:type" content="website"><meta property="og:site_name" content="Vends-moi">' +
+    const tags = '<meta property="og:type" content="website"><meta property="og:site_name" content="Bi3li">' +
       '<meta property="og:title" content="' + esc((a.trip && /[\u0600-\u06FF]/.test(a.title || '') ? String(a.title).replace(/→/g, '←') : a.title) + ' – ' + price) + '">' +
       '<meta property="og:description" content="' + esc(desc) + '">' +
       '<meta property="og:image" content="' + esc(img) + '">' +
@@ -36,9 +36,9 @@ async function withShopPreview(request, env, url, slug) {
     if (!u) return res;
     const sh = JSON.parse(u.shop);
     const img = u.avatar ? url.origin + u.avatar : url.origin + '/icon-512.png';
-    const desc = [sh.market, sh.desc, u.n + ' produits sur Vends-moi'].filter(Boolean).join(' · ').slice(0, 200);
-    const tags = '<meta property="og:type" content="website"><meta property="og:site_name" content="Vends-moi">' +
-      '<meta property="og:title" content="' + esc(sh.name + (sh.verified ? ' ✓' : '') + ' – Boutique Vends-moi') + '">' +
+    const desc = [sh.market, sh.desc, u.n + ' produits sur Bi3li'].filter(Boolean).join(' · ').slice(0, 200);
+    const tags = '<meta property="og:type" content="website"><meta property="og:site_name" content="Bi3li">' +
+      '<meta property="og:title" content="' + esc(sh.name + (sh.verified ? ' ✓' : '') + ' – Boutique Bi3li') + '">' +
       '<meta property="og:description" content="' + esc(desc) + '">' +
       '<meta property="og:image" content="' + esc(img) + '">' +
       '<meta property="og:url" content="' + esc(url.href) + '">';

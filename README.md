@@ -1,4 +1,4 @@
-# Vends-moi (بيعلي) — site web
+# بيعلي – Bi3li — site web
 
 Petites annonces pour la Mauritanie. Hébergement gratuit sur **Cloudflare Workers** avec une base de données **Cloudflare D1**.
 

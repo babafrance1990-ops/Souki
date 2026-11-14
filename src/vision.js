@@ -1,5 +1,5 @@
 // Recherche par photo : Workers AI reconnaît l'objet (modèle ResNet-50, étiquettes en anglais),
-// puis on le traduit en mots français / arabes et en catégorie Vends-moi.
+// puis on le traduit en mots français / arabes et en catégorie Bi3li.
 // [mot anglais contenu dans l'étiquette, français, arabe, catégorie]
 const MAP = [
   ['sports car', 'voiture', 'سيارة', 'auto'], ['convertible', 'voiture', 'سيارة', 'auto'], ['cab', 'voiture', 'سيارة', 'auto'],
