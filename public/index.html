@@ -3465,7 +3465,9 @@ function render(keepScroll){
   var ci=app.querySelector('#chatin'),cv=ci?ci.value:'',cfoc=!!ci&&document.activeElement===ci;
   var fsb=app.querySelector('.fsbody'),fst=fsb?fsb.scrollTop:0,fsOpen=!!fsb;
   document.documentElement.lang=S.lang;document.documentElement.setAttribute('translate','no');app.dir=S.lang==='ar'?'rtl':'ltr';
+  var oldLogo=app.querySelector('.vmimg');
   app.innerHTML=V[S.screen]()+sheetHTML()+(S.screen==='home'?fsheetHTML():'')+(S.langPick?langPickHTML():'');
+  if(oldLogo){var nl=app.querySelector('.vmimg');if(nl&&nl.getAttribute('src')===oldLogo.getAttribute('src'))nl.parentNode.replaceChild(oldLogo,nl);}
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
   if(S.screen==='post'){splitPostForm();subIcons();saveDraftSoon();}
