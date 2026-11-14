@@ -3593,7 +3593,7 @@ function render(keepScroll){
   if(oldLogo){var nl=app.querySelector('.vmimg');if(nl&&nl.getAttribute('src')===oldLogo.getAttribute('src'))nl.parentNode.replaceChild(oldLogo,nl);}
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
-  if(S.screen==='post'){splitPostForm();subIcons();saveDraftSoon();}
+  if(S.screen==='post'){splitPostForm();subIcons();saveDraftSoon();rcBanner();}
   if(S.screen==='detail'&&S.adList){var alb=app.querySelector('#albody');if(alb){if(S.adList.go!=null){var tg=alb.children[S.adList.go];S.adList.go=null;if(tg)setTimeout(function(){alb.scrollTop=tg.offsetTop-8;},0);}else alb.scrollTop=S.adList.top||0;alb.addEventListener('scroll',function(){if(S.adList)S.adList.top=alb.scrollTop;},{passive:true});}}
   if(S.screen==='detail'){var g0=app.querySelector('#gal');if(g0&&S.galI&&S.galI[S.id])galSet(g0,S.galI[S.id],false);var vg0=app.querySelector('#vgal');if(vg0&&S.adView)galSet(vg0,S.adView.i,false);}
   if(S.screen==='detail'||S.screen==='shop')tidySpecs();
@@ -4220,6 +4220,7 @@ function publish(dry,opt){
   var dd=JSON.parse(JSON.stringify(d));delete dd.photos;delete dd.voice;ad._d=dd;
   if(opt&&opt.build)return ad;
   if(S.busy)return;S.busy=true;toast(t('sending'));var eid=S.editId;
+  if(!eid&&d._rid){withVideo(ad).then(function(){return rcPublish(ad,d);}).then(function(){S.busy=false;S.vidBlob=null;S.vidUrl=null;S.vidCut=false;}).catch(function(err){S.busy=false;toast(t(err&&err.code==='too_big'?'e_too_big':'netErr'));});return;}
   withVideo(ad).then(function(){return api(eid?'PUT':'POST',eid?'ads/'+eid:'ads',{ad:ad});}).then(function(r){S.busy=false;S.vidBlob=null;S.vidUrl=null;S.vidCut=false;
     if(eid){S.remote=S.remote.map(function(x){return x.id===eid?r.ad:x;});S.editId=null;S.draft=null;}
     else{S.remote.unshift(r.ad);save('postprefs',{city:d.city,hood:d.hood||'',wa:!!d.wa,call:!!d.call,msg:!!d.msg,stype:d.stype||'',sname:d.sname||'',saddr:d.saddr||''});S.draft=null;S.draftRestored=false;save('draft',null);}
@@ -4299,7 +4300,7 @@ V.admin=function(){
      (del?(P.sure?'<button class="btn wide danger" data-a="prggo" style="height:52px">'+t('prgSure').replace('{n}',del)+'</button>':'<button class="btn wide" data-a="prgask" style="height:52px;color:#B3261E;border-color:#B3261E">'+t('prgDel').replace('{n}',del)+'</button>'):'<p class="meta">'+t('prgNone')+'</p>');}
   var shopsBox='<h2>'+t('admShops')+' ('+shs.length+')</h2>'+(shs.length?shs.map(function(x){return '<div class="box" style="gap:10px"><div style="flex:1;min-width:0"><b translate="no">'+esc(x.shop.name)+'</b>'+shopBadge(x.shop,13)+'<div class="meta" dir="ltr" style="text-align:start">'+esc(x.name)+' · '+esc(x.phone)+' · '+x.ads+' ann.</div></div>'+
     '<button class="btn small" data-a="shop" data-v="'+esc(x.id)+'">'+svg(I.eye||I.list,16)+'</button><button class="btn small'+(x.shop.verified?'':' primary')+'" data-a="admverify" data-id="'+esc(x.id)+'" data-v="'+(x.shop.verified?'0':'1')+'">'+t(x.shop.verified?'admUnverify':'admVerify')+'</button></div>';}).join(''):'<p class="meta">'+t('admNoShop')+'</p>');
-  return topbar(t('admin'),'account')+'<div class="scroll"><div class="sec" style="gap:14px">'+stats+'<div class="box" style="flex-direction:column;align-items:stretch;gap:8px">'+prgBox+'</div>'+shopsBox+shopBox+'<h2>'+t('admReports')+'</h2>'+reps+
+  return topbar(t('admin'),'account')+'<div class="scroll"><div class="sec" style="gap:14px">'+stats+'<button class="btn primary wide" data-a="go" data-s="recruit" style="height:54px;font-size:16px">'+svg(I.users||I.user,20)+rt('rcOpen')+'</button>'+'<div class="box" style="flex-direction:column;align-items:stretch;gap:8px">'+prgBox+'</div>'+shopsBox+shopBox+'<h2>'+t('admReports')+'</h2>'+reps+
    '<h2>'+t('admUsers')+'</h2><div class="field"><label for="admq">'+t('admSearch')+'</label><input id="admq" class="inp" data-adm="admQ" inputmode="numeric" value="'+esc(S.admQ)+'" placeholder="XX XX XX XX"></div>'+users+'</div></div>';};
 function adminClick(a,el,id){
   switch(a){
@@ -4337,6 +4338,166 @@ app.addEventListener('input',function(e){
   var el=e.target,k=el.getAttribute&&el.getAttribute('data-adm');if(!k)return;
   S[k]=el.value;if(k==='admQ'){clearTimeout(admT);admT=setTimeout(function(){loadAdmin().then(function(){var q=app.querySelector('#admq');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}});},400);}
   e.stopImmediatePropagation();},true);
+/* ---------- Agent recruteur : trouver des vendeurs sur les réseaux sociaux et publier pour eux (avec leur accord) ---------- */
+var RX={fr:{
+  rcT:'Recruter des vendeurs',rcOpen:'Recruter des vendeurs (agent IA)',rcIntro:'Trouvez une annonce sur Facebook, WhatsApp ou TikTok, faites une capture d’écran : l’agent prépare tout. Vous envoyez le message vous-même, puis vous publiez avec l’accord du vendeur.',
+  rcNew:'Nouveau vendeur',rcShot:'Capture d’écran de l’annonce',rcShotBtn:'Choisir la capture',rcReading:'L’agent lit la capture…',rcOrText:'… ou collez le texte de l’annonce',rcRead:'Lire le texte',
+  rcPhone:'Numéro du vendeur (8 chiffres)',rcName:'Nom du vendeur',rcSrc:'Trouvé sur',rcNote:'Note (groupe, lien…)',rcSave:'Enregistrer le vendeur',rcFound:'Annonce trouvée',
+  rcEmpty:'Aucun vendeur pour l’instant. Commencez par une capture d’écran.',rcDup:'Ce numéro est déjà dans la liste ({s}).',rcIsUser:'Déjà inscrit sur Bi3li',
+  st_new:'À contacter',st_contacted:'Contacté',st_accepted:'D’accord',st_refused:'Refusé',st_published:'Publié',st_relance:'À relancer',
+  f_all:'Tous',rcToday:'Messages envoyés aujourd’hui : {n} / 30',rcTodayTip:'Pour protéger votre numéro WhatsApp, n’envoyez pas plus de 30 messages par jour, et jamais deux fois le même jour à la même personne.',
+  rcMsg1:'Envoyer le 1er message',rcMsg2:'Relancer',rcYes:'Il est d’accord',rcNo:'Il refuse',rcPrep:'Préparer et publier l’annonce',rcSee:'Voir l’annonce',rcDel:'Retirer de la liste',rcDelSure:'Confirmer : retirer',rcBack:'Remettre « à contacter »',
+  rcTries:'{n} message(s) · dernier {d}',rcMaxTries:'Déjà 3 messages sans réponse : n’insistez plus, marquez « Refusé ».',rcLang:'Langue du message',
+  rcFor:'Annonce pour le vendeur : {n} · +222 {p}',rcForCancel:'Annuler',rcDone:'Annonce publiée pour {n} !',rcCreds:'Compte créé : {p} · code {w}',rcExisted:'Ajoutée à son compte existant ({p}).',
+  rcSendCreds:'Envoyer ses accès sur WhatsApp',rcOk:'C’est fait',rcErrPhone:'Numéro invalide (8 chiffres, commence par 2, 3 ou 4).',rcErrName:'Indiquez le nom du vendeur.',rcSaved:'Vendeur enregistré',
+  rcStats:'{a} à contacter · {c} en attente · {k} d’accord · {p} publiés',rcSearch:'Chercher un nom ou un numéro',
+  src_fb:'Facebook',src_wa:'WhatsApp',src_tt:'TikTok',src_ig:'Instagram',src_other:'Autre',
+  m1:'Bonjour{n},\nJ’ai vu votre annonce « {t} » sur {s}.\nJe fais partie de l’équipe Bi3li, un nouveau site gratuit de petites annonces en Mauritanie : {u}\nNous pouvons publier votre annonce gratuitement à votre place : vous n’avez rien à faire.\nÊtes-vous d’accord ?',
+  m2:'Bonjour{n},\nJe reviens vers vous pour votre annonce « {t} ». La publication sur Bi3li est gratuite et vous ne faites rien : nous nous occupons de tout.\nVoulez-vous qu’on la mette en ligne ? Si cela ne vous intéresse pas, dites-le-moi et je ne vous écrirai plus.',
+  m3:'Bonjour{n},\nVotre annonce « {t} » est en ligne sur Bi3li : {l}\nVotre compte : numéro {p}, code secret {w}.\nAvec ce code, vous pouvez modifier ou supprimer votre annonce quand vous voulez sur {u}\nMerci !',
+  m3b:'Bonjour{n},\nVotre annonce « {t} » est en ligne sur Bi3li : {l}\nElle est dans votre compte (numéro {p}). Vous pouvez la modifier ou la supprimer quand vous voulez.\nMerci !',
+  anAd:'votre article'},
+ar:{
+  rcT:'جلب البائعين',rcOpen:'جلب البائعين (وكيل ذكي)',rcIntro:'ابحث عن إعلان على فيسبوك أو واتساب أو تيك توك، وخذ لقطة شاشة: الوكيل يجهز كل شيء. ترسل الرسالة بنفسك، ثم تنشر بموافقة البائع.',
+  rcNew:'بائع جديد',rcShot:'لقطة شاشة للإعلان',rcShotBtn:'اختر اللقطة',rcReading:'الوكيل يقرأ اللقطة…',rcOrText:'… أو الصق نص الإعلان',rcRead:'اقرأ النص',
+  rcPhone:'رقم البائع (8 أرقام)',rcName:'اسم البائع',rcSrc:'وجدته على',rcNote:'ملاحظة (المجموعة، الرابط…)',rcSave:'حفظ البائع',rcFound:'الإعلان الموجود',
+  rcEmpty:'لا يوجد بائعون بعد. ابدأ بلقطة شاشة.',rcDup:'هذا الرقم موجود في القائمة ({s}).',rcIsUser:'مسجل في بيعلي',
+  st_new:'للتواصل',st_contacted:'تم التواصل',st_accepted:'موافق',st_refused:'رفض',st_published:'تم النشر',st_relance:'للتذكير',
+  f_all:'الكل',rcToday:'الرسائل المرسلة اليوم: {n} / 30',rcTodayTip:'لحماية رقم واتساب، لا ترسل أكثر من 30 رسالة في اليوم، ولا ترسل مرتين لنفس الشخص في نفس اليوم.',
+  rcMsg1:'إرسال الرسالة الأولى',rcMsg2:'تذكير',rcYes:'وافق',rcNo:'رفض',rcPrep:'تجهيز الإعلان ونشره',rcSee:'عرض الإعلان',rcDel:'حذف من القائمة',rcDelSure:'تأكيد الحذف',rcBack:'إرجاع إلى «للتواصل»',
+  rcTries:'{n} رسالة · آخرها {d}',rcMaxTries:'3 رسائل بدون رد: لا تلح، ضع «رفض».',rcLang:'لغة الرسالة',
+  rcFor:'إعلان للبائع: {n} · ‎+222 {p}',rcForCancel:'إلغاء',rcDone:'تم نشر الإعلان لـ {n}!',rcCreds:'تم إنشاء الحساب: {p} · الرقم السري {w}',rcExisted:'أضيف إلى حسابه الموجود ({p}).',
+  rcSendCreds:'أرسل له بيانات الدخول على واتساب',rcOk:'تم',rcErrPhone:'رقم غير صحيح (8 أرقام، يبدأ بـ 2 أو 3 أو 4).',rcErrName:'اكتب اسم البائع.',rcSaved:'تم حفظ البائع',
+  rcStats:'{a} للتواصل · {c} في الانتظار · {k} موافق · {p} منشور',rcSearch:'ابحث عن اسم أو رقم',
+  src_fb:'فيسبوك',src_wa:'واتساب',src_tt:'تيك توك',src_ig:'إنستغرام',src_other:'آخر',
+  m1:'السلام عليكم{n}،\nرأيت إعلانك «{t}» على {s}.\nأنا من فريق بيعلي، موقع جديد ومجاني للإعلانات في موريتانيا: {u}\nنستطيع أن ننشر إعلانك مجاناً بدلاً منك، ولا تحتاج أن تفعل أي شيء.\nهل توافق؟',
+  m2:'السلام عليكم{n}،\nأعود إليك بخصوص إعلانك «{t}». النشر في بيعلي مجاني ونحن نتكفل بكل شيء.\nهل تريد أن ننشره لك؟ إذا لم تكن مهتماً، أخبرني ولن أراسلك مرة أخرى.',
+  m3:'السلام عليكم{n}،\nإعلانك «{t}» منشور الآن في بيعلي: {l}\nحسابك: الرقم {p}، الرقم السري {w}.\nبهذا الرقم السري يمكنك تعديل إعلانك أو حذفه متى شئت على {u}\nشكراً!',
+  m3b:'السلام عليكم{n}،\nإعلانك «{t}» منشور الآن في بيعلي: {l}\nهو في حسابك (الرقم {p}). يمكنك تعديله أو حذفه متى شئت.\nشكراً!',
+  anAd:'منتجك'}};
+function rt(k){return (RX[S.lang]&&RX[S.lang][k])||RX.fr[k]||k;}
+function rtl(lang,k){return (RX[lang]&&RX[lang][k])||RX.fr[k]||k;}
+var RC_SRC=['fb','wa','tt','ig','other'],RC_ST=['new','relance','contacted','accepted','published','refused'];
+S.rc=null;
+function rcLoad(){S.rc=S.rc||{list:null,f:'all',q:'',form:{phone:'',name:'',src:'fb',note:'',txt:'',item:null,thumb:''},busy:false,lang:{},del:null,res:null};
+  return api('GET','admin/prospects').then(function(d){S.rc.list=d.prospects||[];S.rc.loading=false;if(S.screen==='recruit')render(true);}).catch(function(){S.rc.loading=false;toast(t('netErr'));});}
+function rcState(p){if(p.status==='contacted'&&p.tries<3&&Date.now()-p.contacted>2*86400000)return 'relance';return p.status;}
+function rcToday(){var d=new Date();d.setUTCHours(0,0,0,0);var t0=d.getTime();return (S.rc.list||[]).filter(function(p){return p.contacted>=t0;}).length;}
+function rcPhoneFrom(txt){var m=String(txt||'').replace(/[٠-٩]/g,function(c){return '٠١٢٣٤٥٦٧٨٩'.indexOf(c);}).match(/(?:\+?222[\s.-]*)?([234]\d)[\s.-]?(\d{2})[\s.-]?(\d{2})[\s.-]?(\d{2})\b/);return m?m[1]+m[2]+m[3]+m[4]:'';}
+function rcLangOf(p){if(S.rc.lang[p.id])return S.rc.lang[p.id];var src=(p.txt||'')+' '+((p.item&&p.item.title)||'');return isArTxt(src)?'ar':'fr';}
+function rcMsg(p,kind,extra){var L=rcLangOf(p),k=kind,ttl=(p.item&&p.item.title)||rtl(L,'anAd');extra=extra||{};
+  if(kind==='m3'&&extra.existed)k='m3b';
+  var nm=p.name?(L==='ar'?' '+p.name:' '+p.name):'';
+  return rtl(L,k).replace('{n}',nm).replace('{t}',ttl).replace('{s}',rtl(L,'src_'+(p.src||'fb'))).replace('{u}',location.origin).replace('{l}',extra.link||'').replace('{p}',(extra.phone||p.phone).replace(/(\d{2})(?=\d)/g,'$1 ')).replace('{w}',extra.pass||'');}
+function rcWa(phone,msg){return 'https://wa.me/222'+String(phone).replace(/\D/g,'').slice(-8)+'?text='+encodeURIComponent(msg);}
+function rcUpd(id,body,quiet){return api('PUT','admin/prospects/'+id,body).then(function(d){S.rc.list=S.rc.list.map(function(x){return x.id===id?d.prospect:x;});if(!quiet)render(true);return d.prospect;}).catch(function(){toast(t('netErr'));});}
+function rcCard(p){
+  var st=rcState(p),col={new:'#5A3B00',relance:'#B3261E',contacted:'#555',accepted:'#0B6B3A',published:'var(--brand)',refused:'#999'}[st];
+  var it=p.item||{},L=rcLangOf(p);
+  var head='<div class="row" style="gap:10px;align-items:flex-start">'+(p.thumb?'<img src="'+p.thumb+'" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px;flex-shrink:0">':'')+
+    '<div style="flex:1;min-width:0"><div class="row between" style="gap:6px"><b translate="no">'+esc(p.name)+'</b><span class="badge" style="color:'+col+';border-color:'+col+'">'+rt('st_'+st)+'</span></div>'+
+    '<div class="meta" dir="ltr" style="text-align:start">+222 '+esc(p.phone.replace(/(\d{2})(?=\d)/g,'$1 '))+' · '+rt('src_'+(p.src||'fb'))+(p.registered?' · ✓ '+rt('rcIsUser'):'')+'</div>'+
+    (it.title?'<div style="font-weight:700;margin-top:2px"><bdi>'+esc(it.title)+'</bdi>'+(it.price?' · <bdi>'+num(it.price)+' MRU</bdi>':'')+'</div>':'')+
+    (p.note?'<div class="meta">'+esc(p.note)+'</div>':'')+
+    (p.tries?'<div class="meta">'+rt('rcTries').replace('{n}',p.tries).replace('{d}',ago(p.contacted))+'</div>':'')+'</div></div>';
+  var b=[],wa=function(kind,label,primary){return '<a class="btn small'+(primary?' wa':'')+'" style="text-decoration:none" target="_blank" rel="noopener" data-a="rcsent" data-id="'+p.id+'" href="'+esc(rcWa(p.phone,rcMsg(p,kind)))+'">'+svg(I.msg,16)+label+'</a>';};
+  var langSw='<button class="btn small" data-a="rclang" data-id="'+p.id+'" title="'+rt('rcLang')+'">'+(L==='ar'?'FR':'ع')+'</button>';
+  if(st==='new'){b.push(wa('m1',rt('rcMsg1'),true));b.push(langSw);}
+  if(st==='contacted'||st==='relance'){if(p.tries<3)b.push(wa('m2',rt('rcMsg2'),st==='relance'));b.push(langSw);b.push('<button class="btn small primary" data-a="rcset" data-v="accepted" data-id="'+p.id+'">'+svg(I.check,16)+rt('rcYes')+'</button>');b.push('<button class="btn small" data-a="rcset" data-v="refused" data-id="'+p.id+'">'+rt('rcNo')+'</button>');}
+  if(st==='accepted'){b.push('<button class="btn small primary" data-a="rcprep" data-id="'+p.id+'">'+svg(I.plus,16)+rt('rcPrep')+'</button>');b.push('<button class="btn small" data-a="rcset" data-v="refused" data-id="'+p.id+'">'+rt('rcNo')+'</button>');}
+  if(st==='published'&&p.adId)b.push('<button class="btn small" data-a="open" data-id="'+esc(p.adId)+'">'+svg(I.eye||I.list,16)+rt('rcSee')+'</button>');
+  if(st==='refused')b.push('<button class="btn small" data-a="rcset" data-v="new" data-id="'+p.id+'">'+rt('rcBack')+'</button>');
+  if(st!=='published')b.push(S.rc.del===p.id?'<button class="btn small danger" data-a="rcdel" data-id="'+p.id+'">'+rt('rcDelSure')+'</button>':'<button class="btn small" data-a="rcdel" data-id="'+p.id+'" aria-label="'+rt('rcDel')+'">'+svg(I.close,16)+'</button>');
+  var warn=(st==='contacted'||st==='relance')&&p.tries>=3?'<p class="meta" style="margin:0;color:#B3261E">'+rt('rcMaxTries')+'</p>':'';
+  return '<div class="box" style="flex-direction:column;align-items:stretch;gap:8px">'+head+warn+'<div class="row" style="flex-wrap:wrap;gap:6px">'+b.join('')+'</div></div>';}
+V.recruit=function(){
+  if(!S.user||!S.user.admin){S.screen='account';return V.account();}
+  if(!S.rc||!S.rc.list){if(!S.rc||!S.rc.loading){rcLoad();S.rc.loading=true;}return topbar(rt('rcT'),'admin')+'<div class="scroll"><div class="empty">…</div></div>';}
+  var R=S.rc,F=R.form,L=R.list;
+  var cnt={new:0,relance:0,contacted:0,accepted:0,published:0,refused:0};L.forEach(function(p){cnt[rcState(p)]++;});
+  var res='';if(R.res){var r=R.res,pp=r.phone.replace(/(\d{2})(?=\d)/g,'$1 ');
+    res='<div class="tip" style="background:var(--tint);color:var(--fg);flex-direction:column;align-items:stretch;gap:8px"><b style="font-size:17px">✓ '+esc(rt('rcDone').replace('{n}',r.name))+'</b>'+
+      '<div dir="auto" style="font-weight:800">'+esc(r.existed?rt('rcExisted').replace('{p}',pp):rt('rcCreds').replace('{p}',pp).replace('{w}',r.pass))+'</div>'+
+      '<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="'+esc(rcWa(r.phone,rcMsg(r.prospect,'m3',{link:location.origin+'/?annonce='+r.ad.id,pass:r.pass,existed:r.existed,phone:r.phone})))+'">'+svg(I.msg,18)+rt('rcSendCreds')+'</a>'+
+      '<button class="btn small" data-a="rcresok">'+rt('rcOk')+'</button></div>';}
+  var today=rcToday();
+  var top='<p style="margin:0;line-height:1.5">'+rt('rcIntro')+'</p>'+res+
+    '<div class="tip" style="'+(today>=30?'background:#FDE7E7;color:#8A1C1C':'background:var(--tint);color:var(--fg)')+';flex-direction:column;align-items:stretch;gap:4px"><b>'+rt('rcToday').replace('{n}',today)+'</b><span class="meta" style="color:inherit">'+rt('rcTodayTip')+'</span></div>';
+  var srcSel='<select class="inp" data-rcf="src" aria-label="'+rt('rcSrc')+'">'+RC_SRC.map(function(s){return '<option value="'+s+'"'+(F.src===s?' selected':'')+'>'+rt('src_'+s)+'</option>';}).join('')+'</select>';
+  var found=F.item&&(F.item.title||F.item.price)?'<div class="box" style="gap:10px">'+(F.thumb?'<img src="'+F.thumb+'" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px">':'')+'<div style="flex:1;min-width:0"><div class="meta">'+rt('rcFound')+'</div><b><bdi>'+esc(F.item.title||'')+'</bdi></b>'+(F.item.price?'<div class="meta">'+num(F.item.price)+' MRU'+(F.item.city?' · '+esc(F.item.city):'')+'</div>':'')+'</div></div>':'';
+  var form='<h2>'+rt('rcNew')+'</h2><div class="box" style="flex-direction:column;align-items:stretch;gap:10px">'+
+    '<label class="btn primary wide" for="rcshot"'+(R.busy?' aria-disabled="true" style="opacity:.5;pointer-events:none"':'')+'>'+svg(I.cam,20)+rt('rcShotBtn')+'</label><input id="rcshot" type="file" accept="image/*" hidden>'+
+    (R.reading?'<div class="row" style="gap:10px;align-items:center"><span class="spin" aria-hidden="true"></span><b>'+rt('rcReading')+'</b></div>':'')+
+    '<details'+(F.txt&&!F.item?' open':'')+'><summary class="meta" style="cursor:pointer">'+rt('rcOrText')+'</summary><textarea class="inp" rows="4" data-rcf="txt" style="margin-top:8px" aria-label="'+rt('rcOrText')+'">'+esc(F.txt)+'</textarea><button class="btn small" data-a="rcreadtxt" style="margin-top:6px"'+(R.busy?' disabled':'')+'>'+rt('rcRead')+'</button></details>'+
+    found+
+    '<div class="field"><label for="rcph">'+rt('rcPhone')+'</label><input id="rcph" class="inp" data-rcf="phone" inputmode="numeric" maxlength="8" dir="ltr" value="'+esc(F.phone)+'" placeholder="XX XX XX XX"></div>'+
+    '<div class="field"><label for="rcnm">'+rt('rcName')+'</label><input id="rcnm" class="inp" data-rcf="name" maxlength="30" value="'+esc(F.name)+'"></div>'+
+    '<div class="two"><div class="field"><label>'+rt('rcSrc')+'</label>'+srcSel+'</div><div class="field"><label for="rcnt">'+rt('rcNote')+'</label><input id="rcnt" class="inp" data-rcf="note" maxlength="300" value="'+esc(F.note)+'"></div></div>'+
+    '<button class="btn primary wide" data-a="rcsave" style="height:50px"'+(R.busy?' disabled':'')+'>'+svg(I.check,20)+rt('rcSave')+'</button></div>';
+  var chips='<div class="row" style="gap:6px;overflow-x:auto;padding-bottom:4px">'+['all'].concat(RC_ST).map(function(f){var n=f==='all'?L.length:cnt[f];return '<button class="chip" data-a="rcf" data-v="'+f+'" aria-pressed="'+(R.f===f)+'">'+(f==='all'?rt('f_all'):rt('st_'+f))+' ('+n+')</button>';}).join('')+'</div>';
+  var q=inorm(R.q||'').trim(),qd=String(R.q||'').replace(/\D/g,'');
+  var shown=L.filter(function(p){return (R.f==='all'||rcState(p)===R.f)&&(!q||inorm(p.name).indexOf(q)>-1||(qd&&p.phone.indexOf(qd)>-1));});
+  var order={relance:0,accepted:1,new:2,contacted:3,published:4,refused:5};shown.sort(function(a,b){return order[rcState(a)]-order[rcState(b)]||b.updated-a.updated;});
+  var list='<h2>'+rt('rcStats').replace('{a}',cnt.new).replace('{c}',cnt.contacted+cnt.relance).replace('{k}',cnt.accepted).replace('{p}',cnt.published)+'</h2>'+chips+
+    (L.length>5?'<input class="inp" data-rcq="1" id="rcq" value="'+esc(R.q||'')+'" placeholder="'+rt('rcSearch')+'" aria-label="'+rt('rcSearch')+'">':'')+
+    (shown.length?shown.map(rcCard).join(''):'<p class="meta">'+rt('rcEmpty')+'</p>');
+  return topbar(rt('rcT'),'admin')+'<div class="scroll"><div class="sec" style="gap:14px">'+top+form+list+'</div></div>';};
+function rcShot(file){if(!file||!/^image\//.test(file.type)||!S.rc)return;var R=S.rc;if(R.busy)return;
+  var rd=new FileReader();rd.onload=function(){var img=new Image();img.onload=function(){
+    var mx=1400,sc=Math.min(1,mx/Math.max(img.width,img.height)),cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);
+    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);var url=cv.toDataURL('image/jpeg',0.82);
+    var th=document.createElement('canvas'),ts=112/Math.max(cv.width,cv.height);th.width=Math.round(cv.width*ts);th.height=Math.round(cv.height*ts);th.getContext('2d').drawImage(cv,0,0,th.width,th.height);
+    R.form.thumb=th.toDataURL('image/jpeg',0.7);R.busy=true;R.reading=true;render(true);
+    api('POST','ai/read',{img:url,lang:S.lang,schema:iSchema()}).then(function(d){R.busy=false;R.reading=false;
+      if(d.limit){toast(t('impLimit'));render(true);return;}
+      var tx=(d.text||'').trim(),it=d.items&&d.items[0];
+      if(!tx&&!it){toast(t(d.err==='busy'?'impBusy':'impReadNone'));render(true);return;}
+      R.form.txt=tx;rcSetItem(it,tx);render(true);})
+    .catch(function(){R.busy=false;R.reading=false;toast(t('impBusy'));render(true);});};img.src=rd.result;};rd.readAsDataURL(file);}
+function rcSetItem(it,tx){var F=S.rc.form,fb=hparse(tx||(it&&it.title)||'',false)[0]||{};
+  var n=it?keepLang(normItem(it,fb),tx||it.title||'',normItem({},fb)):normItem({},fb);delete n.photos;F.item=n;
+  var ph=String((it&&it.phone)||'').replace(/\D/g,'').slice(-8);if(!/^[234]\d{7}$/.test(ph))ph=rcPhoneFrom(tx);if(ph&&!F.phone)F.phone=ph;}
+document.addEventListener('change',function(e){if(e.target&&e.target.id==='rcshot'){rcShot(e.target.files&&e.target.files[0]);e.target.value='';}
+  var k=e.target&&e.target.getAttribute&&e.target.getAttribute('data-rcf');if(k&&S.rc&&e.target.tagName==='SELECT')S.rc.form[k]=e.target.value;},true);
+document.addEventListener('input',function(e){var el=e.target;if(!el.getAttribute||!S.rc)return;var k=el.getAttribute('data-rcf');
+  if(k){if(k==='phone')el.value=el.value.replace(/\D/g,'');S.rc.form[k]=el.value;e.stopImmediatePropagation();return;}
+  if(el.getAttribute('data-rcq')){S.rc.q=el.value;clearTimeout(window.rcqT);window.rcqT=setTimeout(function(){render(true);var q=app.querySelector('#rcq');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}},250);e.stopImmediatePropagation();}},true);
+function rcPrep(p){var it=p.item||{},d=it.cat?itemToDraft(Object.assign({photos:[]},it),{}):newDraft();
+  d.stype='part';d._rid=p.id;d._rname=p.name;d._rphone=p.phone;d.wa=true;d.call=true;d.photos=[];
+  S.editId=null;S.draft=d;S.draftRestored=false;var k=TYPE_KEY[d.cat],need=!d.cat||(k&&!d[k]);S.pstep=need?1:2;S.maxStep=need?1:2;S.errs={};go('post');}
+function rcBanner(){var d=S.draft;if(S.screen!=='post'||!d||!d._rid)return;var sc=app.querySelector('.scroll');if(!sc||sc.querySelector('.rcban'))return;
+  var b=document.createElement('div');b.className='tip rcban';b.style.cssText='background:#FFF3D6;color:#5A3B00;margin:10px 16px 0;align-items:center;gap:8px';
+  b.innerHTML=svg(I.user,20)+'<b style="flex:1">'+esc(rt('rcFor').replace('{n}',d._rname||'').replace('{p}',String(d._rphone||'').replace(/(\d{2})(?=\d)/g,'$1 ')))+'</b><button class="btn small" data-a="rccancel">'+rt('rcForCancel')+'</button>';
+  sc.insertBefore(b,sc.firstChild);}
+app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(!el)return;var a=el.getAttribute('data-a'),id=el.getAttribute('data-id');
+  if(a==='go'&&el.getAttribute('data-s')==='recruit'){if(S.rc){S.rc.list=null;S.rc.loading=false;}return;}
+  if(a.indexOf('rc')!==0)return;var R=S.rc;e.stopImmediatePropagation();
+  var p=R&&R.list?R.list.filter(function(x){return x.id===id;})[0]:null;
+  switch(a){
+    case 'rcf':R.f=el.getAttribute('data-v');render(true);break;
+    case 'rclang':if(p){R.lang[p.id]=rcLangOf(p)==='ar'?'fr':'ar';render(true);}break;
+    case 'rcsent':if(p){if(p.contacted&&Date.now()-p.contacted<12*3600000&&p.status!=='new'){e.preventDefault();toast(rt('rcTodayTip'));break;}rcUpd(p.id,{contacted:true});}break;
+    case 'rcset':if(p)rcUpd(p.id,{status:el.getAttribute('data-v')});break;
+    case 'rcprep':if(p)rcPrep(p);break;
+    case 'rcresok':R.res=null;render(true);break;
+    case 'rccancel':S.draft=null;save('draft',null);go('recruit');break;
+    case 'rcdel':if(!p)break;if(R.del!==p.id){R.del=p.id;render(true);break;}R.del=null;
+      api('DELETE','admin/prospects/'+p.id).then(function(){R.list=R.list.filter(function(x){return x.id!==p.id;});render(true);}).catch(function(){toast(t('netErr'));});break;
+    case 'rcreadtxt':if(R.busy||!R.form.txt.trim())break;R.busy=true;render(true);
+      aiParse(R.form.txt,false).then(function(l){R.busy=false;var it=l[0]||{};delete it.photos;R.form.item=it;var ph=rcPhoneFrom(R.form.txt);if(ph&&!R.form.phone)R.form.phone=ph;render(true);});break;
+    case 'rcsave':var F=R.form;if(!/^[234]\d{7}$/.test(F.phone)){toast(rt('rcErrPhone'));break;}if(!F.name.trim()){toast(rt('rcErrName'));break;}R.busy=true;render(true);
+      api('POST','admin/prospects',{phone:F.phone,name:F.name,src:F.src,note:F.note,item:F.item,txt:F.txt,thumb:F.thumb}).then(function(d){R.busy=false;R.list.unshift(d.prospect);
+        R.form={phone:'',name:'',src:F.src,note:'',txt:'',item:null,thumb:''};R.f='all';toast(rt('rcSaved'));render(true);})
+      .catch(function(err){R.busy=false;render(true);if(err&&err.code==='dup'){var o=R.list.filter(function(x){return x.phone===F.phone;})[0];toast(rt('rcDup').replace('{s}',o?rt('st_'+rcState(o)):'—'));}
+        else toast(err&&err.code==='phone'?rt('rcErrPhone'):err&&err.code==='name'?rt('rcErrName'):t('netErr'));});break;
+  }},true);
+/* publication : quand le brouillon vient de l'agent recruteur, l'annonce part dans le compte du vendeur */
+function rcPublish(ad,d){var rid=d._rid;if(ad._d){delete ad._d._rid;delete ad._d._rname;delete ad._d._rphone;}delete ad.shop;
+  return api('POST','admin/prospects/'+rid+'/publish',{ad:ad}).then(function(r){
+    S.remote.unshift(r.ad);S.draft=null;S.draftRestored=false;save('draft',null);
+    S.rc=S.rc||{list:null,f:'all',q:'',form:{phone:'',name:'',src:'fb',note:'',txt:'',item:null,thumb:''},busy:false,lang:{},del:null};
+    if(S.rc.list)S.rc.list=S.rc.list.map(function(x){return x.id===rid?r.prospect:x;});
+    S.rc.res=r;S.rc.f='all';go('recruit');toast(t('published'));return r;});}
 if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
 
 /* ---------- Retour : bouton du téléphone, geste de balayage depuis le bord ---------- */

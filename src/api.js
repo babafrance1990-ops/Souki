@@ -19,6 +19,8 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS ad_contacts (ad_id TEXT NOT NULL, user_id TEXT NOT NULL, kind TEXT NOT NULL, t INTEGER NOT NULL, PRIMARY KEY (ad_id, user_id, kind))`,
   `CREATE TABLE IF NOT EXISTS imgsearch (who TEXT NOT NULL, t INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ad_id TEXT NOT NULL, reporter_id TEXT, reason TEXT, t INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS prospects (id TEXT PRIMARY KEY, phone TEXT NOT NULL, name TEXT NOT NULL, src TEXT DEFAULT '', note TEXT DEFAULT '', item TEXT, txt TEXT DEFAULT '', thumb TEXT DEFAULT '', status TEXT DEFAULT 'new', tries INTEGER DEFAULT 0, contacted INTEGER DEFAULT 0, user_id TEXT, ad_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS prospects_phone ON prospects(phone)`,
 ];
 const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`];
 let schemaReady = false;
@@ -198,6 +200,38 @@ async function syncShopAds(db, userId, name, shopJson) {
   if (st.length) await db.batch(st);
 }
 
+// Création d'une annonce pour « owner ». uploader = celui qui a envoyé la vidéo (l'administrateur quand il publie pour un vendeur).
+async function createAd(db, owner, ad, uploaderId) {
+  const id = uid('a');
+  const photos = [];
+  for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6)) {
+    const u = await storeMedia(db, owner.id, id, p, 1500000);
+    if (u) photos.push(u);
+  }
+  ad.photos = photos;
+  if (ad.voice) ad.voice = await storeMedia(db, owner.id, id, ad.voice, 1600000);
+  if (!ad.voice) delete ad.voice;
+  ad.video = await claimVideo(db, uploaderId || owner.id, id, ad.video);
+  if (!ad.video) delete ad.video;
+  else if (uploaderId && uploaderId !== owner.id) await db.prepare('UPDATE videos SET user_id = ? WHERE id = ?').bind(owner.id, ad.video.split('/').pop()).run();
+  delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample; delete ad.photosSaved;
+  if (ad._d) delete ad._d._rid;
+  ad.seller = owner.name; ad.phone = fmtPhone(owner.phone);
+  if (owner.shop) ad.shop = adShop(owner.shop); else delete ad.shop;
+  const created = Date.now();
+  await db.prepare('INSERT INTO ads (id, user_id, data, status, created) VALUES (?, ?, ?, ?, ?)').bind(id, owner.id, JSON.stringify(ad), 'online', created).run();
+  return adOut({ id, user_id: owner.id, data: JSON.stringify(ad), status: 'online', created });
+}
+async function newPin() {
+  let pass = '';
+  do { pass = String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, '0'); } while (!pinOk(pass));
+  return pass;
+}
+function prospectOut(r) {
+  return { id: r.id, phone: r.phone, name: r.name, src: r.src || '', note: r.note || '', item: r.item ? JSON.parse(r.item) : null, txt: r.txt || '', thumb: r.thumb || '',
+    status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg };
+}
+
 export async function onRequest(ctx) {
   const { request: req, env } = ctx;
   const db = env.DB;
@@ -209,7 +243,7 @@ export async function onRequest(ctx) {
   const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
   const method = req.method;
   try {
-    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-13-r2' });
+    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-14-recruteur' });
 
     // ---------- Médias (photos, vocal) ----------
     if (parts[0] === 'media' && parts[1] && method === 'GET') {
@@ -588,23 +622,7 @@ export async function onRequest(ctx) {
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
         const n = await db.prepare('SELECT COUNT(*) AS n FROM ads WHERE user_id = ? AND created > ?').bind(me.id, Date.now() - 86400000).first();
         if (n && n.n >= 60) return fail('too_many', 429);
-        const id = uid('a');
-        const photos = [];
-        for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6)) {
-          const u = await storeMedia(db, me.id, id, p, 1500000);
-          if (u) photos.push(u);
-        }
-        ad.photos = photos;
-        if (ad.voice) ad.voice = await storeMedia(db, me.id, id, ad.voice, 1600000);
-        if (!ad.voice) delete ad.voice;
-        ad.video = await claimVideo(db, me.id, id, ad.video);
-        if (!ad.video) delete ad.video;
-        delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample; delete ad.photosSaved;
-        ad.seller = me.name; ad.phone = fmtPhone(me.phone);
-        if (me.shop) ad.shop = adShop(me.shop); else delete ad.shop;
-        const created = Date.now();
-        await db.prepare('INSERT INTO ads (id, user_id, data, status, created) VALUES (?, ?, ?, ?, ?)').bind(id, me.id, JSON.stringify(ad), 'online', created).run();
-        return json({ ad: adOut({ id, user_id: me.id, data: JSON.stringify(ad), status: 'online', created }) });
+        return json({ ad: await createAd(db, me, ad, me.id) });
       }
       const row = parts[1] ? await db.prepare('SELECT * FROM ads WHERE id = ?').bind(parts[1]).first() : null;
       if (!row) return fail('not_found', 404);
@@ -708,6 +726,71 @@ export async function onRequest(ctx) {
         const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
         await db.prepare('INSERT INTO users (id, phone, name, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?)').bind(uid('u'), phone, name, await hashPass(pass, salt), salt, Date.now()).run();
         return json({ phone, name, pass });
+      }
+      // ---------- Agent recruteur : vendeurs trouvés sur les réseaux sociaux ----------
+      if (parts[1] === 'prospects') {
+        const clean = (b) => ({
+          phone: String(b.phone || '').replace(/\D/g, '').slice(-8), name: String(b.name || '').trim().slice(0, 30),
+          src: String(b.src || '').slice(0, 20), note: String(b.note || '').trim().slice(0, 300),
+          item: b.item && typeof b.item === 'object' ? JSON.stringify(b.item).slice(0, 6000) : null,
+          txt: String(b.txt || '').slice(0, 3000), thumb: /^data:image\/(jpeg|png|webp);base64,/.test(String(b.thumb || '')) && String(b.thumb).length < 40000 ? String(b.thumb) : '',
+        });
+        const one = (id) => db.prepare('SELECT p.*, (SELECT COUNT(*) FROM users u WHERE u.phone = p.phone) AS reg FROM prospects p WHERE p.id = ?').bind(id).first();
+        if (!parts[2] && method === 'GET') {
+          const { results } = await db.prepare('SELECT p.*, (SELECT COUNT(*) FROM users u WHERE u.phone = p.phone) AS reg FROM prospects p ORDER BY p.updated DESC LIMIT 1000').all();
+          return json({ prospects: results.map(prospectOut) });
+        }
+        if (!parts[2] && method === 'POST') {
+          const b = await readBody(req), c = clean(b);
+          if (!/^[234]\d{7}$/.test(c.phone)) return fail('phone');
+          if (!c.name) return fail('name');
+          const dup = await db.prepare('SELECT id, status FROM prospects WHERE phone = ?').bind(c.phone).first();
+          if (dup && !b.force) return json({ error: 'dup', id: dup.id, status: dup.status }, 409);
+          const id = uid('p'), now = Date.now();
+          await db.prepare('INSERT INTO prospects (id, phone, name, src, note, item, txt, thumb, status, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            .bind(id, c.phone, c.name, c.src, c.note, c.item, c.txt, c.thumb, 'new', now, now).run();
+          return json({ prospect: prospectOut(await one(id)) });
+        }
+        const pr = parts[2] ? await one(parts[2]) : null;
+        if (!pr) return fail('not_found', 404);
+        if (!parts[3] && method === 'PUT') {
+          const b = await readBody(req), now = Date.now();
+          const f = { name: pr.name, phone: pr.phone, src: pr.src, note: pr.note, item: pr.item, status: pr.status, tries: pr.tries || 0, contacted: pr.contacted || 0 };
+          const c = clean({ ...prospectOut(pr), ...b, item: b.item !== undefined ? b.item : (pr.item ? JSON.parse(pr.item) : null) });
+          if (b.name !== undefined) { if (!c.name) return fail('name'); f.name = c.name; }
+          if (b.phone !== undefined) { if (!/^[234]\d{7}$/.test(c.phone)) return fail('phone'); f.phone = c.phone; }
+          if (b.src !== undefined) f.src = c.src;
+          if (b.note !== undefined) f.note = c.note;
+          if (b.item !== undefined) f.item = c.item;
+          if (b.contacted) { f.tries += 1; f.contacted = now; if (f.status === 'new') f.status = 'contacted'; }
+          if (b.status !== undefined && ['new', 'contacted', 'accepted', 'refused', 'published'].includes(b.status) && pr.status !== 'published') f.status = b.status;
+          await db.prepare('UPDATE prospects SET name = ?, phone = ?, src = ?, note = ?, item = ?, status = ?, tries = ?, contacted = ?, updated = ? WHERE id = ?')
+            .bind(f.name, f.phone, f.src, f.note, f.item, f.status, f.tries, f.contacted, now, pr.id).run();
+          return json({ prospect: prospectOut(await one(pr.id)) });
+        }
+        if (!parts[3] && method === 'DELETE') {
+          await db.prepare('DELETE FROM prospects WHERE id = ?').bind(pr.id).run();
+          return json({ ok: true });
+        }
+        // Publication à la place du vendeur (avec son accord) : on crée son compte s'il n'existe pas, puis l'annonce.
+        if (parts[3] === 'publish' && method === 'POST') {
+          if (pr.status === 'refused') return fail('refused');
+          const b = await readBody(req), ad = b.ad || {};
+          if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
+          let owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(pr.phone).first(), pass = '';
+          if (owner && owner.blocked) return fail('blocked', 403);
+          if (!owner) {
+            pass = await newPin();
+            const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+            await db.prepare('INSERT INTO users (id, phone, name, city, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?, ?)')
+              .bind(uid('u'), pr.phone, pr.name, String(ad.city || '').slice(0, 60), await hashPass(pass, salt), salt, Date.now()).run();
+            owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(pr.phone).first();
+          }
+          const out = await createAd(db, owner, ad, me.id);
+          await db.prepare("UPDATE prospects SET status = 'published', user_id = ?, ad_id = ?, updated = ? WHERE id = ?").bind(owner.id, out.id, Date.now(), pr.id).run();
+          return json({ ad: out, pass, existed: !pass, phone: pr.phone, name: owner.name, prospect: prospectOut(await one(pr.id)) });
+        }
+        return fail('not_found', 404);
       }
       if (parts[1] === 'owners' && method === 'GET') {
         const { results } = await db.prepare(`SELECT u.id, u.name, u.phone, COUNT(a.id) AS n FROM ads a JOIN users u ON u.id = a.user_id GROUP BY u.id ORDER BY n DESC LIMIT 500`).all();
