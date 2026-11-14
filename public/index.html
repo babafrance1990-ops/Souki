@@ -2591,13 +2591,24 @@ document.addEventListener('touchstart',function(e){var w=e.target.closest&&e.tar
   if(e.touches.length===2){e.preventDefault();var a=e.touches[0],b=e.touches[1];z.t0={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:z.s,mx:(a.clientX+b.clientX)/2,my:(a.clientY+b.clientY)/2,x:z.x,y:z.y};}
   else if(e.touches.length===1){var t1=e.touches[0],now=Date.now();
     if(now-z.last<300&&Math.hypot(t1.clientX-z.lx,t1.clientY-z.ly)<40){e.preventDefault();if(z.s>1.01){z.s=1;zApply(z);}else zAt(z,2.5,t1.clientX,t1.clientY);z.last=0;return;}
-    z.last=now;z.lx=t1.clientX;z.ly=t1.clientY;if(z.s>1.01)z.t0={pan:1,sx:t1.clientX,sy:t1.clientY,x:z.x,y:z.y};}},{passive:false});
-document.addEventListener('touchmove',function(e){var z=ZM;if(!z.el||!z.t0||!e.target.closest||!e.target.closest('.adviewer'))return;
+    z.last=now;z.lx=t1.clientX;z.ly=t1.clientY;if(z.s>1.01)z.t0={pan:1,sx:t1.clientX,sy:t1.clientY,x:z.x,y:z.y};else z.sw={sx:t1.clientX,sy:t1.clientY,t:Date.now(),dir:null,dy:0};}},{passive:false});
+document.addEventListener('touchmove',function(e){var z=ZM;
+  if(z.el&&z.sw&&!z.t0&&e.touches.length===1&&e.target.closest&&e.target.closest('.adviewer')){var t1=e.touches[0],dx=t1.clientX-z.sw.sx,dy=t1.clientY-z.sw.sy;
+    if(!z.sw.dir&&Math.hypot(dx,dy)>10)z.sw.dir=Math.abs(dy)>Math.abs(dx)*1.2?'v':'h';
+    if(z.sw.dir==='v'){e.preventDefault();z.sw.dy=dy;var k=Math.min(1,Math.abs(dy)/400);z.el.style.transition='none';z.el.style.transform='translateY('+dy+'px) scale('+(1-k*0.25)+')';
+      var vw=app.querySelector('.adviewer');if(vw)vw.style.background='rgba(0,0,0,'+(1-k*0.85)+')';var vt=app.querySelector('.adviewer .vtop');if(vt)vt.style.opacity=String(1-k);}
+    return;}
+  if(!z.el||!z.t0||!e.target.closest||!e.target.closest('.adviewer'))return;
   if(z.t0.pan&&e.touches.length===1){e.preventDefault();var t1=e.touches[0];z.x=z.t0.x+t1.clientX-z.t0.sx;z.y=z.t0.y+t1.clientY-z.t0.sy;zApply(z);return;}
   if(e.touches.length===2&&z.t0.d){e.preventDefault();var a=e.touches[0],b=e.touches[1],d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),mx=(a.clientX+b.clientX)/2,my=(a.clientY+b.clientY)/2;
     var r=z.el.parentNode.getBoundingClientRect(),px=z.t0.mx-(r.left+r.width/2),py=z.t0.my-(r.top+r.height/2),s2=Math.max(1,Math.min(5,z.t0.s*d/z.t0.d)),k=s2/z.t0.s;
     z.s=s2;z.x=px-(px-z.t0.x)*k+(mx-z.t0.mx);z.y=py-(py-z.t0.y)*k+(my-z.t0.my);zApply(z);}},{passive:false});
-document.addEventListener('touchend',function(e){if(ZM.t0&&e.touches.length===0)ZM.t0=null;else if(ZM.t0&&ZM.t0.d&&e.touches.length===1){var t1=e.touches[0];ZM.t0={pan:1,sx:t1.clientX,sy:t1.clientY,x:ZM.x,y:ZM.y};}});
+document.addEventListener('touchend',function(e){var z=ZM;
+  if(z.sw&&e.touches.length===0){var sw=z.sw;z.sw=null;if(sw.dir==='v'&&z.el){var v=Math.abs(sw.dy)/Math.max(1,Date.now()-sw.t),vw=app.querySelector('.adviewer'),el=z.el;
+      if(Math.abs(sw.dy)>110||v>0.6){el.style.transition='transform .18s ease-out';el.style.transform='translateY('+(sw.dy>0?1:-1)*window.innerHeight+'px) scale(.7)';if(vw){vw.style.transition='background .18s';vw.style.background='rgba(0,0,0,0)';}
+        setTimeout(function(){ZM.el=null;var av=S.adView;S.adView=null;if(av){S.galI=S.galI||{};S.galI[av.id]=av.i;}render(true);},170);}
+      else{el.style.transition='transform .2s ease-out';el.style.transform='';if(vw){vw.style.transition='background .2s';vw.style.background='';}var vt=app.querySelector('.adviewer .vtop');if(vt)vt.style.opacity='';setTimeout(function(){el.style.transition='';},220);}}}
+  if(ZM.t0&&e.touches.length===0)ZM.t0=null;else if(ZM.t0&&ZM.t0.d&&e.touches.length===1){var t1=e.touches[0];ZM.t0={pan:1,sx:t1.clientX,sy:t1.clientY,x:ZM.x,y:ZM.y};}});
 document.addEventListener('wheel',function(e){var w=e.target.closest&&e.target.closest('.adviewer .zw');if(!w)return;e.preventDefault();var z=zFor(w.querySelector('.zimg'));zAt(z,z.s*(e.deltaY<0?1.2:1/1.2),e.clientX,e.clientY);},{passive:false});
 document.addEventListener('dblclick',function(e){var w=e.target.closest&&e.target.closest('.adviewer .zw');if(!w)return;var z=zFor(w.querySelector('.zimg'));if(z.s>1.01){z.s=1;zApply(z);}else zAt(z,2.5,e.clientX,e.clientY);});
 var zDrag=null;document.addEventListener('mousedown',function(e){var w=e.target.closest&&e.target.closest('.adviewer .zw.zoomed');if(!w)return;e.preventDefault();zDrag={sx:e.clientX,sy:e.clientY,x:ZM.x,y:ZM.y};});
