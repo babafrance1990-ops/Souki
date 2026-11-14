@@ -4454,8 +4454,14 @@ function rcShot(file){if(!file||!/^image\//.test(file.type)||!S.rc)return;var R=
       if(!tx&&!it){toast(t(d.err==='busy'?'impBusy':'impReadNone'));render(true);return;}
       R.form.txt=tx;rcSetItem(it,tx);render(true);})
     .catch(function(){R.busy=false;R.reading=false;toast(t('impBusy'));render(true);});};img.src=rd.result;};rd.readAsDataURL(file);}
+function rcRaw(tx){var clean=String(tx||'').replace(/(\+?222)?[\s.]*[234]\d([\s.-]?\d{2}){3}/g,'').replace(/[ \t]+/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  var first=(clean.split(/\n/).map(function(x){return x.trim();}).filter(function(x){return x.replace(/[^\w\u0600-\u06FF]/g,'').length>2;})[0]||'');
+  return {title:first.length>70?first.slice(0,70).replace(/\s+\S*$/,''):first,desc:clean.slice(0,1000)};}
 function rcSetItem(it,tx){var F=S.rc.form,fb=hparse(tx||(it&&it.title)||'',false)[0]||{};
-  var n=it?keepLang(normItem(it,fb),tx||it.title||'',normItem({},fb)):normItem({},fb);delete n.photos;F.item=n;
+  var n=it?keepLang(normItem(it,fb),tx||it.title||'',normItem({},fb)):normItem({},fb);delete n.photos;
+  /* titre et description : on garde le texte du vendeur tel quel (hassaniya), l'IA ne sert qu'à la catégorie, au prix, à la ville et au numéro */
+  if(String(tx||'').trim()){var raw=rcRaw(tx);if(raw.title)n.title=raw.title;n.desc=raw.desc;}
+  F.item=n;
   var ph=String((it&&it.phone)||'').replace(/\D/g,'').slice(-8);if(!/^[234]\d{7}$/.test(ph))ph=rcPhoneFrom(tx);if(ph&&!F.phone)F.phone=ph;}
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='rcshot'){rcShot(e.target.files&&e.target.files[0]);e.target.value='';}
   var k=e.target&&e.target.getAttribute&&e.target.getAttribute('data-rcf');if(k&&S.rc&&e.target.tagName==='SELECT')S.rc.form[k]=e.target.value;},true);
@@ -4484,7 +4490,7 @@ app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(
     case 'rcdel':if(!p)break;if(R.del!==p.id){R.del=p.id;render(true);break;}R.del=null;
       api('DELETE','admin/prospects/'+p.id).then(function(){R.list=R.list.filter(function(x){return x.id!==p.id;});render(true);}).catch(function(){toast(t('netErr'));});break;
     case 'rcreadtxt':if(R.busy||!R.form.txt.trim())break;R.busy=true;render(true);
-      aiParse(R.form.txt,false).then(function(l){R.busy=false;var it=l[0]||{};delete it.photos;R.form.item=it;var ph=rcPhoneFrom(R.form.txt);if(ph&&!R.form.phone)R.form.phone=ph;render(true);});break;
+      aiParse(R.form.txt,false).then(function(l){R.busy=false;var it=l[0]||{};delete it.photos;var raw=rcRaw(R.form.txt);if(raw.title)it.title=raw.title;it.desc=raw.desc;R.form.item=it;var ph=rcPhoneFrom(R.form.txt);if(ph&&!R.form.phone)R.form.phone=ph;render(true);});break;
     case 'rcsave':var F=R.form;if(!/^[234]\d{7}$/.test(F.phone)){toast(rt('rcErrPhone'));break;}if(!F.name.trim()){toast(rt('rcErrName'));break;}R.busy=true;render(true);
       api('POST','admin/prospects',{phone:F.phone,name:F.name,src:F.src,note:F.note,item:F.item,txt:F.txt,thumb:F.thumb}).then(function(d){R.busy=false;R.list.unshift(d.prospect);
         R.form={phone:'',name:'',src:F.src,note:'',txt:'',item:null,thumb:''};R.f='all';toast(rt('rcSaved'));render(true);})
