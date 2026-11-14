@@ -2816,8 +2816,12 @@ function lgErr(e){S.busy=false;var L=S.login;var code=e&&e.code;
   if(code==='exists'){L.exists=true;L.pin1='';L.mode='login';lgShake(t('e_exists'));return;}
   if(code==='nouser'){L.exists=false;L.mode='register';L.info=t('lgToReg');L.err='';L.pin='';render(true);return;}
   lgShake(t({badpass:'e_badpass',locked:'e_locked',blocked:'e_blocked',pin_format:'e_pin_format',pin_weak:'e_pin_weak',phone:'errPhone',name:'errName'}[code]||'netErr'));}
-function lgScroll(){var f=app.querySelector('.lgf.act'),k=app.querySelector('.lgkb'),sc=app.querySelector('.lgscreen');if(!f||!k||!sc)return;var fr=f.getBoundingClientRect(),kr=k.getBoundingClientRect();
-  if(fr.bottom>kr.top-12)sc.scrollTop+=fr.bottom-kr.top+20;else if(fr.top<sc.getBoundingClientRect().top)sc.scrollTop-=sc.getBoundingClientRect().top-fr.top+12;}
+function lgScroll(late){var f=app.querySelector('.lgf.act'),k=app.querySelector('.lgkb'),sc=app.querySelector('.lgscreen');if(!f||!k||!sc)return;
+  /* the keypad may still be sliding in: use its final place (bottom of the screen) */
+  var fr=f.getBoundingClientRect(),sr=sc.getBoundingClientRect(),kTop=Math.min(sr.bottom,window.innerHeight)-k.offsetHeight,nx=f.nextElementSibling,bottom=fr.bottom;
+  if(nx&&nx.classList&&nx.classList.contains('meta'))bottom=Math.max(bottom,nx.getBoundingClientRect().bottom);
+  if(bottom>kTop-16)sc.scrollTop+=bottom-kTop+28;else if(fr.top<sr.top+8)sc.scrollTop-=sr.top-fr.top+16;
+  if(!late)setTimeout(function(){lgScroll(true);},320);}
 function pinKey(k){var L=S.login;if(S.busy)return;setTimeout(lgScroll,0);if(!L.active)L.active=(L.phone||'').length<8?'phone':'pin';
   if(L.active==='phone'){var ph=L.phone||'';
     if(k==='del'){L.phone=ph.slice(0,-1);L.exists=null;L.err='';L.info='';L.pin='';L.pin1='';render(true);return;}
