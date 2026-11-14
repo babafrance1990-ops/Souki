@@ -22,7 +22,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS prospects (id TEXT PRIMARY KEY, phone TEXT NOT NULL, name TEXT NOT NULL, src TEXT DEFAULT '', note TEXT DEFAULT '', item TEXT, txt TEXT DEFAULT '', thumb TEXT DEFAULT '', status TEXT DEFAULT 'new', tries INTEGER DEFAULT 0, contacted INTEGER DEFAULT 0, user_id TEXT, ad_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS prospects_phone ON prospects(phone)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`, `ALTER TABLE users ADD COLUMN role TEXT DEFAULT ''`, `ALTER TABLE prospects ADD COLUMN owner_id TEXT`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -72,11 +72,12 @@ async function waSigOk(env, raw, sig) {
   const hex = [...mac].map((b) => b.toString(16).padStart(2, '0')).join('');
   return sameStr(hex, sig.slice(7));
 }
+function isRecruiter(env, u) { return isAdmin(env, u) || (!!u && u.role === 'recruiter'); }
 function isAdmin(env, u) {
   return !!u && adminList(env).includes(String(u.phone || '').replace(/\D/g, '').slice(-8));
 }
 function publicUser(u, env) {
-  return { verified: !!u.verified, admin: isAdmin(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]') };
+  return { verified: !!u.verified, admin: isAdmin(env || {}, u), recruiter: isRecruiter(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]') };
 }
 async function newSession(db, userId) {
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -209,7 +210,9 @@ async function createAd(db, owner, ad, uploaderId, claim) {
     if (m) {
       // photos déjà envoyées (découpées dans la capture par l'agent recruteur) : on les rattache à l'annonce et au vendeur
       if (!claim) continue;
-      const own = await db.prepare('SELECT id FROM media WHERE id = ? AND user_id = ? AND ad_id IS NULL').bind(m[1], uploaderId).first();
+      const ok = Array.isArray(claim) ? claim : [uploaderId];
+      const own = await db.prepare('SELECT id, user_id FROM media WHERE id = ? AND ad_id IS NULL').bind(m[1]).first();
+      if (own && !ok.includes(own.user_id)) continue;
       if (own) { await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(id, owner.id, m[1]).run(); photos.push(p); }
       continue;
     }
@@ -237,7 +240,7 @@ async function newPin() {
 }
 function prospectOut(r) {
   return { id: r.id, phone: r.phone, name: r.name, src: r.src || '', note: r.note || '', item: r.item ? JSON.parse(r.item) : null, txt: r.txt || '', thumb: r.thumb || '',
-    photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg };
+    photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, ownerId: r.owner_id || '', ownerName: r.owner_name || '' };
 }
 
 export async function onRequest(ctx) {
@@ -499,7 +502,7 @@ export async function onRequest(ctx) {
 
     // ---------- IA : import d'annonces (texte collé ou capture d'écran) ----------
     // Quota par jour : 20 lectures pour un particulier, 60 pour une boutique, sans limite pour l'admin.
-    const aiMax = () => (isAdmin(env, me) ? 9999 : me.shop ? 60 : 20);
+    const aiMax = () => (isAdmin(env, me) ? 9999 : me.role === 'recruiter' ? 80 : me.shop ? 60 : 20);
     const aiUsed = async () => { const r = await db.prepare('SELECT COUNT(*) AS n FROM imgsearch WHERE who = ? AND t > ?').bind('ai:' + me.id, Date.now() - 86400000).first(); return (r && r.n) || 0; };
     const aiTake = () => db.prepare('INSERT INTO imgsearch (who, t) VALUES (?, ?)').bind('ai:' + me.id, Date.now()).run();
     const aiJson = (out) => { if (out && typeof out === 'object' && !Array.isArray(out)) return out; out = String(out || ''); const a = out.indexOf('{'), z = out.lastIndexOf('}'); if (a < 0 || z < a) return null; try { return JSON.parse(out.slice(a, z + 1)); } catch (e) { return null; } };
@@ -547,7 +550,7 @@ export async function onRequest(ctx) {
     }
     // Agent recruteur : recopier les lignes du haut d'une publication (nom du groupe, nom de la personne) — réservé à l'administrateur
     if (parts[0] === 'ai' && parts[1] === 'who' && method === 'POST') {
-      if (!isAdmin(env, me)) return fail('forbidden', 403);
+      if (!isRecruiter(env, me)) return fail('forbidden', 403);
       const b = await readBody(req), img = String(b.img || '');
       if (!/^data:image\/(jpeg|png|webp);base64,/.test(img) || img.length > 900000) return fail('invalid');
       if (!env.AI) return json({ lines: [] });
@@ -743,7 +746,8 @@ export async function onRequest(ctx) {
 
     // ---------- Administration ----------
     if (parts[0] === 'admin') {
-      if (!isAdmin(env, me)) return fail('forbidden', 403);
+      const boss = isAdmin(env, me);
+      if (!boss && !(parts[1] === 'prospects' && isRecruiter(env, me))) return fail('forbidden', 403);
       if (parts[1] === 'users' && !parts[2] && method === 'POST') {
         const b = await readBody(req);
         const phone = String(b.phone || '').replace(/\D/g, '').slice(-8);
@@ -765,23 +769,25 @@ export async function onRequest(ctx) {
           item: b.item && typeof b.item === 'object' ? JSON.stringify(b.item).slice(0, 6000) : null,
           txt: String(b.txt || '').slice(0, 3000), thumb: /^data:image\/(jpeg|png|webp);base64,/.test(String(b.thumb || '')) && String(b.thumb).length < 40000 ? String(b.thumb) : '',
         });
-        const one = (id) => db.prepare('SELECT p.*, (SELECT COUNT(*) FROM users u WHERE u.phone = p.phone) AS reg FROM prospects p WHERE p.id = ?').bind(id).first();
+        const SEL = 'SELECT p.*, (SELECT COUNT(*) FROM users u WHERE u.phone = p.phone) AS reg, (SELECT name FROM users o WHERE o.id = p.owner_id) AS owner_name FROM prospects p';
+        // un recruteur ne voit que ses vendeurs ; l'administrateur voit tout le monde
+        const one = async (id) => { const r = await db.prepare(SEL + ' WHERE p.id = ?').bind(id).first(); return r && (boss || r.owner_id === me.id) ? r : null; };
         if (!parts[2] && method === 'GET') {
-          const { results } = await db.prepare('SELECT p.*, (SELECT COUNT(*) FROM users u WHERE u.phone = p.phone) AS reg FROM prospects p ORDER BY p.updated DESC LIMIT 1000').all();
+          const { results } = boss ? await db.prepare(SEL + ' ORDER BY p.updated DESC LIMIT 2000').all() : await db.prepare(SEL + ' WHERE p.owner_id = ? ORDER BY p.updated DESC LIMIT 1000').bind(me.id).all();
           return json({ prospects: results.map(prospectOut) });
         }
         if (!parts[2] && method === 'POST') {
           const b = await readBody(req), c = clean(b);
           if (!/^[234]\d{7}$/.test(c.phone)) return fail('phone');
           if (!c.name) return fail('name');
-          const dup = await db.prepare('SELECT id, status FROM prospects WHERE phone = ?').bind(c.phone).first();
-          if (dup && !b.force) return json({ error: 'dup', id: dup.id, status: dup.status }, 409);
+          const dup = await db.prepare('SELECT id, status, owner_id FROM prospects WHERE phone = ?').bind(c.phone).first();
+          if (dup) return json({ error: 'dup', status: dup.status, other: !!dup.owner_id && dup.owner_id !== me.id && !boss }, 409);
           const id = uid('p'), now = Date.now(), photos = [];
           for (const ph of (Array.isArray(b.photos) ? b.photos : []).slice(0, 6)) {
             try { const u = await storeMedia(db, me.id, null, ph, 1500000); if (u) photos.push(u); } catch (e) { /* photo trop lourde : ignorée */ }
           }
-          await db.prepare('INSERT INTO prospects (id, phone, name, src, note, item, txt, thumb, status, created, updated, photos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-            .bind(id, c.phone, c.name, c.src, c.note, c.item, c.txt, c.thumb, 'new', now, now, JSON.stringify(photos)).run();
+          await db.prepare('INSERT INTO prospects (id, phone, name, src, note, item, txt, thumb, status, created, updated, photos, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            .bind(id, c.phone, c.name, c.src, c.note, c.item, c.txt, c.thumb, 'new', now, now, JSON.stringify(photos), me.id).run();
           return json({ prospect: prospectOut(await one(id)) });
         }
         const pr = parts[2] ? await one(parts[2]) : null;
@@ -791,7 +797,7 @@ export async function onRequest(ctx) {
           const f = { name: pr.name, phone: pr.phone, src: pr.src, note: pr.note, item: pr.item, status: pr.status, tries: pr.tries || 0, contacted: pr.contacted || 0 };
           const c = clean({ ...prospectOut(pr), ...b, item: b.item !== undefined ? b.item : (pr.item ? JSON.parse(pr.item) : null) });
           if (b.name !== undefined) { if (!c.name) return fail('name'); f.name = c.name; }
-          if (b.phone !== undefined) { if (!/^[234]\d{7}$/.test(c.phone)) return fail('phone'); f.phone = c.phone; }
+          if (b.phone !== undefined) { if (!/^[234]\d{7}$/.test(c.phone)) return fail('phone'); if (c.phone !== pr.phone && await db.prepare('SELECT id FROM prospects WHERE phone = ? AND id != ?').bind(c.phone, pr.id).first()) return fail('dup', 409); f.phone = c.phone; }
           if (b.src !== undefined) f.src = c.src;
           if (b.note !== undefined) f.note = c.note;
           if (b.item !== undefined) f.item = c.item;
@@ -823,7 +829,7 @@ export async function onRequest(ctx) {
               .bind(uid('u'), pr.phone, pr.name, String(ad.city || '').slice(0, 60), await hashPass(pass, salt), salt, Date.now()).run();
             owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(pr.phone).first();
           }
-          const out = await createAd(db, owner, ad, me.id, true);
+          const out = await createAd(db, owner, ad, me.id, [me.id, pr.owner_id].filter(Boolean));
           await db.prepare("UPDATE prospects SET status = 'published', user_id = ?, ad_id = ?, updated = ? WHERE id = ?").bind(owner.id, out.id, Date.now(), pr.id).run();
           return json({ ad: out, pass, existed: !pass, phone: pr.phone, name: owner.name, prospect: prospectOut(await one(pr.id)) });
         }
@@ -864,9 +870,9 @@ export async function onRequest(ctx) {
       }
       if (parts[1] === 'users' && !parts[2] && method === 'GET') {
         const q = (url.searchParams.get('q') || '').replace(/\D/g, '');
-        const { results } = await db.prepare(`SELECT u.id, u.phone, u.name, u.created, COALESCE(u.blocked, 0) AS blocked, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id) AS ads
+        const { results } = await db.prepare(`SELECT u.id, u.phone, u.name, u.created, COALESCE(u.blocked, 0) AS blocked, COALESCE(u.role, '') AS role, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id) AS ads
           FROM users u WHERE u.phone LIKE ? ORDER BY u.created DESC LIMIT 50`).bind('%' + q + '%').all();
-        return json({ users: results.map((u) => ({ id: u.id, phone: fmtPhone(u.phone), name: u.name, since: u.created, blocked: !!u.blocked, ads: u.ads })) });
+        return json({ users: results.map((u) => ({ id: u.id, phone: fmtPhone(u.phone), name: u.name, since: u.created, blocked: !!u.blocked, ads: u.ads, role: u.role || '' })) });
       }
       const target = parts[1] === 'users' && parts[2] ? await db.prepare('SELECT * FROM users WHERE id = ?').bind(parts[2]).first() : null;
       if (target && method === 'POST') {
@@ -888,6 +894,11 @@ export async function onRequest(ctx) {
             db.prepare('DELETE FROM sessions WHERE user_id = ?').bind(target.id),
           ]);
           return json({ ok: true });
+        }
+        if (parts[3] === 'role') {
+          const role = b.role === 'recruiter' ? 'recruiter' : '';
+          await db.prepare('UPDATE users SET role = ? WHERE id = ?').bind(role, target.id).run();
+          return json({ ok: true, role });
         }
         if (parts[3] === 'block') {
           if (target.id === me.id) return fail('self');
