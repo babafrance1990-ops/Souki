@@ -4354,8 +4354,8 @@ var RX={fr:{
   src_fb:'Facebook',src_wa:'WhatsApp',src_tt:'TikTok',src_ig:'Instagram',src_other:'Autre',
   m1:'Bonjour{n},\nJ’ai vu votre annonce « {t} » sur {s}.\nJe fais partie de l’équipe Bi3li, un nouveau site gratuit de petites annonces en Mauritanie : {u}\nNous pouvons publier votre annonce gratuitement à votre place : vous n’avez rien à faire.\nÊtes-vous d’accord ?',
   m2:'Bonjour{n},\nJe reviens vers vous pour votre annonce « {t} ». La publication sur Bi3li est gratuite et vous ne faites rien : nous nous occupons de tout.\nVoulez-vous qu’on la mette en ligne ? Si cela ne vous intéresse pas, dites-le-moi et je ne vous écrirai plus.',
-  m3:'Bonjour{n},\nVotre annonce « {t} » est en ligne sur Bi3li : {l}\nVotre compte : numéro {p}, code secret {w}.\nAvec ce code, vous pouvez modifier ou supprimer votre annonce quand vous voulez sur {u}\nMerci !',
-  m3b:'Bonjour{n},\nVotre annonce « {t} » est en ligne sur Bi3li : {l}\nElle est dans votre compte (numéro {p}). Vous pouvez la modifier ou la supprimer quand vous voulez.\nMerci !',
+  m3:'Bonjour{n},\nVotre annonce « {t} » est en ligne sur Bi3li : {l}\nPour entrer dans votre compte :\nNuméro : {p}\nCode secret : {w}\nAvec ce code, vous pouvez modifier ou supprimer votre annonce quand vous voulez sur {u}\nMerci !',
+  m3b:'Bonjour{n},\nVotre annonce « {t} » est en ligne sur Bi3li : {l}\nElle est dans votre compte :\nNuméro : {p}\nCode secret : votre code habituel\nVous pouvez la modifier ou la supprimer quand vous voulez sur {u}\nMerci !',
   anAd:'votre article'},
 ar:{
   rcT:'جلب البائعين',rcOpen:'جلب البائعين (وكيل ذكي)',rcIntro:'ابحث عن إعلان على فيسبوك أو واتساب أو تيك توك، وخذ لقطة شاشة: الوكيل يجهز كل شيء. ترسل الرسالة بنفسك، ثم تنشر بموافقة البائع.',
@@ -4372,8 +4372,8 @@ ar:{
   src_fb:'فيسبوك',src_wa:'واتساب',src_tt:'تيك توك',src_ig:'إنستغرام',src_other:'آخر',
   m1:'السلام عليكم{n}،\nرأيت إعلانك «{t}» على {s}.\nأنا من فريق بيعلي، موقع جديد ومجاني للإعلانات في موريتانيا: {u}\nنستطيع أن ننشر إعلانك مجاناً بدلاً منك، ولا تحتاج أن تفعل أي شيء.\nهل توافق؟',
   m2:'السلام عليكم{n}،\nأعود إليك بخصوص إعلانك «{t}». النشر في بيعلي مجاني ونحن نتكفل بكل شيء.\nهل تريد أن ننشره لك؟ إذا لم تكن مهتماً، أخبرني ولن أراسلك مرة أخرى.',
-  m3:'السلام عليكم{n}،\nإعلانك «{t}» منشور الآن في بيعلي: {l}\nحسابك: الرقم {p}، الرقم السري {w}.\nبهذا الرقم السري يمكنك تعديل إعلانك أو حذفه متى شئت على {u}\nشكراً!',
-  m3b:'السلام عليكم{n}،\nإعلانك «{t}» منشور الآن في بيعلي: {l}\nهو في حسابك (الرقم {p}). يمكنك تعديله أو حذفه متى شئت.\nشكراً!',
+  m3:'السلام عليكم{n}،\nإعلانك «{t}» منشور الآن في بيعلي: {l}\nلدخول حسابك:\nالرقم: {p}\nالرقم السري: {w}\nبهذا الرقم السري يمكنك تعديل إعلانك أو حذفه متى شئت على {u}\nشكراً!',
+  m3b:'السلام عليكم{n}،\nإعلانك «{t}» منشور الآن في بيعلي: {l}\nهو في حسابك:\nالرقم: {p}\nالرقم السري: رقمك السري المعتاد\nيمكنك تعديله أو حذفه متى شئت على {u}\nشكراً!',
   anAd:'منتجك'}};
 function rt(k){return (RX[S.lang]&&RX[S.lang][k])||RX.fr[k]||k;}
 function rtl(lang,k){return (RX[lang]&&RX[lang][k])||RX.fr[k]||k;}
@@ -4388,7 +4388,7 @@ function rcLangOf(p){if(S.rc.lang[p.id])return S.rc.lang[p.id];var src=(p.txt||'
 function rcMsg(p,kind,extra){var L=rcLangOf(p),k=kind,ttl=(p.item&&p.item.title)||rtl(L,'anAd');extra=extra||{};
   if(kind==='m3'&&extra.existed)k='m3b';
   var nm=p.name?(L==='ar'?' '+p.name:' '+p.name):'';
-  return rtl(L,k).replace('{n}',nm).replace('{t}',ttl).replace('{s}',rtl(L,'src_'+(p.src||'fb'))).replace('{u}',location.origin).replace('{l}',extra.link||'').replace('{p}',L==='ar'?'\u200E'+String(extra.phone||p.phone).replace(/\D/g,'')+'\u200E':String(extra.phone||p.phone).replace(/(\d{2})(?=\d)/g,'$1 ')).replace('{w}',extra.pass||'');}
+  return rtl(L,k).replace('{n}',nm).replace('{t}',ttl).replace('{s}',rtl(L,'src_'+(p.src||'fb'))).replace('{u}',location.origin).replace('{l}',extra.link||'').replace('{p}',L==='ar'?String(extra.phone||p.phone).replace(/\D/g,'').replace(/(\d{2})/g,'\u200E$1 ').trim()+'\u200E':String(extra.phone||p.phone).replace(/(\d{2})(?=\d)/g,'$1 ')).replace('{w}','\u200E'+(extra.pass||'')+'\u200E');}
 function rcWa(phone,msg){return 'https://wa.me/222'+String(phone).replace(/\D/g,'').slice(-8)+'?text='+encodeURIComponent(msg);}
 function rcUpd(id,body,quiet){return api('PUT','admin/prospects/'+id,body).then(function(d){S.rc.list=S.rc.list.map(function(x){return x.id===id?d.prospect:x;});if(!quiet)render(true);return d.prospect;}).catch(function(){toast(t('netErr'));});}
 function rcCard(p){
