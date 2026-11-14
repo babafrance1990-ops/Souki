@@ -22,7 +22,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS prospects (id TEXT PRIMARY KEY, phone TEXT NOT NULL, name TEXT NOT NULL, src TEXT DEFAULT '', note TEXT DEFAULT '', item TEXT, txt TEXT DEFAULT '', thumb TEXT DEFAULT '', status TEXT DEFAULT 'new', tries INTEGER DEFAULT 0, contacted INTEGER DEFAULT 0, user_id TEXT, ad_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS prospects_phone ON prospects(phone)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -201,10 +201,18 @@ async function syncShopAds(db, userId, name, shopJson) {
 }
 
 // Création d'une annonce pour « owner ». uploader = celui qui a envoyé la vidéo (l'administrateur quand il publie pour un vendeur).
-async function createAd(db, owner, ad, uploaderId) {
+async function createAd(db, owner, ad, uploaderId, claim) {
   const id = uid('a');
   const photos = [];
   for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6)) {
+    const m = /^\/api\/media\/(\w+)$/.exec(p || '');
+    if (m) {
+      // photos déjà envoyées (découpées dans la capture par l'agent recruteur) : on les rattache à l'annonce et au vendeur
+      if (!claim) continue;
+      const own = await db.prepare('SELECT id FROM media WHERE id = ? AND user_id = ? AND ad_id IS NULL').bind(m[1], uploaderId).first();
+      if (own) { await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(id, owner.id, m[1]).run(); photos.push(p); }
+      continue;
+    }
     const u = await storeMedia(db, owner.id, id, p, 1500000);
     if (u) photos.push(u);
   }
@@ -229,7 +237,7 @@ async function newPin() {
 }
 function prospectOut(r) {
   return { id: r.id, phone: r.phone, name: r.name, src: r.src || '', note: r.note || '', item: r.item ? JSON.parse(r.item) : null, txt: r.txt || '', thumb: r.thumb || '',
-    status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg };
+    photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg };
 }
 
 export async function onRequest(ctx) {
@@ -746,9 +754,12 @@ export async function onRequest(ctx) {
           if (!c.name) return fail('name');
           const dup = await db.prepare('SELECT id, status FROM prospects WHERE phone = ?').bind(c.phone).first();
           if (dup && !b.force) return json({ error: 'dup', id: dup.id, status: dup.status }, 409);
-          const id = uid('p'), now = Date.now();
-          await db.prepare('INSERT INTO prospects (id, phone, name, src, note, item, txt, thumb, status, created, updated) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-            .bind(id, c.phone, c.name, c.src, c.note, c.item, c.txt, c.thumb, 'new', now, now).run();
+          const id = uid('p'), now = Date.now(), photos = [];
+          for (const ph of (Array.isArray(b.photos) ? b.photos : []).slice(0, 6)) {
+            try { const u = await storeMedia(db, me.id, null, ph, 1500000); if (u) photos.push(u); } catch (e) { /* photo trop lourde : ignorée */ }
+          }
+          await db.prepare('INSERT INTO prospects (id, phone, name, src, note, item, txt, thumb, status, created, updated, photos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            .bind(id, c.phone, c.name, c.src, c.note, c.item, c.txt, c.thumb, 'new', now, now, JSON.stringify(photos)).run();
           return json({ prospect: prospectOut(await one(id)) });
         }
         const pr = parts[2] ? await one(parts[2]) : null;
@@ -769,6 +780,10 @@ export async function onRequest(ctx) {
           return json({ prospect: prospectOut(await one(pr.id)) });
         }
         if (!parts[3] && method === 'DELETE') {
+          const ids = JSON.parse(pr.photos || '[]').map((u) => u.split('/').pop());
+          const orphans = [];
+          for (const mid of ids) { if (await db.prepare('SELECT id FROM media WHERE id = ? AND ad_id IS NULL').bind(mid).first()) orphans.push(mid); }
+          await dropMedia(db, orphans);
           await db.prepare('DELETE FROM prospects WHERE id = ?').bind(pr.id).run();
           return json({ ok: true });
         }
@@ -786,7 +801,7 @@ export async function onRequest(ctx) {
               .bind(uid('u'), pr.phone, pr.name, String(ad.city || '').slice(0, 60), await hashPass(pass, salt), salt, Date.now()).run();
             owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(pr.phone).first();
           }
-          const out = await createAd(db, owner, ad, me.id);
+          const out = await createAd(db, owner, ad, me.id, true);
           await db.prepare("UPDATE prospects SET status = 'published', user_id = ?, ad_id = ?, updated = ? WHERE id = ?").bind(owner.id, out.id, Date.now(), pr.id).run();
           return json({ ad: out, pass, existed: !pass, phone: pr.phone, name: owner.name, prospect: prospectOut(await one(pr.id)) });
         }

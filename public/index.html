@@ -4342,7 +4342,7 @@ app.addEventListener('input',function(e){
 var RX={fr:{
   rcT:'Recruter des vendeurs',rcOpen:'Recruter des vendeurs (agent IA)',rcIntro:'Trouvez une annonce sur Facebook, WhatsApp ou TikTok, faites une capture d’écran : l’agent prépare tout. Vous envoyez le message vous-même, puis vous publiez avec l’accord du vendeur.',
   rcNew:'Nouveau vendeur',rcShot:'Capture d’écran de l’annonce',rcShotBtn:'Choisir la capture',rcReading:'L’agent lit la capture…',rcOrText:'… ou collez le texte de l’annonce',rcRead:'Lire le texte',
-  rcPhone:'Numéro du vendeur (8 chiffres)',rcName:'Nom du vendeur',rcSrc:'Trouvé sur',rcNote:'Note (groupe, lien…)',rcSave:'Enregistrer le vendeur',rcFound:'Annonce trouvée',
+  rcPhone:'Numéro du vendeur (8 chiffres)',rcName:'Nom du vendeur',rcSrc:'Trouvé sur',rcNote:'Note (groupe, lien…)',rcSave:'Enregistrer le vendeur',rcPhotos:'Photos trouvées (sans le texte) — touchez × pour en retirer une',rcNoPhoto:'Aucune photo trouvée dans la capture : vous les ajouterez dans le formulaire.',rcFound:'Annonce trouvée',
   rcEmpty:'Aucun vendeur pour l’instant. Commencez par une capture d’écran.',rcDup:'Ce numéro est déjà dans la liste ({s}).',rcIsUser:'Déjà inscrit sur Bi3li',
   st_new:'À contacter',st_contacted:'Contacté',st_accepted:'D’accord',st_refused:'Refusé',st_published:'Publié',st_relance:'À relancer',
   f_all:'Tous',rcToday:'Messages envoyés aujourd’hui : {n} / 30',rcTodayTip:'Pour protéger votre numéro WhatsApp, n’envoyez pas plus de 30 messages par jour, et jamais deux fois le même jour à la même personne.',
@@ -4360,7 +4360,7 @@ var RX={fr:{
 ar:{
   rcT:'جلب البائعين',rcOpen:'جلب البائعين (وكيل ذكي)',rcIntro:'ابحث عن إعلان على فيسبوك أو واتساب أو تيك توك، وخذ لقطة شاشة: الوكيل يجهز كل شيء. ترسل الرسالة بنفسك، ثم تنشر بموافقة البائع.',
   rcNew:'بائع جديد',rcShot:'لقطة شاشة للإعلان',rcShotBtn:'اختر اللقطة',rcReading:'الوكيل يقرأ اللقطة…',rcOrText:'… أو الصق نص الإعلان',rcRead:'اقرأ النص',
-  rcPhone:'رقم البائع (8 أرقام)',rcName:'اسم البائع',rcSrc:'وجدته على',rcNote:'ملاحظة (المجموعة، الرابط…)',rcSave:'حفظ البائع',rcFound:'الإعلان الموجود',
+  rcPhone:'رقم البائع (8 أرقام)',rcName:'اسم البائع',rcSrc:'وجدته على',rcNote:'ملاحظة (المجموعة، الرابط…)',rcSave:'حفظ البائع',rcPhotos:'الصور الموجودة (بدون النص) — اضغط × لحذف صورة',rcNoPhoto:'لم يتم العثور على صور في اللقطة: ستضيفها في الاستمارة.',rcFound:'الإعلان الموجود',
   rcEmpty:'لا يوجد بائعون بعد. ابدأ بلقطة شاشة.',rcDup:'هذا الرقم موجود في القائمة ({s}).',rcIsUser:'مسجل في بيعلي',
   st_new:'للتواصل',st_contacted:'تم التواصل',st_accepted:'موافق',st_refused:'رفض',st_published:'تم النشر',st_relance:'للتذكير',
   f_all:'الكل',rcToday:'الرسائل المرسلة اليوم: {n} / 30',rcTodayTip:'لحماية رقم واتساب، لا ترسل أكثر من 30 رسالة في اليوم، ولا ترسل مرتين لنفس الشخص في نفس اليوم.',
@@ -4379,7 +4379,7 @@ function rt(k){return (RX[S.lang]&&RX[S.lang][k])||RX.fr[k]||k;}
 function rtl(lang,k){return (RX[lang]&&RX[lang][k])||RX.fr[k]||k;}
 var RC_SRC=['fb','wa','tt','ig','other'],RC_ST=['new','relance','contacted','accepted','published','refused'];
 S.rc=null;
-function rcLoad(){S.rc=S.rc||{list:null,f:'all',q:'',form:{phone:'',name:'',src:'fb',note:'',txt:'',item:null,thumb:''},busy:false,lang:{},del:null,res:null};
+function rcLoad(){S.rc=S.rc||{list:null,f:'all',q:'',form:{phone:'',name:'',src:'fb',note:'',txt:'',item:null,thumb:'',photos:[]},busy:false,lang:{},del:null,res:null};
   return api('GET','admin/prospects').then(function(d){S.rc.list=d.prospects||[];S.rc.loading=false;if(S.screen==='recruit')render(true);}).catch(function(){S.rc.loading=false;toast(t('netErr'));});}
 function rcState(p){if(p.status==='contacted'&&p.tries<3&&Date.now()-p.contacted>2*86400000)return 'relance';return p.status;}
 function rcToday(){var d=new Date();d.setUTCHours(0,0,0,0);var t0=d.getTime();return (S.rc.list||[]).filter(function(p){return p.contacted>=t0;}).length;}
@@ -4394,7 +4394,7 @@ function rcUpd(id,body,quiet){return api('PUT','admin/prospects/'+id,body).then(
 function rcCard(p){
   var st=rcState(p),col={new:'#5A3B00',relance:'#B3261E',contacted:'#555',accepted:'#0B6B3A',published:'var(--brand)',refused:'#999'}[st];
   var it=p.item||{},L=rcLangOf(p);
-  var head='<div class="row" style="gap:10px;align-items:flex-start">'+(p.thumb?'<img src="'+p.thumb+'" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px;flex-shrink:0">':'')+
+  var pic=(p.photos&&p.photos[0])||p.thumb;var head='<div class="row" style="gap:10px;align-items:flex-start">'+(pic?'<img src="'+pic+'" alt="" style="width:56px;height:56px;object-fit:cover;border-radius:10px;flex-shrink:0">':'')+
     '<div style="flex:1;min-width:0"><div class="row between" style="gap:6px"><b translate="no">'+esc(p.name)+'</b><span class="badge" style="color:'+col+';border-color:'+col+'">'+rt('st_'+st)+'</span></div>'+
     '<div class="meta" dir="ltr" style="text-align:start">+222 '+esc(p.phone.replace(/(\d{2})(?=\d)/g,'$1 '))+' · '+rt('src_'+(p.src||'fb'))+(p.registered?' · ✓ '+rt('rcIsUser'):'')+'</div>'+
     (it.title?'<div style="font-weight:700;margin-top:2px"><bdi>'+esc(it.title)+'</bdi>'+(it.price?' · <bdi>'+num(it.price)+' MRU</bdi>':'')+'</div>':'')+
@@ -4429,7 +4429,7 @@ V.recruit=function(){
     '<label class="btn primary wide" for="rcshot"'+(R.busy?' aria-disabled="true" style="opacity:.5;pointer-events:none"':'')+'>'+svg(I.cam,20)+rt('rcShotBtn')+'</label><input id="rcshot" type="file" accept="image/*" hidden>'+
     (R.reading?'<div class="row" style="gap:10px;align-items:center"><span class="spin" aria-hidden="true"></span><b>'+rt('rcReading')+'</b></div>':'')+
     '<details'+(F.txt&&!F.item?' open':'')+'><summary class="meta" style="cursor:pointer">'+rt('rcOrText')+'</summary><textarea class="inp" rows="4" data-rcf="txt" style="margin-top:8px" aria-label="'+rt('rcOrText')+'">'+esc(F.txt)+'</textarea><button class="btn small" data-a="rcreadtxt" style="margin-top:6px"'+(R.busy?' disabled':'')+'>'+rt('rcRead')+'</button></details>'+
-    found+
+    found+(F.thumb&&!R.reading?'<div class="field"><label>'+rt('rcPhotos')+'</label>'+((F.photos||[]).length?'<div class="row" style="gap:8px;flex-wrap:wrap">'+F.photos.map(function(u,i){return '<div style="position:relative"><img src="'+u+'" alt="" style="width:96px;height:96px;object-fit:cover;border-radius:10px;display:block"><button class="icon" data-a="rcphrm" data-i="'+i+'" aria-label="'+rt('rcDel')+'" style="position:absolute;top:-8px;inset-inline-end:-8px;width:28px;height:28px;border-radius:14px;background:#fff;border:1px solid var(--line)">'+svg(I.close,14)+'</button></div>';}).join('')+'</div>':'<p class="meta" style="margin:0">'+rt('rcNoPhoto')+'</p>')+'</div>':'')+
     '<div class="field"><label for="rcph">'+rt('rcPhone')+'</label><input id="rcph" class="inp" data-rcf="phone" inputmode="numeric" maxlength="8" dir="ltr" value="'+esc(F.phone)+'" placeholder="XX XX XX XX"></div>'+
     '<div class="field"><label for="rcnm">'+rt('rcName')+'</label><input id="rcnm" class="inp" data-rcf="name" maxlength="30" value="'+esc(F.name)+'"></div>'+
     '<div class="two"><div class="field"><label>'+rt('rcSrc')+'</label>'+srcSel+'</div><div class="field"><label for="rcnt">'+rt('rcNote')+'</label><input id="rcnt" class="inp" data-rcf="note" maxlength="300" value="'+esc(F.note)+'"></div></div>'+
@@ -4442,12 +4442,59 @@ V.recruit=function(){
     (L.length>5?'<input class="inp" data-rcq="1" id="rcq" value="'+esc(R.q||'')+'" placeholder="'+rt('rcSearch')+'" aria-label="'+rt('rcSearch')+'">':'')+
     (shown.length?shown.map(rcCard).join(''):'<p class="meta">'+rt('rcEmpty')+'</p>');
   return topbar(rt('rcT'),'admin')+'<div class="scroll"><div class="sec" style="gap:14px">'+top+form+list+'</div></div>';};
+/* découpe des photos d'une capture d'écran : on garde les zones « photo » (beaucoup de couleurs) et on enlève le texte et l'interface */
+function rcCrops(src){
+  var W=src.width,H=src.height,sc=Math.min(1,360/W),w=Math.max(1,Math.round(W*sc)),h=Math.max(1,Math.round(H*sc));
+  var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(src,0,0,w,h);
+  var D=x.getImageData(0,0,w,h).data;
+  function px(i,j){var k=(j*w+i)*4;return [D[k],D[k+1],D[k+2]];}
+  function dist(a,b){return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2]);}
+  /* une ligne de « photo » : beaucoup de pixels différents de leurs voisins de gauche ET peu de fond uni */
+  function lineScore(get,n){var tex=0,run=0,flat=0,prev=get(0);
+    for(var t=1;t<n;t++){var p=get(t),d=dist(p,prev);if(d<6){run++;if(run>n*0.04)flat++;}else{run=0;}if(d>4)tex++;prev=p;}
+    return {tex:tex/n,flat:flat/n};}
+  function isPhotoRow(j,x0,x1){var s=lineScore(function(t){return px(x0+t,j);},x1-x0);return s.flat<0.35&&s.tex>0.25;}
+  /* 1) bandes de lignes « photo » */
+  var rows=[];for(var j=0;j<h;j++)rows.push(isPhotoRow(j,0,w));
+  /* lisser : on comble les petits trous (séparateurs fins entre photos, zones calmes du ciel) */
+  var gap=Math.max(3,Math.round(h*0.012));
+  var bands=[],start=-1,last=-1;
+  for(j=0;j<h;j++){if(rows[j]){if(start<0)start=j;last=j;}else if(start>=0&&j-last>gap){bands.push([start,last]);start=-1;}}
+  if(start>=0)bands.push([start,last]);
+  var minH=Math.max(30,h*0.06);
+  bands=bands.filter(function(b){return b[1]-b[0]>=minH;});
+  if(!bands.length)return [];
+  /* 2) pour chaque bande : colonnes « photo » → bord gauche et droit */
+  var boxes=[];
+  bands.forEach(function(b){
+    var cols=[];for(var i=0;i<w;i++){var s=lineScore(function(t){return px(i,b[0]+t);},b[1]-b[0]+1);cols.push(s.flat<0.35&&s.tex>0.25);}
+    /* groupes de colonnes (plusieurs photos côte à côte) */
+    var g=Math.max(2,Math.round(w*0.01)),cs=-1,cl=-1;
+    for(var i2=0;i2<=w;i2++){var on=i2<w&&cols[i2];if(on){if(cs<0)cs=i2;cl=i2;}else if(cs>=0&&(i2===w||i2-cl>g)){if(cl-cs>=w*0.18)boxes.push([cs,b[0],cl,b[1]]);cs=-1;}}
+  });
+  /* 3) découper chaque boîte sur les fines lignes de séparation (grille de photos), en pleine résolution */
+  var FD=src.getContext('2d').getImageData(0,0,W,H).data;
+  function fp(i,j){var k=(j*W+i)*4;return [FD[k],FD[k+1],FD[k+2]];}
+  function uni(get,n){var a=get(Math.floor(n/2)),ok=0,tot=0,b=Math.floor(n*0.04),st=Math.max(1,Math.floor(n/150));for(var t=b;t<n-b;t+=st){tot++;if(dist(get(t),a)<40)ok++;}return tot>0&&ok/tot>0.9;}
+  function cuts(n,isSep){var segs=[],s0=0,t=0;while(t<n){if(t>n*0.12&&t<n*0.88&&isSep(t)){var e=t;while(e<n&&isSep(e))e++;if(e-t<=Math.max(14,n*0.03)){segs.push([s0,t-1]);s0=e;}t=e;}else t++;}segs.push([s0,n-1]);return segs;}
+  function splitBox(bx){var X0=Math.round(bx[0]/sc),Y0=Math.round(bx[1]/sc),X1=Math.min(W-1,Math.round(bx[2]/sc)),Y1=Math.min(H-1,Math.round(bx[3]/sc)),out=[];
+    var rs=cuts(Y1-Y0+1,function(t){return uni(function(u){return fp(X0+u,Y0+t);},X1-X0+1);});
+    rs.forEach(function(r){var a=Y0+r[0],z=Y0+r[1];if(z-a<(Y1-Y0)*0.15)return;
+      var cs=cuts(X1-X0+1,function(t){return uni(function(u){return fp(X0+t,a+u);},z-a+1);});
+      cs.forEach(function(c){if(c[1]-c[0]<(X1-X0)*0.15)return;out.push([X0+c[0],a,X0+c[1],z]);});});
+    return out.length?out:[[X0,Y0,X1,Y1]];}
+  var tiles=[];boxes.forEach(function(b){tiles=tiles.concat(splitBox(b));});
+  /* on enlève un petit bord (liserés) et on garde les tuiles assez grandes, dans l'ordre de lecture */
+  tiles=tiles.filter(function(t){return (t[2]-t[0])>=W*0.18&&(t[3]-t[1])>=Math.max(80,H*0.05);}).slice(0,6);
+  return tiles.map(function(t){var m=4,X0=t[0]+m,Y0=t[1]+m,cw=Math.max(1,t[2]-t[0]-2*m),ch=Math.max(1,t[3]-t[1]-2*m),f=Math.min(1,900/Math.max(cw,ch)),o=document.createElement('canvas');o.width=Math.round(cw*f);o.height=Math.round(ch*f);
+    o.getContext('2d').drawImage(src,X0,Y0,cw,ch,0,0,o.width,o.height);return o.toDataURL('image/jpeg',0.8);});
+}
 function rcShot(file){if(!file||!/^image\//.test(file.type)||!S.rc)return;var R=S.rc;if(R.busy)return;
   var rd=new FileReader();rd.onload=function(){var img=new Image();img.onload=function(){
     var mx=1400,sc=Math.min(1,mx/Math.max(img.width,img.height)),cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);
     cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);var url=cv.toDataURL('image/jpeg',0.82);
     var th=document.createElement('canvas'),ts=112/Math.max(cv.width,cv.height);th.width=Math.round(cv.width*ts);th.height=Math.round(cv.height*ts);th.getContext('2d').drawImage(cv,0,0,th.width,th.height);
-    R.form.thumb=th.toDataURL('image/jpeg',0.7);R.busy=true;R.reading=true;render(true);
+    R.form.thumb=th.toDataURL('image/jpeg',0.7);try{R.form.photos=rcCrops(cv);}catch(er){R.form.photos=[];}R.busy=true;R.reading=true;render(true);
     api('POST','ai/read',{img:url,lang:S.lang,schema:iSchema()}).then(function(d){R.busy=false;R.reading=false;
       if(d.limit){toast(t('impLimit'));render(true);return;}
       var tx=(d.text||'').trim(),it=d.items&&d.items[0];
@@ -4469,7 +4516,7 @@ document.addEventListener('input',function(e){var el=e.target;if(!el.getAttribut
   if(k){if(k==='phone')el.value=el.value.replace(/\D/g,'');S.rc.form[k]=el.value;e.stopImmediatePropagation();return;}
   if(el.getAttribute('data-rcq')){S.rc.q=el.value;clearTimeout(window.rcqT);window.rcqT=setTimeout(function(){render(true);var q=app.querySelector('#rcq');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}},250);e.stopImmediatePropagation();}},true);
 function rcPrep(p){var it=p.item||{},d=it.cat?itemToDraft(Object.assign({photos:[]},it),{}):newDraft();
-  d.stype='part';d._rid=p.id;d._rname=p.name;d._rphone=p.phone;d.wa=true;d.call=true;d.photos=[];
+  d.stype='part';d._rid=p.id;d._rname=p.name;d._rphone=p.phone;d.wa=true;d.call=true;d.photos=(p.photos||[]).slice(0,MAXPH);
   S.editId=null;S.draft=d;S.draftRestored=false;var k=TYPE_KEY[d.cat],need=!d.cat||(k&&!d[k]);S.pstep=need?1:2;S.maxStep=need?1:2;S.errs={};go('post');}
 function rcBanner(){var d=S.draft;if(S.screen!=='post'||!d||!d._rid)return;var sc=app.querySelector('.scroll');if(!sc||sc.querySelector('.rcban'))return;
   var b=document.createElement('div');b.className='tip rcban';b.style.cssText='background:#FFF3D6;color:#5A3B00;margin:10px 16px 0;align-items:center;gap:8px';
@@ -4486,14 +4533,15 @@ app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(
     case 'rcset':if(p)rcUpd(p.id,{status:el.getAttribute('data-v')});break;
     case 'rcprep':if(p)rcPrep(p);break;
     case 'rcresok':R.res=null;render(true);break;
+    case 'rcphrm':R.form.photos.splice(+el.getAttribute('data-i'),1);render(true);break;
     case 'rccancel':S.draft=null;save('draft',null);go('recruit');break;
     case 'rcdel':if(!p)break;if(R.del!==p.id){R.del=p.id;render(true);break;}R.del=null;
       api('DELETE','admin/prospects/'+p.id).then(function(){R.list=R.list.filter(function(x){return x.id!==p.id;});render(true);}).catch(function(){toast(t('netErr'));});break;
     case 'rcreadtxt':if(R.busy||!R.form.txt.trim())break;R.busy=true;render(true);
       aiParse(R.form.txt,false).then(function(l){R.busy=false;var it=l[0]||{};delete it.photos;var raw=rcRaw(R.form.txt);if(raw.title)it.title=raw.title;it.desc=raw.desc;R.form.item=it;var ph=rcPhoneFrom(R.form.txt);if(ph&&!R.form.phone)R.form.phone=ph;render(true);});break;
     case 'rcsave':var F=R.form;if(!/^[234]\d{7}$/.test(F.phone)){toast(rt('rcErrPhone'));break;}if(!F.name.trim()){toast(rt('rcErrName'));break;}R.busy=true;render(true);
-      api('POST','admin/prospects',{phone:F.phone,name:F.name,src:F.src,note:F.note,item:F.item,txt:F.txt,thumb:F.thumb}).then(function(d){R.busy=false;R.list.unshift(d.prospect);
-        R.form={phone:'',name:'',src:F.src,note:'',txt:'',item:null,thumb:''};R.f='all';toast(rt('rcSaved'));render(true);})
+      api('POST','admin/prospects',{phone:F.phone,name:F.name,src:F.src,note:F.note,item:F.item,txt:F.txt,thumb:F.thumb,photos:F.photos||[]}).then(function(d){R.busy=false;R.list.unshift(d.prospect);
+        R.form={phone:'',name:'',src:F.src,note:'',txt:'',item:null,thumb:'',photos:[]};R.f='all';toast(rt('rcSaved'));render(true);})
       .catch(function(err){R.busy=false;render(true);if(err&&err.code==='dup'){var o=R.list.filter(function(x){return x.phone===F.phone;})[0];toast(rt('rcDup').replace('{s}',o?rt('st_'+rcState(o)):'—'));}
         else toast(err&&err.code==='phone'?rt('rcErrPhone'):err&&err.code==='name'?rt('rcErrName'):t('netErr'));});break;
   }},true);
@@ -4501,7 +4549,7 @@ app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(
 function rcPublish(ad,d){var rid=d._rid;if(ad._d){delete ad._d._rid;delete ad._d._rname;delete ad._d._rphone;}delete ad.shop;
   return api('POST','admin/prospects/'+rid+'/publish',{ad:ad}).then(function(r){
     S.remote.unshift(r.ad);S.draft=null;S.draftRestored=false;save('draft',null);
-    S.rc=S.rc||{list:null,f:'all',q:'',form:{phone:'',name:'',src:'fb',note:'',txt:'',item:null,thumb:''},busy:false,lang:{},del:null};
+    S.rc=S.rc||{list:null,f:'all',q:'',form:{phone:'',name:'',src:'fb',note:'',txt:'',item:null,thumb:'',photos:[]},busy:false,lang:{},del:null};
     if(S.rc.list)S.rc.list=S.rc.list.map(function(x){return x.id===rid?r.prospect:x;});
     S.rc.res=r;S.rc.f='all';go('recruit');toast(t('published'));return r;});}
 if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});}
