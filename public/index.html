@@ -2573,6 +2573,8 @@ function loadConvs(){
       else if(o&&c.msgs.length>o.msgs.length&&!c.msgs[c.msgs.length-1].me)toast(t('newMsg').replace('{n}',c.seller));
       if(o&&o.pending)o.pending.forEach(function(m){if(!c.msgs.some(function(x){return x.me&&x.txt===m.txt&&x.t>=m.t-60000;}))c.msgs.push(m);});
     });
+    // garder la conversation ouverte même si elle est encore vide (rien n'est envoyé au vendeur avant le 1er message)
+    if(S.screen==='chat'&&old[S.convId]&&!fresh.some(function(c){return c.id===S.convId;}))fresh.push(old[S.convId]);
     S.convs=S.convs.filter(function(c){return !c.srv;}).concat(fresh);
     if(sig!==convSig){convSig=sig;if(['msgs','chat','account'].indexOf(S.screen)>-1)render(S.screen!=='chat');}
   }).catch(function(){});}
@@ -3687,7 +3689,7 @@ app.addEventListener('click',function(e){
    case 'go':var tg=el.getAttribute('data-s');if(tg==='profile')S.profForm=null;if(tg==='admin'){S.adm=null;loadAdmin();}go(tg);break;
    case 'chat':if(!S.user){S.after='chat';S.pendingAd=S.id;S.login={step:1,phone:'',code:'',name:'',err:''};go('login');}else openConv(byId(S.id));break;
    case 'openconv':var oc=convById(id);if(oc){if(oc.srv&&oc.unread)api('POST','convs/'+oc.id+'/read').catch(function(){});oc.unread=0;saveConvs();}S.convId=id;go('chat');break;
-   case 'quick':sendMsg(t(el.getAttribute('data-v')));break;
+   case 'quick':var qi=document.getElementById('chatin'),qv=t(el.getAttribute('data-v'));if(!qi){sendMsg(qv);break;}qi.value=qv;try{qi.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}qi.focus();try{qi.setSelectionRange(qv.length,qv.length);}catch(e){}break;
    case 'savesearch':if(!S.user){S.pendSave=curSearch();S.after='home';S.login={step:1,phone:'',code:'',name:'',err:''};toast(t('needLoginS'));go('login');break;}
      var ns=curSearch();doSaveSearch(ns);toast(t('searchSaved'));var sk=sKey(ns);S.svJust=sk;render(true);setTimeout(function(){if(S.svJust===sk){S.svJust=null;if(S.screen==='home')render(true);}},4000);break;
    case 'svdis':S.svDis=S.svDis||{};S.svDis[sKey(curSearch())]=1;save('svDis',S.svDis);render(true);break;

@@ -282,7 +282,7 @@ export async function onRequest(ctx) {
   const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
   const method = req.method;
   try {
-    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-correction' });
+    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-messages' });
 
     // ---------- Médias (photos, vocal) ----------
     if (parts[0] === 'media' && parts[1] && method === 'GET') {
@@ -997,7 +997,9 @@ export async function onRequest(ctx) {
         if (!cs.length) return json({ convs: [] });
         const ids = cs.map((c) => c.id);
         const { results: ms } = await db.prepare(`SELECT * FROM messages WHERE conv_id IN (${ids.map(() => '?').join(',')}) ORDER BY t`).bind(...ids).all();
-        return json({ convs: cs.map((c) => {
+        const withMsg = new Set(ms.map((m) => m.conv_id));
+        // une conversation n'existe pour le vendeur (et dans la liste) qu'après le 1er message envoyé
+        return json({ convs: cs.filter((c) => withMsg.has(c.id)).map((c) => {
           const buyer = c.buyer_id === me.id, read = buyer ? c.buyer_read : c.seller_read;
           const msgs = ms.filter((m) => m.conv_id === c.id).map((m) => ({ me: m.sender_id === me.id, txt: m.txt, t: m.t, img: m.img || '' }));
           return { id: c.id, adId: c.ad_id, title: c.title, seller: buyer ? c.seller_name : c.buyer_name, otherSince: buyer ? c.seller_created : c.buyer_created, otherCity: (buyer ? c.seller_city : c.buyer_city) || '', otherRead: buyer ? c.seller_read : c.buyer_read, otherId: buyer ? c.seller_id : c.buyer_id, otherAvatar: (buyer ? c.seller_avatar : c.buyer_avatar) || '', buyer, updated: c.updated, msgs, unread: msgs.filter((m) => !m.me && m.t > read).length };
@@ -1008,7 +1010,6 @@ export async function onRequest(ctx) {
         const ad = await db.prepare('SELECT * FROM ads WHERE id = ?').bind(String(b.adId || '')).first();
         if (!ad) return fail('not_found', 404);
         if (ad.user_id === me.id) return fail('own_ad');
-        try { await db.prepare('INSERT OR REPLACE INTO ad_contacts (ad_id, user_id, kind, t) VALUES (?, ?, ?, ?)').bind(ad.id, me.id, 'msg', Date.now()).run(); } catch (e) { /* ignore */ }
         let c = await db.prepare('SELECT id FROM convs WHERE ad_id = ? AND buyer_id = ?').bind(ad.id, me.id).first();
         if (!c) {
           c = { id: uid('c') };
@@ -1030,6 +1031,9 @@ export async function onRequest(ctx) {
           db.prepare('INSERT INTO messages (conv_id, sender_id, txt, t, img) VALUES (?, ?, ?, ?, ?)').bind(c.id, me.id, txt, t, img),
           db.prepare(`UPDATE convs SET updated = ?, ${col} = ? WHERE id = ?`).bind(t, t, c.id),
         ]);
+        if (c.buyer_id === me.id) {
+          try { await db.prepare('INSERT OR IGNORE INTO ad_contacts (ad_id, user_id, kind, t) VALUES (?, ?, ?, ?)').bind(c.ad_id, me.id, 'msg', t).run(); } catch (e) { /* ignore */ }
+        }
         return json({ ok: true, t, img });
       }
       if (parts[2] === 'read' && method === 'POST') {
