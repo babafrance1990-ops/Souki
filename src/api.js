@@ -204,22 +204,21 @@ async function syncShopAds(db, userId, name, shopJson) {
 // Création d'une annonce pour « owner ». uploader = celui qui a envoyé la vidéo (l'administrateur quand il publie pour un vendeur).
 async function createAd(db, owner, ad, uploaderId, claim) {
   const id = uid('a');
-  const photos = [];
-  for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6)) {
+  // Photos traitées en même temps (et non plus une par une), dans l'ordre choisi par le vendeur
+  const photos = await Promise.all((Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6).map(async (p) => {
     const m = /^\/api\/media\/(\w+)$/.exec(p || '');
     if (m) {
-      // photos déjà envoyées (découpées dans la capture par l'agent recruteur) : on les rattache à l'annonce et au vendeur
-      if (!claim) continue;
+      // photos déjà envoyées (dès leur ajout, ou découpées par l'agent recruteur) : on les rattache à l'annonce et au vendeur
+      if (!claim) return null;
       const ok = Array.isArray(claim) ? claim : [uploaderId];
       const own = await db.prepare('SELECT id, user_id FROM media WHERE id = ? AND ad_id IS NULL').bind(m[1]).first();
-      if (own && !ok.includes(own.user_id)) continue;
-      if (own) { await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(id, owner.id, m[1]).run(); photos.push(p); }
-      continue;
+      if (!own || !ok.includes(own.user_id)) return null;
+      await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(id, owner.id, m[1]).run();
+      return p;
     }
-    const u = await storeMedia(db, owner.id, id, p, 1500000);
-    if (u) photos.push(u);
-  }
-  ad.photos = photos;
+    return storeMedia(db, owner.id, id, p, 1500000);
+  }));
+  ad.photos = photos.filter(Boolean);
   if (ad.voice) ad.voice = await storeMedia(db, owner.id, id, ad.voice, 1600000);
   if (!ad.voice) delete ad.voice;
   ad.video = await claimVideo(db, uploaderId || owner.id, id, ad.video);
@@ -282,7 +281,7 @@ export async function onRequest(ctx) {
   const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
   const method = req.method;
   try {
-    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-messages' });
+    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-photos' });
 
     // ---------- Médias (photos, vocal) ----------
     if (parts[0] === 'media' && parts[1] && method === 'GET') {
@@ -683,7 +682,7 @@ export async function onRequest(ctx) {
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
         const n = await db.prepare('SELECT COUNT(*) AS n FROM ads WHERE user_id = ? AND created > ?').bind(me.id, Date.now() - 86400000).first();
         if (n && n.n >= 60) return fail('too_many', 429);
-        return json({ ad: await createAd(db, me, ad, me.id) });
+        return json({ ad: await createAd(db, me, ad, me.id, [me.id]) });
       }
       const row = parts[1] ? await db.prepare('SELECT * FROM ads WHERE id = ?').bind(parts[1]).first() : null;
       if (!row) return fail('not_found', 404);
@@ -707,17 +706,18 @@ export async function onRequest(ctx) {
         const before = JSON.parse(row.data);
         const ad = b.ad || {};
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
-        const keep = [], photos = [];
-        for (const p of (Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6)) {
+        const keep = [];
+        const photos = (await Promise.all((Array.isArray(ad.photos) ? ad.photos : []).slice(0, 6).map(async (p) => {
           const m = /^\/api\/media\/(\w+)$/.exec(p || '');
-          if (m) {
-            const own = await db.prepare('SELECT id FROM media WHERE id = ? AND ad_id = ?').bind(m[1], row.id).first();
-            if (own) { keep.push(m[1]); photos.push(p); }
-          } else {
-            const u = await storeMedia(db, owner.id, row.id, p, 1500000);
-            if (u) { keep.push(u.split('/').pop()); photos.push(u); }
-          }
-        }
+          if (!m) return storeMedia(db, owner.id, row.id, p, 1500000);
+          const own = await db.prepare('SELECT id, ad_id, user_id FROM media WHERE id = ?').bind(m[1]).first();
+          if (!own) return null;
+          if (own.ad_id === row.id) return p;
+          // photo envoyée à l'avance par celui qui modifie (vendeur, admin ou recruteur)
+          if (own.ad_id == null && own.user_id === me.id) { await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(row.id, owner.id, own.id).run(); return p; }
+          return null;
+        }))).filter(Boolean);
+        photos.forEach((u) => keep.push(u.split('/').pop()));
         ad.photos = photos;
         const vm = /^\/api\/media\/(\w+)$/.exec(ad.voice || '');
         if (vm) keep.push(vm[1]);
@@ -989,6 +989,16 @@ export async function onRequest(ctx) {
     }
 
     // ---------- Messagerie ----------
+    // Envoi d'une photo dès qu'elle est ajoutée au formulaire (la publication est ensuite presque instantanée)
+    if (parts[0] === 'media' && !parts[1] && method === 'POST') {
+      const n = await db.prepare('SELECT COUNT(*) AS n FROM media WHERE user_id = ? AND ad_id IS NULL AND created > ?').bind(me.id, Date.now() - 86400000).first();
+      if (n && n.n >= 300) return fail('limit', 429);
+      const b = await readBody(req);
+      if (!/^data:image\//.test(String(b.img || ''))) return fail('bad_image');
+      const url = await storeMedia(db, me.id, null, b.img, 1500000);
+      if (!url) return fail('bad_image');
+      return json({ url });
+    }
     if (parts[0] === 'convs') {
       if (!parts[1] && method === 'GET') {
         const { results: cs } = await db.prepare(
