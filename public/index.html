@@ -512,6 +512,7 @@ button.pinrow{border:1.5px solid var(--line);background:var(--card,#fff);border-
 .pubic{width:52px;height:52px;border-radius:26px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center}
 .refbtn{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font:inherit;font-weight:800;color:var(--fg);text-align:start}
 .refbtn .meta{font-weight:700;color:var(--brand)}
+.refshow{position:sticky;bottom:10px;z-index:3;height:52px;box-shadow:0 8px 22px rgba(0,0,0,.18);margin-top:4px}
 .vbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}.vbar span{display:block;height:100%;background:var(--brand);transition:width .2s}
 .vprevid{width:100%;max-height:260px;border-radius:14px;background:#000}
 .vidbox{display:flex;flex-direction:column;gap:6px}.vidbox video{width:100%;max-height:320px;border-radius:14px;background:#000}
@@ -2590,8 +2591,9 @@ V.home=function(){
   return '<div class="scroll"><header class="hdr"><div class="row between"><button class="logo" data-a="gohome" aria-label="'+t('home')+'"><img class="hlogo" src="/icon-192.png" alt="" width="30" height="30">'+(S.lang==='ar'?'بيع<span>لي</span>':'Bi3<span>li</span>')+'</button><div class="row" style="gap:4px;min-width:0;flex:0 1 auto;margin-inline:6px">'+svg(I.pin,16)+'<label for="city" class="srh">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
    '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" class="srh">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"><button type="button" class="camq" data-a="visual" aria-label="'+t('imgSearch')+'" title="'+t('imgSearch')+'">'+svg(I.cam,22)+'</button></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
    '</header>'+
-   '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles">'+cats+'</div></div>'+(S.cat?'<button class="linkbtn" data-a="cat" data-c="" style="color:var(--brand);align-self:flex-end;font-size:13px">'+t('showAll')+'</button>':'')+
-   (S.cat?refineBtn():'')+(S.cat?typeRow():'')+(S.cat&&S.refOpen?(S.cat==='serv'?servFilters():'')+(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+xfHTML()+(S.cat==='tel'?phoneFilters():'')+(isMM(S.cat)?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='menager'?menagerFilters():'')+(S.cat==='beaute'?beautyFilters():'')+(S.cat==='equip'?equipFilters():'')+(S.cat==='alim'?alimFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():''):'')+
+   '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles">'+cats+'</div></div>'+
+   /* comme Leboncoin : les résultats d'abord, les filtres de la catégorie restent derrière le bouton « Affiner » */
+   (S.cat?refineBtn():'')+(S.cat&&S.refOpen?typeRow():'')+(S.cat&&S.refOpen?(S.cat==='serv'?servFilters():'')+(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+xfHTML()+(S.cat==='tel'?phoneFilters():'')+(isMM(S.cat)?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='menager'?menagerFilters():'')+(S.cat==='beaute'?beautyFilters():'')+(S.cat==='equip'?equipFilters():'')+(S.cat==='alim'?alimFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():'')+'<button type="button" class="btn primary wide refshow" data-a="refshow">'+svg(I.search,20)+t('seeAllN').replace('{n}',filtered().length)+'</button>':'')+
    '</div><div class="sec" id="list" style="padding-top:12px">'+listHTML()+'</div><div style="height:16px"></div></div>'+tabs('home');};
 
 // Boutons WhatsApp / Appel / Message aussi en bas de la galerie, pour contacter le vendeur sans fermer les photos
@@ -3661,7 +3663,7 @@ app.addEventListener('click',function(e){
    case 'quick':sendMsg(t(el.getAttribute('data-v')));break;
    case 'savesearch':if(!S.user){S.after='home';S.login={step:1,phone:'',code:'',name:'',err:''};toast(t('needLoginS'));go('login');break;}
      var ns={q:S.q.trim(),cat:S.cat,city:S.city,hood:S.hood,pmin:S.gf.pmin||'',pmax:S.gf.pmax||'',seller:S.gf.seller||'',tonly:!!S.tonly,t:Date.now(),seen:Date.now(),alert:true};var nfs=CAT_STORE[S.cat];if(nfs&&fUsed(S[nfs]))ns.f=fCopy(S[nfs]);S.searches=S.searches.filter(function(x){return !(x.q===ns.q&&x.cat===ns.cat&&x.city===ns.city&&x.hood===ns.hood&&JSON.stringify(x.f||null)===JSON.stringify(ns.f||null));});S.searches.unshift(ns);saveSearches();toast(t('searchSaved'));break;
-   case 'runsearch':var rs=S.searches[+el.getAttribute('data-i')];if(rs){rs.seen=Date.now();saveSearches();S.smenu=null;S.q=rs.q||'';S.cat=rs.cat||'';S.city=rs.city||'';S.hood=rs.hood||'';S.tonly=!!rs.tonly;S.gf=Object.assign({},S.gf,{seller:rs.seller||'',pmin:rs.pmin||'',pmax:rs.pmax||''});var rfs=CAT_STORE[rs.cat];if(rfs)S[rfs]=rs.f?Object.assign(blankF(S[rfs]),fCopy(rs.f)):blankF(S[rfs]);go('home');}break;
+   case 'runsearch':var rs=S.searches[+el.getAttribute('data-i')];if(rs){rs.seen=Date.now();saveSearches();S.smenu=null;S.q=rs.q||'';S.cat=rs.cat||'';S.city=rs.city||'';S.hood=rs.hood||'';S.tonly=!!rs.tonly;S.gf=Object.assign({},S.gf,{seller:rs.seller||'',pmin:rs.pmin||'',pmax:rs.pmax||''});var rfs=CAT_STORE[rs.cat];if(rfs)S[rfs]=rs.f?Object.assign(blankF(S[rfs]),fCopy(rs.f)):blankF(S[rfs]);S.refOpen=false;S.showCats=false;go('home');}break;
    case 'delsearch':S.searches.splice(+el.getAttribute('data-i'),1);S.smenu=null;saveSearches();render(true);break;
    case 'ftab':S.ftab=el.getAttribute('data-v');S.smenu=null;if(S.ftab==='sellers')S.following=null;render(true);break;
    case 'ssort':S.ssort=S.ssort==='saved'?'new':'saved';render(true);break;
@@ -3752,6 +3754,7 @@ app.addEventListener('click',function(e){
    case 'showmore':S.shown=(S.shown||20)+20;render(true);break;
    case 'pubshared':S.justPub=null;break;
    case 'refine':S.refOpen=!S.refOpen;render(true);break;
+   case 'refshow':S.refOpen=false;render(true);var lst=app.querySelector('#list'),scr=app.querySelector('.scroll');if(lst&&scr)scr.scrollTop=Math.max(0,lst.offsetTop-70);break;
    case 'vidcancel':if(S.vidJob)S.vidJob.cancel=true;S.vidJob=null;S.vidBusy=null;render(true);break;
    case 'viddel':S.vidBlob=null;if(S.vidUrl)try{URL.revokeObjectURL(S.vidUrl);}catch(e){}S.vidUrl=null;S.vidCut=false;if(S.draft)S.draft.video='';render(true);break;
    case 'bump':S.mgmt=null;api('POST','ads/'+id+'/bump').then(function(r){S.remote=S.remote.filter(function(x){return x.id!==id;});S.remote.unshift(r.ad);refreshMine();toast(t('bumpOk'));render(true);})
@@ -3806,7 +3809,7 @@ app.addEventListener('click',function(e){
    case 'sugq':S.showCats=false;S.q=el.getAttribute('data-v');pushRecent(S.q);S.sfocus=false;render(true);break;
    case 'sugcat':S.showCats=false;S.cat=el.getAttribute('data-c');S.q=el.getAttribute('data-v')||'';if(S.q)pushRecent(S.q);S.sfocus=false;render();break;
    case 'sugapply':S.showCats=false;if(el.hasAttribute('data-c'))S.cat=el.getAttribute('data-c');if(el.hasAttribute('data-q'))S.q=el.getAttribute('data-q');
-     if(el.hasAttribute('data-ts')){var sts=el.getAttribute('data-ts');S[sts]=blankF(S[sts]);S[sts][el.getAttribute('data-tk')]=el.getAttribute('data-tv');if(el.hasAttribute('data-tm'))S[sts].mode=el.getAttribute('data-tm');S.refOpen=true;pushRecent(q0sug(el));S.sfocus=false;render();break;}
+     if(el.hasAttribute('data-ts')){var sts=el.getAttribute('data-ts');S[sts]=blankF(S[sts]);S[sts][el.getAttribute('data-tk')]=el.getAttribute('data-tv');if(el.hasAttribute('data-tm'))S[sts].mode=el.getAttribute('data-tm');S.refOpen=false;pushRecent(q0sug(el));S.sfocus=false;render();break;}
      if(el.hasAttribute('data-city')){S.city=el.getAttribute('data-city');S.hood=el.getAttribute('data-hood')||'';}
      pushRecent(S.q||'');S.sfocus=false;render();break;
    case 'clearrecent':S.recentQ=[];save('recentq',[]);updateSugg();break;
