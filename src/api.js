@@ -238,6 +238,34 @@ async function newPin() {
   do { pass = String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, '0'); } while (!pinOk(pass));
   return pass;
 }
+// Liste des parties d'une annonce corrigées par l'équipe (en arabe et en français, pour le message au vendeur)
+const MOD_FIELDS = [
+  ['title', 'العنوان', 'titre'], ['cat', 'الفئة', 'catégorie'], ['price', 'السعر', 'prix'], ['punit', 'عملة السعر (قديمة / جديدة)', 'unité du prix'],
+  ['city', 'المدينة', 'ville'], ['hood', 'الحي', 'quartier'], ['near', 'المعلم القريب', 'repère'], ['desc', 'الوصف', 'description'], ['photos', 'الصور', 'photos'],
+];
+const MOD_DETAILS = ['car', 'veh', 'estate', 'dev', 'mm', 'home', 'mo', 'fam', 'bty', 'eqp', 'alim', 'job', 'anim', 'trip', 'serv', 'nego', 'deliv', 'delivNote', 'stype', 'splace'];
+function modChanges(a, b) {
+  const same = (x, y) => JSON.stringify(x === undefined ? null : x) === JSON.stringify(y === undefined ? null : y);
+  const out = MOD_FIELDS.filter(([k]) => !same(k === 'punit' ? a[k] || 'new' : a[k], k === 'punit' ? b[k] || 'new' : b[k]));
+  if (MOD_DETAILS.some((k) => !same(a[k], b[k]))) out.push(['details', 'التفاصيل', 'détails']);
+  return out;
+}
+async function modNotify(db, me, row, ad, changed, note) {
+  let c = await db.prepare('SELECT id FROM convs WHERE ad_id = ? AND buyer_id = ?').bind(row.id, me.id).first();
+  const t = Date.now();
+  if (!c) {
+    c = { id: uid('c') };
+    await db.prepare('INSERT INTO convs (id, ad_id, buyer_id, seller_id, title, updated, buyer_read) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(c.id, row.id, me.id, row.user_id, ad.title, t, t).run();
+  }
+  const ar = changed.map((x) => x[1]).join('، '), fr = changed.map((x) => x[2]).join(', ');
+  let txt = '🛠️ فريق بيعلي\nالسلام عليكم، قمنا بتصحيح إعلانك «' + ad.title + '»' + (ar ? ':\n✓ ' + ar : '.') + '\n';
+  if (note) txt += '\n' + note + '\n';
+  txt += '\nرقمك واسمك لم يتغيّرا. يمكنك مراجعة الإعلان أو تعديله من «إعلاناتي».\n— Bi3li : notre équipe a corrigé votre annonce' + (fr ? ' (' + fr + ')' : '') + '. Votre numéro et votre nom ne changent pas.';
+  await db.batch([
+    db.prepare('INSERT INTO messages (conv_id, sender_id, txt, t, img) VALUES (?, ?, ?, ?, ?)').bind(c.id, me.id, txt.slice(0, 1200), t, null),
+    db.prepare('UPDATE convs SET updated = ?, buyer_read = ? WHERE id = ?').bind(t, t, c.id),
+  ]);
+}
 function prospectOut(r) {
   return { id: r.id, phone: r.phone, name: r.name, src: r.src || '', note: r.note || '', item: r.item ? JSON.parse(r.item) : null, txt: r.txt || '', thumb: r.thumb || '',
     photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, ownerId: r.owner_id || '', ownerName: r.owner_name || '' };
@@ -254,7 +282,7 @@ export async function onRequest(ctx) {
   const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
   const method = req.method;
   try {
-    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-moughataa' });
+    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-correction' });
 
     // ---------- Médias (photos, vocal) ----------
     if (parts[0] === 'media' && parts[1] && method === 'GET') {
@@ -666,9 +694,17 @@ export async function onRequest(ctx) {
         return json({ ok: true });
       }
       const admin = isAdmin(env, me);
-      if (row.user_id !== me.id && !(admin && !parts[2] && method === 'DELETE')) return fail('forbidden', 403);
+      // Correction par l'équipe : l'administrateur (toutes les annonces) ou un recruteur (annonces de ses vendeurs) peut modifier une annonce.
+      let mod = false;
+      if (row.user_id !== me.id && !parts[2] && method === 'PUT') {
+        mod = admin || (me.role === 'recruiter' && !!(await db.prepare('SELECT id FROM prospects WHERE owner_id = ? AND user_id = ?').bind(me.id, row.user_id).first()));
+      }
+      if (row.user_id !== me.id && !mod && !(admin && !parts[2] && method === 'DELETE')) return fail('forbidden', 403);
       if (!parts[2] && method === 'PUT') {
         const b = await readBody(req);
+        const owner = mod ? await db.prepare('SELECT * FROM users WHERE id = ?').bind(row.user_id).first() : me;
+        if (!owner) return fail('not_found', 404);
+        const before = JSON.parse(row.data);
         const ad = b.ad || {};
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
         const keep = [], photos = [];
@@ -678,27 +714,37 @@ export async function onRequest(ctx) {
             const own = await db.prepare('SELECT id FROM media WHERE id = ? AND ad_id = ?').bind(m[1], row.id).first();
             if (own) { keep.push(m[1]); photos.push(p); }
           } else {
-            const u = await storeMedia(db, me.id, row.id, p, 1500000);
+            const u = await storeMedia(db, owner.id, row.id, p, 1500000);
             if (u) { keep.push(u.split('/').pop()); photos.push(u); }
           }
         }
         ad.photos = photos;
         const vm = /^\/api\/media\/(\w+)$/.exec(ad.voice || '');
         if (vm) keep.push(vm[1]);
-        else if (ad.voice) { ad.voice = await storeMedia(db, me.id, row.id, ad.voice, 1600000); if (ad.voice) keep.push(ad.voice.split('/').pop()); }
+        else if (ad.voice) { ad.voice = await storeMedia(db, owner.id, row.id, ad.voice, 1600000); if (ad.voice) keep.push(ad.voice.split('/').pop()); }
         if (!ad.voice) delete ad.voice;
-        const oldVid = JSON.parse(row.data).video;
-        ad.video = await claimVideo(db, me.id, row.id, ad.video);
+        const oldVid = before.video;
+        ad.video = ad.video === oldVid ? oldVid : await claimVideo(db, me.id, row.id, ad.video);
         if (!ad.video) delete ad.video;
+        else if (mod && ad.video !== oldVid) await db.prepare('UPDATE videos SET user_id = ? WHERE id = ?').bind(owner.id, ad.video.split('/').pop()).run();
         if (oldVid && oldVid !== ad.video) await dropVideo(db, oldVid);
         const { results: old } = await db.prepare('SELECT id FROM media WHERE ad_id = ?').bind(row.id).all();
         await dropMedia(db, old.filter((o) => !keep.includes(o.id)).map((o) => o.id));
         delete ad.id; delete ad.owner; delete ad.t; delete ad.status; delete ad.sample;
-        ad.seller = me.name; ad.phone = fmtPhone(me.phone);
-        if (me.shop) ad.shop = adShop(me.shop); else delete ad.shop;
+        const note = mod ? String(b.note || '').trim().slice(0, 300) : '';
+        delete ad.modNote;
+        // le nom, le numéro et la boutique restent toujours ceux du vendeur
+        ad.seller = owner.name; ad.phone = fmtPhone(owner.phone);
+        if (owner.shop) ad.shop = adShop(owner.shop); else delete ad.shop;
+        if (mod && before.contacts) ad.contacts = before.contacts;
         ad.edited = Date.now();
+        if (mod) ad.modAt = ad.edited;
         await db.prepare('UPDATE ads SET data = ? WHERE id = ?').bind(JSON.stringify(ad), row.id).run();
-        return json({ ad: adOut({ ...row, data: JSON.stringify(ad) }) });
+        if (mod) {
+          const changed = modChanges(before, ad);
+          if (changed.length || note) await modNotify(db, me, row, ad, changed, note);
+        }
+        return json({ ad: adOut({ ...row, data: JSON.stringify(ad) }), notified: mod });
       }
       if (parts[2] === 'bump' && method === 'POST' && row.user_id === me.id) {
         const a = JSON.parse(row.data), last = a.bumpedAt || row.created, wait = 7 * 86400000;
