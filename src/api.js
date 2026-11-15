@@ -211,7 +211,7 @@ async function createAd(db, owner, ad, uploaderId, claim) {
       // photos déjà envoyées (dès leur ajout, ou découpées par l'agent recruteur) : on les rattache à l'annonce et au vendeur
       if (!claim) return null;
       const ok = Array.isArray(claim) ? claim : [uploaderId];
-      const own = await db.prepare('SELECT id, user_id FROM media WHERE id = ? AND ad_id IS NULL').bind(m[1]).first();
+      const own = await db.prepare("SELECT id, user_id FROM media WHERE id = ? AND (ad_id IS NULL OR ad_id = 'tmp')").bind(m[1]).first();
       if (!own || !ok.includes(own.user_id)) return null;
       await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(id, owner.id, m[1]).run();
       return p;
@@ -270,6 +270,25 @@ function prospectOut(r) {
     photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, ownerId: r.owner_id || '', ownerName: r.owner_name || '' };
 }
 
+// Nettoyage de nuit (tâche planifiée Cloudflare, voir wrangler.jsonc) : photos envoyées à l'avance
+// pour une annonce jamais publiée (dépôt abandonné), plus vieilles que 2 jours.
+// Les photos de profil, de la messagerie et de l'agent recruteur ne sont jamais concernées.
+export async function cleanupTmp(env) {
+  const db = env.DB;
+  if (!db) return 0;
+  R2 = env.MEDIA || null;
+  await ensureSchema(db);
+  let total = 0;
+  for (let round = 0; round < 10; round++) {
+    const { results } = await db.prepare("SELECT id FROM media WHERE ad_id = 'tmp' AND created < ? LIMIT 500").bind(Date.now() - 2 * 86400000).all();
+    if (!results.length) break;
+    const ids = results.map((r) => r.id);
+    for (let i = 0; i < ids.length; i += 50) await dropMedia(db, ids.slice(i, i + 50));
+    total += ids.length;
+  }
+  return total;
+}
+
 export async function onRequest(ctx) {
   const { request: req, env } = ctx;
   const db = env.DB;
@@ -281,7 +300,7 @@ export async function onRequest(ctx) {
   const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
   const method = req.method;
   try {
-    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-photos' });
+    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-nettoyage' });
 
     // ---------- Médias (photos, vocal) ----------
     if (parts[0] === 'media' && parts[1] && method === 'GET') {
@@ -714,7 +733,7 @@ export async function onRequest(ctx) {
           if (!own) return null;
           if (own.ad_id === row.id) return p;
           // photo envoyée à l'avance par celui qui modifie (vendeur, admin ou recruteur)
-          if (own.ad_id == null && own.user_id === me.id) { await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(row.id, owner.id, own.id).run(); return p; }
+          if ((own.ad_id == null || own.ad_id === 'tmp') && own.user_id === me.id) { await db.prepare('UPDATE media SET ad_id = ?, user_id = ? WHERE id = ?').bind(row.id, owner.id, own.id).run(); return p; }
           return null;
         }))).filter(Boolean);
         photos.forEach((u) => keep.push(u.split('/').pop()));
@@ -991,11 +1010,12 @@ export async function onRequest(ctx) {
     // ---------- Messagerie ----------
     // Envoi d'une photo dès qu'elle est ajoutée au formulaire (la publication est ensuite presque instantanée)
     if (parts[0] === 'media' && !parts[1] && method === 'POST') {
-      const n = await db.prepare('SELECT COUNT(*) AS n FROM media WHERE user_id = ? AND ad_id IS NULL AND created > ?').bind(me.id, Date.now() - 86400000).first();
+      const n = await db.prepare("SELECT COUNT(*) AS n FROM media WHERE user_id = ? AND ad_id = 'tmp' AND created > ?").bind(me.id, Date.now() - 86400000).first();
       if (n && n.n >= 300) return fail('limit', 429);
       const b = await readBody(req);
       if (!/^data:image\//.test(String(b.img || ''))) return fail('bad_image');
-      const url = await storeMedia(db, me.id, null, b.img, 1500000);
+      // ad_id = 'tmp' : photo en attente de publication (supprimée par le nettoyage de nuit si l'annonce n'est jamais publiée)
+      const url = await storeMedia(db, me.id, 'tmp', b.img, 1500000);
       if (!url) return fail('bad_image');
       return json({ url });
     }

@@ -1,6 +1,6 @@
 // Point d'entrée Cloudflare Worker : /api/* → serveur Bi3li, le reste → fichiers du dossier public/.
 // Pour un lien d'annonce (/?annonce=ID), on ajoute l'aperçu (photo, titre, prix) affiché par WhatsApp.
-import { onRequest } from './api.js';
+import { onRequest, cleanupTmp } from './api.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -50,6 +50,10 @@ async function withShopPreview(request, env, url, slug) {
 }
 
 export default {
+  // chaque nuit : suppression des photos de dépôts abandonnés (voir cleanupTmp)
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(cleanupTmp(env).catch(() => 0));
+  },
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/')) return onRequest({ request, env, ctx });

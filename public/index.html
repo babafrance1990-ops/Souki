@@ -4049,8 +4049,8 @@ function withVideo(ad){
 var UPL=typeof Map!=='undefined'?new Map():null;
 function upPhoto(u){
   if(!UPL||!/^data:image\//.test(u||'')||!S.user||!TOKEN)return null;
-  var o=UPL.get(u);if(o&&(o.url||o.p))return o;
-  o={};UPL.set(u,o);
+  var o=UPL.get(u);if(o&&(o.p||(o.url&&Date.now()-o.at<86400000)))return o;
+  o={at:Date.now()};UPL.set(u,o);
   o.p=api('POST','media',{img:u}).then(function(r){if(!r||!r.url)throw new Error('up');o.url=r.url;o.p=null;return r.url;},function(e){o.p=null;throw e;});
   o.p.catch(function(){});return o;}
 function photosReady(ad){
