@@ -2746,6 +2746,7 @@ V.post=function(){
      '<div class="meta" id="phint" style="font-weight:700;color:var(--brand)">'+esc(priceHint(d))+'</div><div id="pwarn">'+priceWarnHTML(d)+'</div>'+chk('nego',t('nego'))+'</div>'+
      (S.prefilled&&!S.editId?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><span>'+svg(I.check,18,2.5)+'</span><p style="flex:1;margin:0">'+t('prefilled')+'</p></div>':'')+
      '<div class="field"><label for="fcity">'+t('city')+'</label><select id="fcity" class="inp" data-f="city">'+cityOpts+'</select></div>'+
+     '<div class="field"><label for="fhood">'+t('hood')+O+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div>'+
      '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="legend" style="margin-bottom:4px">'+t('contact')+'</legend>'+
      (S.user&&S.user.phone?'<div class="meta" style="margin-bottom:4px">'+t('contactAt')+' <b dir="ltr" style="color:var(--fg)">'+esc(String(S.user.phone).replace(/(\d{2})(?=\d)/g,'$1 '))+'</b></div>':'')+
      chk('wa','WhatsApp')+chk('call',t('call'))+chk('msg',t('message'))+'</fieldset>'+
@@ -2753,7 +2754,6 @@ V.post=function(){
      '<div class="field"><div class="legend" style="display:flex;gap:6px;align-items:center">'+svg(I.eye||'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',18)+t('pvSee')+'</div>'+pv+'</div>'+
      '<details id="moredet" class="detmore"'+(S.detOpen?' open':'')+'><summary>'+svg(I.plus||'<path d="M12 5v14M5 12h14"/>',18)+t('detMore')+'</summary><p class="meta" style="margin:0">'+t('detWhy')+'</p>'+
      '<div id="more" class="more"><div id="catmore"></div>'+
-     '<div class="field"><label for="fhood">'+t('hood')+O+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div>'+
      '<div class="field"><label for="fnear">'+t('nearLbl')+O+'</label><input id="fnear" class="inp" data-f="near" maxlength="50" value="'+esc(d.near)+'" placeholder="'+t('nearPh')+'"></div>'+
      (d.cat&&d.cat!=='immo'?sellerBlock(d,e):'')+
      '</div></details>')+
