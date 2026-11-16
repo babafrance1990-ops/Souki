@@ -2743,7 +2743,7 @@ V.post=function(){
       :'<button type="button" class="implink" data-a="goimport">'+svg(IMP_TXT_ICO,18)+'<span>'+t('impLinkQ')+' <u>'+t('impLinkA')+'</u></span></button>'))+
      '<div id="catf">'+(d.cat==='serv'?servFields(d,e):'')+(d.cat==='covoit'?covoitFields(d,e):'')+(d.cat==='auto'?vehFields(d,e):'')+(d.cat==='immo'?estateFields(d,e):'')+(d.cat==='tel'?phoneFields(d,e):'')+(isMM(d.cat)?multiFields(d,e):'')+(d.cat==='maison'||d.cat==='menager'?homeFields(d,e):'')+(d.cat==='beaute'?beautyFields(d,e):'')+(d.cat==='equip'?equipFields(d,e):'')+(d.cat==='alim'?alimFields(d,e):'')+(d.cat==='mode'?modeFields(d,e):'')+(d.cat==='fam'?famFields(d,e):'')+(d.cat==='job'?jobFields(d,e):'')+(d.cat==='anim'?animFields(d,e):'')+'</div>')+
    step(2,'<div class="field"><label for="ftitle">'+t('title')+O+'</label><input id="ftitle" class="inp" data-f="title" maxlength="70" value="'+esc(d.title===d._autoT?'':d.title)+'" placeholder="'+esc(titlePh(d))+'"'+(e.title?' aria-invalid="true"':'')+'>'+(e.title?'<div class="err">'+t('errTitle')+'</div>':'')+(d.cat&&autoTitle(d)?'<div class="meta">'+esc(t('titleAuto').replace('{x}',autoTitle(d)))+'</div>':'')+'</div>'+
-     '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div>'+(d.cat==='immo'?'<div class="meta" style="font-weight:700;color:var(--brand)">'+t('ph3Hint')+'</div>':'')+'<div class="photos">'+ph+add+'</div>'+(e.photos?'<div class="err">'+t('errPh3')+'</div>':'')+'<div class="meta">'+t('compress')+'</div></div>'+
+     '<div class="field"><div class="legend">'+t('photos')+' <span class="meta" style="font-weight:400">'+t('upTo')+'</span></div>'+(d.cat==='immo'?'<div class="meta" style="font-weight:700;color:var(--brand)">'+t('ph3Hint')+'</div>':'')+'<div class="photos">'+ph+add+'</div>'+(d.cat==='auto'&&d.photos.length?'<button class="btn small" data-a="plate" style="align-self:flex-start;margin-top:8px">'+svg(I.shield||I.eye||I.cam,16)+rt('plBtn')+'</button>':'')+(e.photos?'<div class="err">'+t('errPh3')+'</div>':'')+'<div class="meta">'+t('compress')+'</div></div>'+
      '<div class="field"><label for="fdesc">'+t('desc')+O+'</label><textarea id="fdesc" class="inp" rows="3" data-f="desc" maxlength="1000" placeholder="'+esc(descPh(d))+'">'+esc(d.desc)+'</textarea><div class="meta">'+t('descVoice')+'</div></div>'+
      '<details id="meddet" class="detmore"'+((S.medOpen||d.video||d.voice||S.vidUrl||S.vidBusy!=null||S.rec)?' open':'')+'><summary>'+svg(I.plus||'<path d="M12 5v14M5 12h14"/>',18)+t('medMore')+'</summary>'+
      videoField(d)+'<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div></details>')+
@@ -4406,7 +4406,7 @@ app.addEventListener('input',function(e){
 var RX={fr:{
   rcT:'Recruter des vendeurs',rcOpen:'Recruter des vendeurs (agent IA)',rcIntro:'Trouvez une annonce sur Facebook, WhatsApp ou TikTok, faites une capture d’écran : l’agent prépare tout. Vous envoyez le message vous-même, puis vous publiez avec l’accord du vendeur.',
   rcNew:'Nouveau vendeur',rcShot:'Capture d’écran de l’annonce',rcShotBtn:'Choisir la capture',rcReading:'L’agent lit la capture…',rcOrText:'… ou collez le texte de l’annonce',rcRead:'Lire le texte',
-  rcPhone:'Numéro du vendeur (8 chiffres)',rcName:'Nom du vendeur',rcSrc:'Trouvé sur',rcNote:'Note (groupe, lien…)',rcSave:'Enregistrer le vendeur',rcNoWa:'Pas de WhatsApp',rcNoWaTag:'⚠ Pas de WhatsApp : contacter par SMS ou appel',rcNoWaOk:'Noté : utilisez le SMS ou l’appel',rcWaBack:'Il a WhatsApp',rcCall:'Appeler',rcSendCredsSms:'Envoyer ses accès par SMS',rcMe:'Moi',rcTeam:'Équipe',rcTeamRow:'{t} vendeurs · {d} messages aujourd’hui · {k} d’accord · {p} publiés',rcTeamHelp:'Pour ajouter un recruteur : Administration → Utilisateurs → « Nommer recruteur ».',rcBy:'Recruté par {n}',rcDupOther:'Ce vendeur est déjà suivi par un autre membre de l’équipe.',rcRoleSet:'Nommer recruteur',rcRoleOn:'Recruteur',rcRoleOk:'Il est maintenant recruteur',rcRoleOff:'Il n’est plus recruteur',rcEditHint:'vous pouvez corriger',rcDesc:'Description',rcEdit:'Modifier',rcEdSave:'Enregistrer',rcEdOk:'Modifications enregistrées',rcPhotos:'Photos trouvées (sans le texte) — touchez × pour en retirer une',rcNoPhoto:'Aucune photo trouvée dans la capture : vous les ajouterez dans le formulaire.',rcFound:'Annonce trouvée',
+  rcPhone:'Numéro du vendeur (8 chiffres)',rcName:'Nom du vendeur',rcSrc:'Trouvé sur',rcNote:'Note (groupe, lien…)',rcSave:'Enregistrer le vendeur',plBtn:'Cacher les plaques (automatique)',plTitle:'Cacher la plaque — photo {i}/{n}',plFound:'Plaque trouvée (cadre rouge). Si ce n’est pas la plaque, touchez la plaque sur la photo pour déplacer le cadre.',plNone:'Plaque non trouvée. Touchez la plaque sur la photo, ou appuyez sur « Pas de plaque ».',plSkip:'Pas de plaque',plApply:'Flouter',plClose:'Fermer',plDone:'Plaque cachée sur {n} photo(s)',rcNoWa:'Pas de WhatsApp',rcNoWaTag:'⚠ Pas de WhatsApp : contacter par SMS ou appel',rcNoWaOk:'Noté : utilisez le SMS ou l’appel',rcWaBack:'Il a WhatsApp',rcCall:'Appeler',rcSendCredsSms:'Envoyer ses accès par SMS',rcMe:'Moi',rcTeam:'Équipe',rcTeamRow:'{t} vendeurs · {d} messages aujourd’hui · {k} d’accord · {p} publiés',rcTeamHelp:'Pour ajouter un recruteur : Administration → Utilisateurs → « Nommer recruteur ».',rcBy:'Recruté par {n}',rcDupOther:'Ce vendeur est déjà suivi par un autre membre de l’équipe.',rcRoleSet:'Nommer recruteur',rcRoleOn:'Recruteur',rcRoleOk:'Il est maintenant recruteur',rcRoleOff:'Il n’est plus recruteur',rcEditHint:'vous pouvez corriger',rcDesc:'Description',rcEdit:'Modifier',rcEdSave:'Enregistrer',rcEdOk:'Modifications enregistrées',rcPhotos:'Photos trouvées (sans le texte) — touchez × pour en retirer une',rcNoPhoto:'Aucune photo trouvée dans la capture : vous les ajouterez dans le formulaire.',rcFound:'Annonce trouvée',
   rcEmpty:'Aucun vendeur pour l’instant. Commencez par une capture d’écran.',rcDup:'Ce numéro est déjà dans la liste ({s}).',rcIsUser:'Déjà inscrit sur Bi3li',
   st_new:'À contacter',st_contacted:'Contacté',st_accepted:'D’accord',st_refused:'Refusé',st_published:'Publié',st_relance:'À relancer',
   f_all:'Tous',rcToday:'Messages envoyés aujourd’hui : {n} / 30',rcTodayTip:'Pour protéger votre numéro WhatsApp, n’envoyez pas plus de 30 messages par jour, et jamais deux fois le même jour à la même personne.',
@@ -4424,7 +4424,7 @@ var RX={fr:{
 ar:{
   rcT:'جلب البائعين',rcOpen:'جلب البائعين (وكيل ذكي)',rcIntro:'ابحث عن إعلان على فيسبوك أو واتساب أو تيك توك، وخذ لقطة شاشة: الوكيل يجهز كل شيء. ترسل الرسالة بنفسك، ثم تنشر بموافقة البائع.',
   rcNew:'بائع جديد',rcShot:'لقطة شاشة للإعلان',rcShotBtn:'اختر اللقطة',rcReading:'الوكيل يقرأ اللقطة…',rcOrText:'… أو الصق نص الإعلان',rcRead:'اقرأ النص',
-  rcPhone:'رقم البائع (8 أرقام)',rcName:'اسم البائع',rcSrc:'وجدته على',rcNote:'ملاحظة (المجموعة، الرابط…)',rcSave:'حفظ البائع',rcNoWa:'ليس عنده واتساب',rcNoWaTag:'⚠ ليس عنده واتساب: تواصل عبر الرسائل القصيرة أو الاتصال',rcNoWaOk:'تم: استعمل الرسالة القصيرة أو الاتصال',rcWaBack:'عنده واتساب',rcCall:'اتصال',rcSendCredsSms:'أرسل له بيانات الدخول برسالة قصيرة',rcMe:'أنا',rcTeam:'الفريق',rcTeamRow:'{t} بائع · {d} رسالة اليوم · {k} موافق · {p} منشور',rcTeamHelp:'لإضافة عضو: الإدارة ← المستخدمون ← «تعيين كجالب بائعين».',rcBy:'جلبه {n}',rcDupOther:'هذا البائع يتابعه عضو آخر في الفريق.',rcRoleSet:'تعيين كجالب بائعين',rcRoleOn:'جالب بائعين',rcRoleOk:'أصبح جالب بائعين',rcRoleOff:'لم يعد جالب بائعين',rcEditHint:'يمكنك التصحيح',rcDesc:'الوصف',rcEdit:'تعديل',rcEdSave:'حفظ',rcEdOk:'تم حفظ التعديلات',rcPhotos:'الصور الموجودة (بدون النص) — اضغط × لحذف صورة',rcNoPhoto:'لم يتم العثور على صور في اللقطة: ستضيفها في الاستمارة.',rcFound:'الإعلان الموجود',
+  rcPhone:'رقم البائع (8 أرقام)',rcName:'اسم البائع',rcSrc:'وجدته على',rcNote:'ملاحظة (المجموعة، الرابط…)',rcSave:'حفظ البائع',plBtn:'إخفاء اللوحات (تلقائي)',plTitle:'إخفاء اللوحة — صورة {i}/{n}',plFound:'تم العثور على اللوحة (الإطار الأحمر). إذا لم تكن هي اللوحة، المس اللوحة في الصورة لتحريك الإطار.',plNone:'لم يتم العثور على اللوحة. المس اللوحة في الصورة، أو اضغط «لا توجد لوحة».',plSkip:'لا توجد لوحة',plApply:'تمويه',plClose:'إغلاق',plDone:'تم إخفاء اللوحة في {n} صورة',rcNoWa:'ليس عنده واتساب',rcNoWaTag:'⚠ ليس عنده واتساب: تواصل عبر الرسائل القصيرة أو الاتصال',rcNoWaOk:'تم: استعمل الرسالة القصيرة أو الاتصال',rcWaBack:'عنده واتساب',rcCall:'اتصال',rcSendCredsSms:'أرسل له بيانات الدخول برسالة قصيرة',rcMe:'أنا',rcTeam:'الفريق',rcTeamRow:'{t} بائع · {d} رسالة اليوم · {k} موافق · {p} منشور',rcTeamHelp:'لإضافة عضو: الإدارة ← المستخدمون ← «تعيين كجالب بائعين».',rcBy:'جلبه {n}',rcDupOther:'هذا البائع يتابعه عضو آخر في الفريق.',rcRoleSet:'تعيين كجالب بائعين',rcRoleOn:'جالب بائعين',rcRoleOk:'أصبح جالب بائعين',rcRoleOff:'لم يعد جالب بائعين',rcEditHint:'يمكنك التصحيح',rcDesc:'الوصف',rcEdit:'تعديل',rcEdSave:'حفظ',rcEdOk:'تم حفظ التعديلات',rcPhotos:'الصور الموجودة (بدون النص) — اضغط × لحذف صورة',rcNoPhoto:'لم يتم العثور على صور في اللقطة: ستضيفها في الاستمارة.',rcFound:'الإعلان الموجود',
   rcEmpty:'لا يوجد بائعون بعد. ابدأ بلقطة شاشة.',rcDup:'هذا الرقم موجود في القائمة ({s}).',rcIsUser:'مسجل في بيعلي',
   st_new:'للتواصل',st_contacted:'تم التواصل',st_accepted:'موافق',st_refused:'رفض',st_published:'تم النشر',st_relance:'للتذكير',
   f_all:'الكل',rcToday:'الرسائل المرسلة اليوم: {n} / 30',rcTodayTip:'لحماية رقم واتساب، لا ترسل أكثر من 30 رسالة في اليوم، ولا ترسل مرتين لنفس الشخص في نفس اليوم.',
@@ -4584,6 +4584,78 @@ function rcWho(cv){var R=S.rc,hh=Math.round(cv.height*0.17),f=Math.min(2,1100/cv
     if(r.seller&&(!F.name.trim()||F._autoName)){F.name=r.seller;F._autoName=true;}
     if(r.group&&(!F.note.trim()||F._autoNote)){F.note=(S.lang==='ar'?'المجموعة: ':'Groupe : ')+r.group;F._autoNote=true;}
     if(S.screen==='recruit')render(true);}).catch(function(){});}
+/* Détection de plaque d'immatriculation (sans IA) : rectangle clair, allongé, rempli de caractères sombres serrés.
+   Renvoie {x,y,w,h} en proportions de l'image (0..1), ou null. */
+function plateFind(img){
+  var W0=img.naturalWidth||img.width,H0=img.naturalHeight||img.height,sc=Math.min(1,480/Math.max(W0,H0));
+  var w=Math.max(8,Math.round(W0*sc)),h=Math.max(8,Math.round(H0*sc)),c=document.createElement('canvas');c.width=w;c.height=h;
+  var x=c.getContext('2d');x.drawImage(img,0,0,w,h);var D=x.getImageData(0,0,w,h).data,N=w*h;
+  var G=new Float32Array(N),S=new Float32Array(N);
+  for(var i=0;i<N;i++){var r=D[i*4],g=D[i*4+1],b=D[i*4+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);G[i]=0.299*r+0.587*g+0.114*b;S[i]=mx-mn;}
+  /* images intégrales : bords verticaux (traits des caractères), bords horizontaux, luminosité et luminosité² (contraste) */
+  var W1=w+1,L=W1*(h+1),IE=new Float64Array(L),IH=new Float64Array(L),IG=new Float64Array(L),IQ=new Float64Array(L),IS=new Float64Array(L);
+  for(var y=0;y<h;y++){var re=0,rh=0,rg=0,rq=0,rs=0;for(var xx=0;xx<w;xx++){var k=y*w+xx,gv=xx+1<w?Math.abs(G[k+1]-G[k]):0,gh=y+1<h?Math.abs(G[k+w]-G[k]):0;
+    re+=gv>24?1:0;rh+=gh>24?1:0;rg+=G[k];rq+=G[k]*G[k];rs+=S[k];
+    var o=(y+1)*W1+xx+1;IE[o]=IE[o-W1]+re;IH[o]=IH[o-W1]+rh;IG[o]=IG[o-W1]+rg;IQ[o]=IQ[o-W1]+rq;IS[o]=IS[o-W1]+rs;}}
+  function sum(I,x0,y0,x1,y1){return I[y1*W1+x1]-I[y0*W1+x1]-I[y1*W1+x0]+I[y0*W1+x0];}
+  var best=null,bs=0,step=Math.max(2,Math.round(w/160));
+  for(var pw=Math.round(w*0.08);pw<=Math.round(w*0.42);pw=Math.round(pw*1.15)+1){
+    [3,3.8,4.6,5.4,6.3].forEach(function(ar){var ph=Math.max(6,Math.round(pw/ar));if(ph>h*0.3)return;
+      for(var y0=Math.round(h*0.12);y0+ph<=h;y0+=step){for(var x0=0;x0+pw<=w;x0+=step){
+        var A=pw*ph,x1=x0+pw,y1=y0+ph;
+        var e=sum(IE,x0,y0,x1,y1)/A;if(e<0.12)continue;
+        var eh=sum(IH,x0,y0,x1,y1)/A;if(e<eh*0.7)continue;
+        var mu=sum(IG,x0,y0,x1,y1)/A,sd=Math.sqrt(Math.max(0,sum(IQ,x0,y0,x1,y1)/A-mu*mu));if(sd<28)continue;
+        var sat=sum(IS,x0,y0,x1,y1)/A;if(sat>90)continue;
+        /* le contour autour de la plaque est plus calme que l'intérieur */
+        var m=Math.max(2,Math.round(ph*0.6)),X0=Math.max(0,x0-m),Y0=Math.max(0,y0-m),X1=Math.min(w,x1+m),Y1=Math.min(h,y1+m),Ar=(X1-X0)*(Y1-Y0)-A;
+        var eo=Ar>0?(sum(IE,X0,Y0,X1,Y1)-sum(IE,x0,y0,x1,y1))/Ar:0;if(eo>e*0.8)continue;
+        var sc2=e*Math.min(1,sd/60)*(1-eo/e)*Math.sqrt(A/(w*h));
+        if(sc2>bs){bs=sc2;best=[x0,y0,pw,ph];}
+      }}});
+  }
+  if(!best||bs<0.006)return null;
+  /* marge pour couvrir tout le cadre de la plaque */
+  var mg=0.12,bx=best[0]-best[2]*mg,by=best[1]-best[3]*mg*2,bw=best[2]*(1+2*mg),bh=best[3]*(1+4*mg);
+  return {x:Math.max(0,bx/w),y:Math.max(0,by/h),w:Math.min(1,bw/w),h:Math.min(1,bh/h),score:bs};
+}
+/* flou par grosses mosaïques (impossible à relire) */
+function plateBlur(img,box){
+  var W0=img.naturalWidth||img.width,H0=img.naturalHeight||img.height,c=document.createElement('canvas');c.width=W0;c.height=H0;var x=c.getContext('2d');x.drawImage(img,0,0);
+  var bx=Math.round(box.x*W0),by=Math.round(box.y*H0),bw=Math.max(4,Math.round(box.w*W0)),bh=Math.max(4,Math.round(box.h*H0));
+  bw=Math.min(bw,W0-bx);bh=Math.min(bh,H0-by);
+  var t=document.createElement('canvas'),k=Math.max(3,Math.round(bw/10));t.width=Math.max(1,Math.round(bw/k));t.height=Math.max(1,Math.round(bh/k));
+  var tx=t.getContext('2d');tx.drawImage(c,bx,by,bw,bh,0,0,t.width,t.height);
+  x.imageSmoothingEnabled=false;x.drawImage(t,0,0,t.width,t.height,bx,by,bw,bh);x.imageSmoothingEnabled=true;
+  return c.toDataURL('image/jpeg',0.8);
+}
+
+/* Option « Cacher les plaques » : détection automatique, vérification photo par photo, flou en mosaïque */
+function plateStart(){var d=S.draft;if(!d||!d.photos.length)return;var list=d.photos.map(function(u,i){return i;}),k=0,done=0,box=null,img=null;
+  var ov=document.createElement('div');ov.dir=S.lang==='ar'?'rtl':'ltr';ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.94);color:#fff;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px;overflow:auto;font:inherit';
+  document.body.appendChild(ov);
+  function close(){ov.remove();render(true);if(done)toast(rt('plDone').replace('{n}',done));}
+  function next(){if(k>=list.length){close();return;}var i=list[k],src=d.photos[i];img=new Image();img.onload=function(){try{box=plateFind(img);}catch(e){box=null;}draw();};img.onerror=function(){k++;next();};img.src=src;}
+  function draw(){var i=list[k];
+    ov.innerHTML='<b style="font-size:18px">'+rt('plTitle').replace('{i}',k+1).replace('{n}',list.length)+'</b>'+
+      '<p style="margin:0;text-align:center;max-width:420px;line-height:1.4;color:'+(box?'#9fe3b5':'#ffd27a')+'">'+(box?rt('plFound'):rt('plNone'))+'</p>'+
+      '<div id="plw" style="position:relative;max-width:100%;touch-action:manipulation;cursor:crosshair"><img src="'+d.photos[i]+'" alt="" style="display:block;max-width:min(92vw,560px);max-height:58vh;border-radius:10px">'+
+      (box?'<div style="position:absolute;left:'+box.x*100+'%;top:'+box.y*100+'%;width:'+box.w*100+'%;height:'+box.h*100+'%;border:3px solid #ff3b30;background:rgba(255,59,48,.25);border-radius:4px;pointer-events:none"></div>':'')+'</div>'+
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">'+
+      (box?'<button class="btn small" data-p="small" aria-label="−">−</button><button class="btn small" data-p="big" aria-label="+">+</button>':'')+
+      '<button class="btn small" data-p="skip">'+rt('plSkip')+'</button>'+
+      (box?'<button class="btn small primary" data-p="apply">'+rt('plApply')+'</button>':'')+
+      '<button class="btn small" data-p="close">'+rt('plClose')+'</button></div>';}
+  ov.addEventListener('click',function(e){var b=e.target.closest('[data-p]'),w=e.target.closest('#plw');
+    if(b){var a=b.getAttribute('data-p');
+      if(a==='close'){close();return;}
+      if(a==='skip'){k++;next();return;}
+      if(a==='small'||a==='big'){var f=a==='big'?1.18:0.85,cx=box.x+box.w/2,cy=box.y+box.h/2;box.w=Math.min(1,box.w*f);box.h=Math.min(1,box.h*f);box.x=Math.max(0,Math.min(1-box.w,cx-box.w/2));box.y=Math.max(0,Math.min(1-box.h,cy-box.h/2));draw();return;}
+      if(a==='apply'){var i=list[k],u;try{u=plateBlur(img,box);}catch(er){toast(t('netErr'));return;}d.photos[i]=u;try{upPhoto(u);}catch(er){}done++;k++;next();return;}
+      return;}
+    if(w){var r=w.getBoundingClientRect(),cx=(e.clientX-r.left)/r.width,cy=(e.clientY-r.top)/r.height;if(!box)box={w:0.3,h:0.09};
+      box.x=Math.max(0,Math.min(1-box.w,cx-box.w/2));box.y=Math.max(0,Math.min(1-box.h,cy-box.h/2));draw();}});
+  next();}
 function rcShot(file){if(!file||!/^image\//.test(file.type)||!S.rc)return;var R=S.rc;if(R.busy)return;
   var rd=new FileReader();rd.onload=function(){var img=new Image();img.onload=function(){
     var mx=1400,sc=Math.min(1,mx/Math.max(img.width,img.height)),cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);
@@ -4625,6 +4697,7 @@ function rcBanner(){var d=S.draft;if(S.screen!=='post'||!d||!d._rid)return;var s
   sc.insertBefore(b,sc.firstChild);}
 app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(!el)return;var a=el.getAttribute('data-a'),id=el.getAttribute('data-id');
   if(a==='go'&&el.getAttribute('data-s')==='recruit'){if(S.rc){S.rc.list=null;S.rc.loading=false;}return;}
+  if(a==='plate'){e.stopImmediatePropagation();plateStart();return;}
   if(a.indexOf('rc')!==0)return;var R=S.rc;e.stopImmediatePropagation();
   var p=R&&R.list?R.list.filter(function(x){return x.id===id;})[0]:null;
   switch(a){
