@@ -326,7 +326,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-badge', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-code-oublie', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -448,7 +448,7 @@ export async function onRequest(ctx) {
           await waLog(db, 'OK ' + row.purpose);
           await db.prepare('UPDATE wa_codes SET done = 1 WHERE code = ?').bind(row.code).run();
           await db.prepare('UPDATE users SET verified = 1 WHERE phone = ?').bind(from).run();
-          await waReply(env, m.from, row.purpose === 'login' ? '✅ C’est bon ! Retournez dans Bi3li, vous êtes connecté.' : '✅ Votre numéro est vérifié. Merci !');
+          await waReply(env, m.from, row.purpose === 'reset' ? '✅ تم! ارجع إلى بيعلي واختر رمزك السري الجديد.\n✅ C’est bon ! Retournez dans Bi3li pour choisir votre nouveau code.' : row.purpose === 'login' ? '✅ C’est bon ! Retournez dans Bi3li, vous êtes connecté.' : '✅ Votre numéro est vérifié. Merci !');
         }
         if (!nMsg) await waLog(db, 'notification sans message (' + ((((body.entry || [])[0] || {}).changes || [])[0] || {}).field + ')');
         return json({ ok: true });
@@ -458,7 +458,7 @@ export async function onRequest(ctx) {
       if (!waOn(env)) return fail('wa_off', 503);
       const b = await readBody(req);
       const viewer = await currentUser(db, req);
-      const purpose = b.purpose === 'login' ? 'login' : 'verify';
+      const purpose = b.purpose === 'login' || b.purpose === 'reset' ? b.purpose : 'verify';
       let phone = '';
       if (purpose === 'verify') { if (!viewer) return fail('auth', 401); phone = viewer.phone; }
       else {
@@ -483,7 +483,7 @@ export async function onRequest(ctx) {
       if (!row.done) return json({ done: false, expired: row.created < Date.now() - 15 * 60000 });
       const u = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(row.phone).first();
       if (!u) return fail('nouser', 404);
-      if (row.purpose === 'login') {
+      if (row.purpose === 'login' || row.purpose === 'reset') {
         await db.prepare('DELETE FROM wa_codes WHERE code = ?').bind(row.code).run();
         await db.prepare('UPDATE users SET fails = 0, lock_until = 0, lockn = 0 WHERE id = ?').bind(u.id).run();
         return json({ done: true, token: await newSession(db, u.id), user: publicUser(u, env) });
