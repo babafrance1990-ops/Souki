@@ -464,8 +464,8 @@ export async function onRequest(ctx) {
           if (!row) { await waLog(db, 'code inconnu, déjà utilisé ou expiré'); await waReply(env, m.from, '⌛ هذا الرمز انتهت صلاحيته أو استُعمل. أعد المحاولة من تطبيق بيعلي.\n⌛ Ce code a expiré ou a déjà été utilisé. Recommencez depuis Bi3li.'); continue; }
           if (row.phone !== from) {
             await waLog(db, 'numéro différent : envoyé par …' + from.slice(-2) + ', attendu …' + String(row.phone).slice(-2));
-            const want = String(row.phone).slice(-4).replace(/(\d{2})(\d{2})/, '$1 $2');
-            await waReply(env, m.from, '⚠️ هذا الرمز خاص بالرقم …' + want + '، لكنك ترسل من رقم آخر.\nافتح واتساب الخاص بالرقم …' + want + ' (واتساب أو واتساب للأعمال) وأعد إرسال الرسالة.\n\n⚠️ Ce code est pour le numéro …' + want + ', mais vous écrivez depuis un autre numéro. Ouvrez le WhatsApp de ce numéro (WhatsApp ou WhatsApp Business) et renvoyez le message.');
+            const want = '\u2066' + String(row.phone).replace(/^(\d{2})(\d{2})(\d{2})(\d{2})$/, '•• •• $3 $4') + '\u2069';
+            await waReply(env, m.from, '⚠️ هذا الرمز خاص بالرقم ' + want + '، لكنك ترسل من رقم آخر.\nافتح واتساب الخاص بالرقم ' + want + ' (واتساب أو واتساب للأعمال) وأعد إرسال الرسالة.\n\n\u200E⚠️ Ce code est pour le numéro ' + want + ', mais vous écrivez depuis un autre numéro. Ouvrez le WhatsApp de ce numéro (WhatsApp ou WhatsApp Business) et renvoyez le message.');
             continue;
           }
           await waLog(db, 'OK ' + row.purpose);
