@@ -86,6 +86,7 @@ async function waCheck(env) {
   return out;
 }
 // Code envoyé PAR Bi3li sur le WhatsApp du client (modèle « authentification » approuvé par Meta, nom dans WA_OTP_TEMPLATE)
+const UNVERIFIED_MAX = 3;
 function otpOn(env) { return !!(env.WA_TOKEN && env.WA_PHONE_ID && env.WA_OTP_TEMPLATE); }
 async function waSendOtp(env, phone, code, lang) {
   const send = async (lc) => {
@@ -344,7 +345,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-messages-connexion', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-limite-3', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -803,6 +804,12 @@ export async function onRequest(ctx) {
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
         const n = await db.prepare('SELECT COUNT(*) AS n FROM ads WHERE user_id = ? AND created > ?').bind(me.id, Date.now() - 86400000).first();
         if (n && n.n >= 60) return fail('too_many', 429);
+        // Numéro non vérifié : 3 annonces en ligne au maximum (l'équipe et les boutiques vérifiées ne sont pas limitées)
+        let shopOk = false; try { shopOk = !!(me.shop && JSON.parse(me.shop).verified); } catch (e) { /* ignore */ }
+        if (!me.verified && !shopOk && !isRecruiter(env, me)) {
+          const on = await db.prepare("SELECT COUNT(*) AS n FROM ads WHERE user_id = ? AND status = 'online'").bind(me.id).first();
+          if (on && on.n >= UNVERIFIED_MAX) return json({ error: 'verify_needed', limit: UNVERIFIED_MAX }, 403);
+        }
         return json({ ad: await createAd(db, me, ad, me.id, [me.id]) });
       }
       const row = parts[1] ? await db.prepare('SELECT * FROM ads WHERE id = ?').bind(parts[1]).first() : null;
