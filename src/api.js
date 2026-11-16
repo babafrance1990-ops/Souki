@@ -250,7 +250,9 @@ async function createAd(db, owner, ad, uploaderId, claim) {
   if (owner.shop) ad.shop = adShop(owner.shop); else delete ad.shop;
   const created = Date.now();
   await db.prepare('INSERT INTO ads (id, user_id, data, status, created) VALUES (?, ?, ?, ?, ?)').bind(id, owner.id, JSON.stringify(ad), 'online', created).run();
-  return adOut({ id, user_id: owner.id, data: JSON.stringify(ad), status: 'online', created });
+  const out = adOut({ id, user_id: owner.id, data: JSON.stringify(ad), status: 'online', created });
+  if (owner.verified) out.sv = 1;
+  return out;
 }
 async function newPin() {
   let pass = '';
@@ -324,7 +326,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-wa-diag2', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-badge', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -562,7 +564,7 @@ export async function onRequest(ctx) {
         .bind(u.id, u.id, u.id, u.id, u.id).first();
       const out = { id: u.id, name: u.name, city: u.city || '', since: u.created, lastSeen: u.last_seen || 0, avatar: u.avatar || '',
         shop: u.shop ? Object.assign(JSON.parse(u.shop), { wa: JSON.parse(u.shop).wa || u.phone }) : null, followers: agg.followers || 0, rating: { n: agg.nrev || 0, avg: agg.avg ? Math.round(agg.avg * 10) / 10 : 0 },
-        reactive: (agg.asked || 0) >= 3 && (agg.answered || 0) / agg.asked >= 0.8, following: false, canReview: false, myReview: null };
+        reactive: (agg.asked || 0) >= 3 && (agg.answered || 0) / agg.asked >= 0.8, verified: !!u.verified, following: false, canReview: false, myReview: null };
       if (viewer && viewer.id !== u.id) {
         out.following = !!(await db.prepare('SELECT 1 AS x FROM follows WHERE follower_id = ? AND target_id = ?').bind(viewer.id, u.id).first());
         out.canReview = !!(await db.prepare(`SELECT 1 AS x FROM convs c WHERE ((c.buyer_id = ? AND c.seller_id = ?) OR (c.buyer_id = ? AND c.seller_id = ?))
@@ -794,7 +796,9 @@ export async function onRequest(ctx) {
           const changed = modChanges(before, ad);
           if (changed.length || note) await modNotify(db, me, row, ad, changed, note);
         }
-        return json({ ad: adOut({ ...row, data: JSON.stringify(ad) }), notified: mod });
+        const outAd = adOut({ ...row, data: JSON.stringify(ad) });
+        if (owner.verified) outAd.sv = 1;
+        return json({ ad: outAd, notified: mod });
       }
       if (parts[2] === 'bump' && method === 'POST' && row.user_id === me.id) {
         const a = JSON.parse(row.data), last = a.bumpedAt || row.created, wait = 7 * 86400000;
