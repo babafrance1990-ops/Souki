@@ -67,6 +67,23 @@ async function waReply(env, to, text) {
 }
 // Témoin de diagnostic : ce que le site a fait des derniers messages reçus de Meta (visible dans /api/health, sans numéro complet)
 async function waLog(db, st) { try { await db.prepare('INSERT INTO wa_log (t, st) VALUES (?, ?)').bind(Date.now(), String(st).slice(0, 80)).run(); await db.prepare('DELETE FROM wa_log WHERE id NOT IN (SELECT id FROM wa_log ORDER BY id DESC LIMIT 20)').run(); } catch (e) { /* ignore */ } }
+// Vérification et réparation de la liaison WhatsApp (appelée par /api/health?check=1, au plus une fois par minute)
+let waCheckAt = 0;
+async function waCheck(env) {
+  if (!env.WA_TOKEN || !env.WA_PHONE_ID) return { err: 'WA_TOKEN ou WA_PHONE_ID manquant' };
+  if (Date.now() - waCheckAt < 60000) return { err: 'patientez 1 minute' };
+  waCheckAt = Date.now();
+  const G = 'https://graph.facebook.com/v25.0/';
+  const h = { authorization: 'Bearer ' + String(env.WA_TOKEN).trim() };
+  const out = {};
+  const get = async (u, init) => { try { const r = await fetch(G + u, { headers: h, ...(init || {}) }); const j = await r.json(); return j.error ? { erreur: j.error.message } : j; } catch (e) { return { erreur: String(e && e.message || e) }; } };
+  out.numero = await get(env.WA_PHONE_ID + '?fields=display_phone_number,verified_name,status,platform_type,code_verification_status,quality_rating,name_status');
+  const waba = String(env.WA_WABA_ID || '1826147895089884');
+  out.abonnement = await get(waba + '/subscribed_apps', { method: 'POST' });
+  out.apps_abonnees = await get(waba + '/subscribed_apps');
+  if (out.apps_abonnees && Array.isArray(out.apps_abonnees.data)) out.apps_abonnees = out.apps_abonnees.data.map((a) => (a.whatsapp_business_api_data || {}).name || (a.whatsapp_business_api_data || {}).id);
+  return out;
+}
 async function waSigOk(env, raw, sig) {
   if (!env.WA_APP_SECRET) return true;
   if (!sig || !sig.startsWith('sha256=')) return false;
@@ -306,7 +323,8 @@ export async function onRequest(ctx) {
     if (parts[0] === 'health' && method === 'GET') {
       let wa = null;
       try { wa = { on: waOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-wa-diag', wa });
+      if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-wa-diag2', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
