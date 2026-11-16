@@ -3,6 +3,7 @@ import { recognise } from './vision.js';
 // Toutes les routes /api/* passent ici.
 
 const SCHEMA = [
+  'CREATE TABLE IF NOT EXISTS wa_log (id INTEGER PRIMARY KEY AUTOINCREMENT, t INTEGER, st TEXT)',
   `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, phone TEXT UNIQUE NOT NULL, name TEXT NOT NULL, city TEXT DEFAULT '', shop TEXT, favs TEXT DEFAULT '[]', pass_hash TEXT NOT NULL, salt TEXT NOT NULL, fails INTEGER DEFAULT 0, lock_until INTEGER DEFAULT 0, created INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id TEXT NOT NULL, created INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS ads (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, data TEXT NOT NULL, status TEXT DEFAULT 'online', created INTEGER NOT NULL)`,
@@ -64,10 +65,12 @@ async function waReply(env, to, text) {
     });
   } catch (e) { /* tant pis */ }
 }
+// Témoin de diagnostic : ce que le site a fait des derniers messages reçus de Meta (visible dans /api/health, sans numéro complet)
+async function waLog(db, st) { try { await db.prepare('INSERT INTO wa_log (t, st) VALUES (?, ?)').bind(Date.now(), String(st).slice(0, 80)).run(); await db.prepare('DELETE FROM wa_log WHERE id NOT IN (SELECT id FROM wa_log ORDER BY id DESC LIMIT 20)').run(); } catch (e) { /* ignore */ } }
 async function waSigOk(env, raw, sig) {
   if (!env.WA_APP_SECRET) return true;
   if (!sig || !sig.startsWith('sha256=')) return false;
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.WA_APP_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(env.WA_APP_SECRET).trim()), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(raw)));
   const hex = [...mac].map((b) => b.toString(16).padStart(2, '0')).join('');
   return sameStr(hex, sig.slice(7));
@@ -300,7 +303,11 @@ export async function onRequest(ctx) {
   const parts = url.pathname.replace(/^\/api\/?/, '').split('/').filter(Boolean);
   const method = req.method;
   try {
-    if (parts[0] === 'health' && method === 'GET') return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-15-nettoyage' });
+    if (parts[0] === 'health' && method === 'GET') {
+      let wa = null;
+      try { wa = { on: waOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-wa-diag', wa });
+    }
 
     // ---------- Médias (photos, vocal) ----------
     if (parts[0] === 'media' && parts[1] && method === 'GET') {
@@ -405,19 +412,25 @@ export async function onRequest(ctx) {
       }
       if (method === 'POST') {
         const raw = await req.text();
-        if (!(await waSigOk(env, raw, req.headers.get('x-hub-signature-256')))) return new Response('bad signature', { status: 401 });
+        if (!(await waSigOk(env, raw, req.headers.get('x-hub-signature-256')))) { await waLog(db, 'signature refusée (WA_APP_SECRET)'); return new Response('bad signature', { status: 401 }); }
         let body = {}; try { body = JSON.parse(raw); } catch (e) { /* vide */ }
+        let nMsg = 0;
         for (const en of body.entry || []) for (const ch of en.changes || []) for (const m of (ch.value && ch.value.messages) || []) {
+          nMsg++;
           const from = String(m.from || '').replace(/\D/g, '').slice(-8);
-          const txt = String((m.text && m.text.body) || (m.button && m.button.text) || '');
+          // chiffres arabes (٠-٩) acceptés aussi
+          const txt = String((m.text && m.text.body) || (m.button && m.button.text) || '').replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/[\u06F0-\u06F9]/g, (d) => String(d.charCodeAt(0) - 0x6F0));
           const mm = txt.match(/(?:code|رمز|الرمز)\D{0,3}(\d{6})/i) || txt.match(/(\d{6})/);
-          if (!mm) { await waReply(env, m.from, 'Bonjour 👋 Pour vérifier votre numéro ou vous connecter, utilisez le bouton WhatsApp dans l’application Bi3li.'); continue; }
+          if (!mm) { await waLog(db, 'message sans code (type ' + (m.type || '?') + ')'); await waReply(env, m.from, 'Bonjour 👋 Pour vérifier votre numéro ou vous connecter, utilisez le bouton WhatsApp dans l’application Bi3li.'); continue; }
           const row = await db.prepare('SELECT * FROM wa_codes WHERE code = ? AND done = 0 AND created > ?').bind(mm[1], Date.now() - 15 * 60000).first();
-          if (!row || row.phone !== from) { await waReply(env, m.from, 'Ce code ne correspond pas à votre numéro ou a expiré. Recommencez depuis l’application.'); continue; }
+          if (!row) { await waLog(db, 'code inconnu, déjà utilisé ou expiré'); await waReply(env, m.from, 'Ce code ne correspond pas à votre numéro ou a expiré. Recommencez depuis l’application.'); continue; }
+          if (row.phone !== from) { await waLog(db, 'numéro différent : envoyé par …' + from.slice(-2) + ', attendu …' + String(row.phone).slice(-2)); await waReply(env, m.from, 'Ce code ne correspond pas à votre numéro ou a expiré. Recommencez depuis l’application.'); continue; }
+          await waLog(db, 'OK ' + row.purpose);
           await db.prepare('UPDATE wa_codes SET done = 1 WHERE code = ?').bind(row.code).run();
           await db.prepare('UPDATE users SET verified = 1 WHERE phone = ?').bind(from).run();
           await waReply(env, m.from, row.purpose === 'login' ? '✅ C’est bon ! Retournez dans Bi3li, vous êtes connecté.' : '✅ Votre numéro est vérifié. Merci !');
         }
+        if (!nMsg) await waLog(db, 'notification sans message (' + ((((body.entry || [])[0] || {}).changes || [])[0] || {}).field + ')');
         return json({ ok: true });
       }
     }
