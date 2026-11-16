@@ -22,7 +22,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS prospects (id TEXT PRIMARY KEY, phone TEXT NOT NULL, name TEXT NOT NULL, src TEXT DEFAULT '', note TEXT DEFAULT '', item TEXT, txt TEXT DEFAULT '', thumb TEXT DEFAULT '', status TEXT DEFAULT 'new', tries INTEGER DEFAULT 0, contacted INTEGER DEFAULT 0, user_id TEXT, ad_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS prospects_phone ON prospects(phone)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`, `ALTER TABLE users ADD COLUMN role TEXT DEFAULT ''`, `ALTER TABLE prospects ADD COLUMN owner_id TEXT`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`, `ALTER TABLE users ADD COLUMN role TEXT DEFAULT ''`, `ALTER TABLE prospects ADD COLUMN owner_id TEXT`, `ALTER TABLE prospects ADD COLUMN nowa INTEGER DEFAULT 0`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -267,7 +267,7 @@ async function modNotify(db, me, row, ad, changed, note) {
 }
 function prospectOut(r) {
   return { id: r.id, phone: r.phone, name: r.name, src: r.src || '', note: r.note || '', item: r.item ? JSON.parse(r.item) : null, txt: r.txt || '', thumb: r.thumb || '',
-    photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, ownerId: r.owner_id || '', ownerName: r.owner_name || '' };
+    photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, nowa: !!r.nowa, ownerId: r.owner_id || '', ownerName: r.owner_name || '' };
 }
 
 // Nettoyage de nuit (tâche planifiée Cloudflare, voir wrangler.jsonc) : photos envoyées à l'avance
@@ -866,10 +866,11 @@ export async function onRequest(ctx) {
           if (b.src !== undefined) f.src = c.src;
           if (b.note !== undefined) f.note = c.note;
           if (b.item !== undefined) f.item = c.item;
+          f.nowa = b.nowa !== undefined ? (b.nowa ? 1 : 0) : (pr.nowa || 0);
           if (b.contacted) { f.tries += 1; f.contacted = now; if (f.status === 'new') f.status = 'contacted'; }
           if (b.status !== undefined && ['new', 'contacted', 'accepted', 'refused', 'published'].includes(b.status) && pr.status !== 'published') f.status = b.status;
-          await db.prepare('UPDATE prospects SET name = ?, phone = ?, src = ?, note = ?, item = ?, status = ?, tries = ?, contacted = ?, updated = ? WHERE id = ?')
-            .bind(f.name, f.phone, f.src, f.note, f.item, f.status, f.tries, f.contacted, now, pr.id).run();
+          await db.prepare('UPDATE prospects SET name = ?, phone = ?, src = ?, note = ?, item = ?, status = ?, tries = ?, contacted = ?, nowa = ?, updated = ? WHERE id = ?')
+            .bind(f.name, f.phone, f.src, f.note, f.item, f.status, f.tries, f.contacted, f.nowa, now, pr.id).run();
           return json({ prospect: prospectOut(await one(pr.id)) });
         }
         if (!parts[3] && method === 'DELETE') {
