@@ -3,6 +3,7 @@ import { recognise } from './vision.js';
 // Toutes les routes /api/* passent ici.
 
 const SCHEMA = [
+  'CREATE TABLE IF NOT EXISTS wa_otp (nonce TEXT PRIMARY KEY, phone TEXT NOT NULL, purpose TEXT NOT NULL, code TEXT NOT NULL, created INTEGER NOT NULL, tries INTEGER DEFAULT 0, done INTEGER DEFAULT 0)',
   'CREATE TABLE IF NOT EXISTS wa_log (id INTEGER PRIMARY KEY AUTOINCREMENT, t INTEGER, st TEXT)',
   `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, phone TEXT UNIQUE NOT NULL, name TEXT NOT NULL, city TEXT DEFAULT '', shop TEXT, favs TEXT DEFAULT '[]', pass_hash TEXT NOT NULL, salt TEXT NOT NULL, fails INTEGER DEFAULT 0, lock_until INTEGER DEFAULT 0, created INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id TEXT NOT NULL, created INTEGER NOT NULL)`,
@@ -83,6 +84,23 @@ async function waCheck(env) {
   out.apps_abonnees = await get(waba + '/subscribed_apps');
   if (out.apps_abonnees && Array.isArray(out.apps_abonnees.data)) out.apps_abonnees = out.apps_abonnees.data.map((a) => (a.whatsapp_business_api_data || {}).name || (a.whatsapp_business_api_data || {}).id);
   return out;
+}
+// Code envoyé PAR Bi3li sur le WhatsApp du client (modèle « authentification » approuvé par Meta, nom dans WA_OTP_TEMPLATE)
+function otpOn(env) { return !!(env.WA_TOKEN && env.WA_PHONE_ID && env.WA_OTP_TEMPLATE); }
+async function waSendOtp(env, phone, code, lang) {
+  const send = async (lc) => {
+    const r = await fetch('https://graph.facebook.com/v25.0/' + env.WA_PHONE_ID + '/messages', {
+      method: 'POST', headers: { authorization: 'Bearer ' + String(env.WA_TOKEN).trim(), 'content-type': 'application/json' },
+      body: JSON.stringify({ messaging_product: 'whatsapp', to: '222' + phone, type: 'template', template: { name: env.WA_OTP_TEMPLATE, language: { code: lc },
+        components: [{ type: 'body', parameters: [{ type: 'text', text: code }] }, { type: 'button', sub_type: 'url', index: '0', parameters: [{ type: 'text', text: code }] }] } }),
+    });
+    const j = await r.json().catch(() => ({}));
+    return j.error ? { err: j.error } : { ok: true };
+  };
+  const langs = lang === 'fr' ? ['fr', 'ar'] : ['ar', 'fr'];
+  let res = await send(langs[0]);
+  if (res.err && res.err.code === 132001) res = await send(langs[1]); // modèle absent dans cette langue
+  return res;
 }
 async function waSigOk(env, raw, sig) {
   if (!env.WA_APP_SECRET) return true;
@@ -324,9 +342,9 @@ export async function onRequest(ctx) {
   try {
     if (parts[0] === 'health' && method === 'GET') {
       let wa = null;
-      try { wa = { on: waOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
+      try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-code-oublie', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-otp', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -454,6 +472,51 @@ export async function onRequest(ctx) {
         return json({ ok: true });
       }
     }
+    if (parts[0] === 'wa' && parts[1] === 'otp' && !parts[2] && method === 'POST') {
+      if (!otpOn(env)) return fail('otp_off', 503);
+      const b = await readBody(req);
+      const viewer = await currentUser(db, req);
+      const purpose = ['login', 'reset'].includes(b.purpose) ? b.purpose : 'verify';
+      let phone = '';
+      if (purpose === 'verify') { if (!viewer) return fail('auth', 401); phone = viewer.phone; }
+      else {
+        phone = String(b.phone || '').replace(/\D/g, '').slice(-8);
+        if (!/^\d{8}$/.test(phone)) return fail('phone');
+        const u = await db.prepare('SELECT id, blocked FROM users WHERE phone = ?').bind(phone).first();
+        if (!u) return fail('nouser', 404);
+        if (u.blocked) return fail('blocked', 403);
+      }
+      const last = await db.prepare('SELECT MAX(created) AS t, COUNT(*) AS n FROM wa_otp WHERE phone = ? AND created > ?').bind(phone, Date.now() - 3600000).first();
+      if (last && last.n >= 5) return fail('too_many', 429);
+      if (last && last.t && Date.now() - last.t < 45000) return fail('wait', 429);
+      const code = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
+      const sent = await waSendOtp(env, phone, code, b.lang);
+      if (!sent.ok) { await waLog(db, 'envoi du code refusé : ' + ((sent.err && (sent.err.error_user_msg || sent.err.message)) || '?')); return fail(sent.err && sent.err.code === 131026 ? 'not_on_wa' : 'wa_send', 502); }
+      const nonce = crypto.randomUUID();
+      await db.prepare('INSERT INTO wa_otp (nonce, phone, purpose, code, created) VALUES (?, ?, ?, ?, ?)').bind(nonce, phone, purpose, code, Date.now()).run();
+      await waLog(db, 'code envoyé (' + purpose + ') à …' + phone.slice(-2));
+      return json({ nonce, phone });
+    }
+    if (parts[0] === 'wa' && parts[1] === 'otp' && parts[2] === 'check' && method === 'POST') {
+      const b = await readBody(req);
+      const row = await db.prepare('SELECT * FROM wa_otp WHERE nonce = ?').bind(String(b.nonce || '')).first();
+      if (!row || row.done) return fail('expired', 410);
+      if (row.created < Date.now() - 10 * 60000) return fail('expired', 410);
+      if (row.tries >= 5) return fail('too_many', 429);
+      const code = String(b.code || '').replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x660)).replace(/\D/g, '');
+      if (!sameStr(code, row.code)) { await db.prepare('UPDATE wa_otp SET tries = tries + 1 WHERE nonce = ?').bind(row.nonce).run(); return fail('badcode', 400); }
+      await db.prepare('UPDATE wa_otp SET done = 1 WHERE nonce = ?').bind(row.nonce).run();
+      await db.prepare('UPDATE users SET verified = 1 WHERE phone = ?').bind(row.phone).run();
+      const u = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(row.phone).first();
+      if (!u) return fail('nouser', 404);
+      if (row.purpose === 'verify') {
+        const viewer = await currentUser(db, req);
+        if (!viewer || viewer.id !== u.id) return fail('auth', 401);
+        return json({ done: true, user: publicUser(u, env) });
+      }
+      await db.prepare('UPDATE users SET fails = 0, lock_until = 0, lockn = 0 WHERE id = ?').bind(u.id).run();
+      return json({ done: true, token: await newSession(db, u.id), user: publicUser(u, env) });
+    }
     if (parts[0] === 'wa' && parts[1] === 'start' && method === 'POST') {
       if (!waOn(env)) return fail('wa_off', 503);
       const b = await readBody(req);
@@ -491,7 +554,7 @@ export async function onRequest(ctx) {
       return json({ done: true, user: publicUser(u, env) });
     }
     if (parts[0] === 'config' && method === 'GET') {
-      return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, ''), admins: adminList(env).length, wa: waOn(env) ? String(env.WA_NUMBER).replace(/\D/g, '') : '' });
+      return json({ support: String(env.SUPPORT_WHATSAPP || '').replace(/\D/g, ''), admins: adminList(env).length, wa: waOn(env) ? String(env.WA_NUMBER).replace(/\D/g, '') : '', otp: otpOn(env) });
     }
 
     // ---------- Recherche par photo (ouverte à tous, 10 par jour et par personne) ----------
