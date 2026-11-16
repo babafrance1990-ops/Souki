@@ -393,6 +393,7 @@ html,body{overflow-x:hidden;max-width:100%}
 @keyframes kbup{from{transform:translateY(40%);opacity:.3}}
 .lgkbhide{display:block;margin:0 auto 2px;border:0;background:none;color:var(--muted);padding:2px 20px;cursor:pointer}
 .pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.lgkb,.pk{touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}.pk.press{background:var(--tint);transform:scale(.96)}
 .pk{height:62px;border:0;border-radius:14px;background:var(--surface);box-shadow:0 1px 0 var(--line),0 1px 3px rgba(0,0,0,.08);color:var(--fg);font:inherit;font-size:28px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .pk small{font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--muted);margin-top:3px}
 .pk:active{background:var(--tint)}.pkdel{background:none;box-shadow:none}
@@ -2958,6 +2959,11 @@ function lgScroll(late){var f=app.querySelector('.lgf.act'),k=app.querySelector(
   if(nx&&nx.classList&&nx.classList.contains('meta'))bottom=Math.max(bottom,nx.getBoundingClientRect().bottom);
   if(bottom>kTop-16)sc.scrollTop+=bottom-kTop+28;else if(fr.top<sr.top+8)sc.scrollTop-=sr.top-fr.top+16;
   if(!late)setTimeout(function(){lgScroll(true);},320);}
+/* Clavier du code : la touche compte dès que le doigt la touche (pas d'attente du « click »,
+   qui se perd quand l'écran se redessine entre deux appuis rapides, ou quand iPhone croit à un double-tap zoom) */
+var pkDownAt=0;
+app.addEventListener('pointerdown',function(e){var k=e.target.closest&&e.target.closest('.pk');if(!k||e.button>0)return;e.preventDefault();pkDownAt=Date.now();
+  var v=k.getAttribute('data-v');pinKey(v);var n=app.querySelector('.pk[data-v="'+v+'"]');if(n){n.classList.add('press');setTimeout(function(){n.classList.remove('press');},120);}});
 function pinKey(k){var L=S.login;if(S.busy)return;setTimeout(lgScroll,0);if(!L.active)L.active=(L.phone||'').length<8?'phone':'pin';
   if(L.active==='phone'){var ph=L.phone||'';
     if(k==='del'){L.phone=ph.slice(0,-1);L.exists=null;L.err='';L.info='';L.pin='';L.pin1='';L.ready='';render(true);return;}
@@ -3956,7 +3962,7 @@ app.addEventListener('click',function(e){
    case 'publish':publish();break;
    case 'logout':api('POST','auth/logout').catch(function(){});clearSession();render();break;
    case 'lmode':break;
-   case 'pk':pinKey(el.getAttribute('data-v'));break;
+   case 'pk':if(Date.now()-pkDownAt<900)break;pinKey(el.getAttribute('data-v'));break;
    case 'wcshow':S.wcShow=!S.wcShow;render(true);break;
    case 'wcpost':S.wcAfter=null;startPost();break;
    case 'wcbrowse':S.wcAfter=null;go('home');break;
