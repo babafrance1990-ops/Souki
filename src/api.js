@@ -24,7 +24,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS prospects (id TEXT PRIMARY KEY, phone TEXT NOT NULL, name TEXT NOT NULL, src TEXT DEFAULT '', note TEXT DEFAULT '', item TEXT, txt TEXT DEFAULT '', thumb TEXT DEFAULT '', status TEXT DEFAULT 'new', tries INTEGER DEFAULT 0, contacted INTEGER DEFAULT 0, user_id TEXT, ad_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS prospects_phone ON prospects(phone)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`, `ALTER TABLE users ADD COLUMN role TEXT DEFAULT ''`, `ALTER TABLE prospects ADD COLUMN owner_id TEXT`, `ALTER TABLE prospects ADD COLUMN nowa INTEGER DEFAULT 0`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`, `ALTER TABLE users ADD COLUMN role TEXT DEFAULT ''`, `ALTER TABLE prospects ADD COLUMN owner_id TEXT`, `ALTER TABLE prospects ADD COLUMN nowa INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN pverified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified_by TEXT`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -308,7 +308,7 @@ async function modNotify(db, me, row, ad, changed, note) {
 }
 function prospectOut(r) {
   return { id: r.id, phone: r.phone, name: r.name, src: r.src || '', note: r.note || '', item: r.item ? JSON.parse(r.item) : null, txt: r.txt || '', thumb: r.thumb || '',
-    photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, nowa: !!r.nowa, ownerId: r.owner_id || '', ownerName: r.owner_name || '' };
+    photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, nowa: !!r.nowa, ownerId: r.owner_id || '', ownerName: r.owner_name || '', verified: !!(r.pverified || r.uver) };
 }
 
 // Nettoyage de nuit (tâche planifiée Cloudflare, voir wrangler.jsonc) : photos envoyées à l'avance
@@ -345,7 +345,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-limite-3', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-17-equipe', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -945,7 +945,7 @@ export async function onRequest(ctx) {
           item: b.item && typeof b.item === 'object' ? JSON.stringify(b.item).slice(0, 6000) : null,
           txt: String(b.txt || '').slice(0, 3000), thumb: /^data:image\/(jpeg|png|webp);base64,/.test(String(b.thumb || '')) && String(b.thumb).length < 40000 ? String(b.thumb) : '',
         });
-        const SEL = 'SELECT p.*, (SELECT COUNT(*) FROM users u WHERE u.phone = p.phone) AS reg, (SELECT name FROM users o WHERE o.id = p.owner_id) AS owner_name FROM prospects p';
+        const SEL = 'SELECT p.*, (SELECT COUNT(*) FROM users u WHERE u.phone = p.phone) AS reg, (SELECT MAX(COALESCE(u.verified, 0)) FROM users u WHERE u.phone = p.phone) AS uver, (SELECT name FROM users o WHERE o.id = p.owner_id) AS owner_name FROM prospects p';
         // un recruteur ne voit que ses vendeurs ; l'administrateur voit tout le monde
         const one = async (id) => { const r = await db.prepare(SEL + ' WHERE p.id = ?').bind(id).first(); return r && (boss || r.owner_id === me.id) ? r : null; };
         if (!parts[2] && method === 'GET') {
@@ -993,6 +993,12 @@ export async function onRequest(ctx) {
           return json({ ok: true });
         }
         // Publication à la place du vendeur (avec son accord) : on crée son compte s'il n'existe pas, puis l'annonce.
+        // Validation manuelle du numéro par l'équipe (on a parlé au vendeur sur ce numéro)
+        if (parts[3] === 'verify' && method === 'POST') {
+          await db.prepare('UPDATE prospects SET pverified = 1, updated = ? WHERE id = ?').bind(Date.now(), pr.id).run();
+          await db.prepare("UPDATE users SET verified = 1, verified_by = ? WHERE phone = ? AND COALESCE(verified, 0) = 0").bind('team:' + me.id, pr.phone).run();
+          return json({ prospect: prospectOut(await one(pr.id)) });
+        }
         if (parts[3] === 'publish' && method === 'POST') {
           if (pr.status === 'refused') return fail('refused');
           const b = await readBody(req), ad = b.ad || {};
@@ -1002,8 +1008,8 @@ export async function onRequest(ctx) {
           if (!owner) {
             pass = await newPin();
             const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
-            await db.prepare('INSERT INTO users (id, phone, name, city, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?, ?)')
-              .bind(uid('u'), pr.phone, pr.name, String(ad.city || '').slice(0, 60), await hashPass(pass, salt), salt, Date.now()).run();
+            await db.prepare('INSERT INTO users (id, phone, name, city, pass_hash, salt, created, verified, verified_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+              .bind(uid('u'), pr.phone, pr.name, String(ad.city || '').slice(0, 60), await hashPass(pass, salt), salt, Date.now(), pr.pverified ? 1 : 0, pr.pverified ? 'team:' + me.id : null).run();
             owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(pr.phone).first();
           }
           const out = await createAd(db, owner, ad, me.id, [me.id, pr.owner_id].filter(Boolean));
@@ -1047,9 +1053,9 @@ export async function onRequest(ctx) {
       }
       if (parts[1] === 'users' && !parts[2] && method === 'GET') {
         const q = (url.searchParams.get('q') || '').replace(/\D/g, '');
-        const { results } = await db.prepare(`SELECT u.id, u.phone, u.name, u.created, COALESCE(u.blocked, 0) AS blocked, COALESCE(u.role, '') AS role, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id) AS ads
+        const { results } = await db.prepare(`SELECT u.id, u.phone, u.name, u.created, COALESCE(u.blocked, 0) AS blocked, COALESCE(u.role, '') AS role, COALESCE(u.verified, 0) AS verified, (SELECT COUNT(*) FROM ads a WHERE a.user_id = u.id) AS ads
           FROM users u WHERE u.phone LIKE ? ORDER BY u.created DESC LIMIT 50`).bind('%' + q + '%').all();
-        return json({ users: results.map((u) => ({ id: u.id, phone: fmtPhone(u.phone), name: u.name, since: u.created, blocked: !!u.blocked, ads: u.ads, role: u.role || '' })) });
+        return json({ users: results.map((u) => ({ id: u.id, phone: fmtPhone(u.phone), name: u.name, since: u.created, blocked: !!u.blocked, ads: u.ads, role: u.role || '', verified: !!u.verified })) });
       }
       const target = parts[1] === 'users' && parts[2] ? await db.prepare('SELECT * FROM users WHERE id = ?').bind(parts[2]).first() : null;
       if (target && method === 'POST') {
@@ -1061,6 +1067,11 @@ export async function onRequest(ctx) {
           await db.prepare('UPDATE users SET shop = ? WHERE id = ?').bind(js, target.id).run();
           await syncShopAds(db, target.id, null, js);
           return json({ ok: true, verified: sh.verified });
+        }
+        if (parts[3] === 'verify') {
+          const v = b.verified ? 1 : 0;
+          await db.prepare('UPDATE users SET verified = ?, verified_by = ? WHERE id = ?').bind(v, v ? 'admin:' + me.id : null, target.id).run();
+          return json({ ok: true, verified: !!v });
         }
         if (parts[3] === 'password') {
           const pass = String(b.password || '');
