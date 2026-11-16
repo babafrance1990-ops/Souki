@@ -344,7 +344,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-otp', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-wa-choix', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -461,8 +461,13 @@ export async function onRequest(ctx) {
           const mm = txt.match(/(?:code|رمز|الرمز)\D{0,3}(\d{6})/i) || txt.match(/(\d{6})/);
           if (!mm) { await waLog(db, 'message sans code (type ' + (m.type || '?') + ')'); await waReply(env, m.from, 'Bonjour 👋 Pour vérifier votre numéro ou vous connecter, utilisez le bouton WhatsApp dans l’application Bi3li.'); continue; }
           const row = await db.prepare('SELECT * FROM wa_codes WHERE code = ? AND done = 0 AND created > ?').bind(mm[1], Date.now() - 15 * 60000).first();
-          if (!row) { await waLog(db, 'code inconnu, déjà utilisé ou expiré'); await waReply(env, m.from, 'Ce code ne correspond pas à votre numéro ou a expiré. Recommencez depuis l’application.'); continue; }
-          if (row.phone !== from) { await waLog(db, 'numéro différent : envoyé par …' + from.slice(-2) + ', attendu …' + String(row.phone).slice(-2)); await waReply(env, m.from, 'Ce code ne correspond pas à votre numéro ou a expiré. Recommencez depuis l’application.'); continue; }
+          if (!row) { await waLog(db, 'code inconnu, déjà utilisé ou expiré'); await waReply(env, m.from, '⌛ هذا الرمز انتهت صلاحيته أو استُعمل. أعد المحاولة من تطبيق بيعلي.\n⌛ Ce code a expiré ou a déjà été utilisé. Recommencez depuis Bi3li.'); continue; }
+          if (row.phone !== from) {
+            await waLog(db, 'numéro différent : envoyé par …' + from.slice(-2) + ', attendu …' + String(row.phone).slice(-2));
+            const want = String(row.phone).slice(-4).replace(/(\d{2})(\d{2})/, '$1 $2');
+            await waReply(env, m.from, '⚠️ هذا الرمز خاص بالرقم …' + want + '، لكنك ترسل من رقم آخر.\nافتح واتساب الخاص بالرقم …' + want + ' (واتساب أو واتساب للأعمال) وأعد إرسال الرسالة.\n\n⚠️ Ce code est pour le numéro …' + want + ', mais vous écrivez depuis un autre numéro. Ouvrez le WhatsApp de ce numéro (WhatsApp ou WhatsApp Business) et renvoyez le message.');
+            continue;
+          }
           await waLog(db, 'OK ' + row.purpose);
           await db.prepare('UPDATE wa_codes SET done = 1 WHERE code = ?').bind(row.code).run();
           await db.prepare('UPDATE users SET verified = 1 WHERE phone = ?').bind(from).run();
