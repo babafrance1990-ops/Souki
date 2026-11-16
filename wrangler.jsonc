@@ -18,7 +18,9 @@
   },
   "vars": {
     "ADMIN_PHONES": "37264646",
-    "SUPPORT_WHATSAPP": "22237264646"
+    "SUPPORT_WHATSAPP": "22237264646",
+    "WA_NUMBER": "22243268072",
+    "WA_PHONE_ID": "1462922720237239"
   },
   "r2_buckets": [
     {

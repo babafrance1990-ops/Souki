@@ -58,7 +58,7 @@ function waOn(env) { return !!(env.WA_NUMBER && env.WA_VERIFY_TOKEN); }
 async function waReply(env, to, text) {
   if (!env.WA_TOKEN || !env.WA_PHONE_ID) return;
   try {
-    await fetch('https://graph.facebook.com/v21.0/' + env.WA_PHONE_ID + '/messages', {
+    await fetch('https://graph.facebook.com/v25.0/' + env.WA_PHONE_ID + '/messages', {
       method: 'POST', headers: { authorization: 'Bearer ' + env.WA_TOKEN, 'content-type': 'application/json' },
       body: JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body: text } }),
     });
