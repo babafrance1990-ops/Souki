@@ -473,7 +473,7 @@ export async function onRequest(ctx) {
           await waLog(db, 'OK ' + row.purpose);
           await db.prepare('UPDATE wa_codes SET done = 1 WHERE code = ?').bind(row.code).run();
           await db.prepare('UPDATE users SET verified = 1 WHERE phone = ?').bind(from).run();
-          await waReply(env, m.from, row.purpose === 'reset' ? '✅ تم! ارجع إلى بيعلي واختر رمزك السري الجديد.\n✅ C’est bon ! Retournez dans Bi3li pour choisir votre nouveau code.' : row.purpose === 'login' ? '✅ C’est bon ! Retournez dans Bi3li, vous êtes connecté.' : '✅ Votre numéro est vérifié. Merci !');
+          await waReply(env, m.from, row.purpose === 'reset' ? '✅ تم! ارجع إلى بيعلي واختر رمزك السري الجديد.\n✅ C’est bon ! Retournez dans Bi3li pour choisir votre nouveau code.' : row.purpose === 'login' ? '✅ تم! ارجع إلى بيعلي، أنت متصل الآن.\n✅ C’est bon ! Retournez dans Bi3li, vous êtes connecté.' : '✅ تم توثيق رقمك في بيعلي. شكراً!\n✅ Votre numéro est vérifié. Merci !');
         }
         if (!nMsg) await waLog(db, 'notification sans message (' + ((((body.entry || [])[0] || {}).changes || [])[0] || {}).field + ')');
         return json({ ok: true });
