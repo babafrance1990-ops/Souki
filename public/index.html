@@ -1327,14 +1327,18 @@ function mgmtSheet(a){var sold=a.status==='sold',conf=S.mgmtDel===a.id;
     '<button class="btn wide" data-a="mgmtclose">'+t('close')+'</button>')+'</div>';}
 var WEAK_PIN=['0000','1111','2222','3333','4444','5555','6666','7777','8888','9999','1234','4321','0123','1212','1122','6969','2580'];
 function waLink(num,text){return 'https://wa.me/'+num+'?text='+encodeURIComponent(text);}
+/* Sur téléphone : ouvrir directement l'application WhatsApp (sans onglet vide laissé dans le navigateur) */
+var IS_MOB=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+function waAppLink(num,text){return IS_MOB?'whatsapp://send?phone='+num+'&text='+encodeURIComponent(text):waLink(num,text);}
+function waGo(num,text){if(IS_MOB){location.href=waAppLink(num,text);}else{try{window.open(waLink(num,text),'_blank');}catch(e){}}}
 function waWaitBox(){var J=S.waJob;return '<div class="wabox"><b>'+t(J.expired?'waExpired':'waWait')+'</b>'+(J.expired?'':'<p class="meta" style="margin:0">'+t('waStep')+'</p>')+
-  '<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="'+waLink(J.wa,t(J.purpose==='login'?'waMsgLogin':'waMsgVerify').replace('{c}',J.code))+'">'+svg(I.msg,18)+t('waOpen')+'</a>'+
+  '<a class="btn wa wide" style="text-decoration:none"'+(IS_MOB?'':' target="_blank" rel="noopener"')+' href="'+esc(waAppLink(J.wa,t(J.purpose==='login'?'waMsgLogin':'waMsgVerify').replace('{c}',J.code)))+'">'+svg(I.msg,18)+t('waOpen')+'</a>'+
   '<button type="button" class="linkbtn" data-a="wacancel" style="align-self:center">'+t('waCancel')+'</button></div>';}
 var waTimer=null;
 function waStart(purpose,phone){
   api('POST','wa/start',{purpose:purpose,phone:phone}).then(function(r){
     S.waJob={purpose:purpose,code:r.code,nonce:r.nonce,wa:r.wa,t:Date.now()};render(true);
-    try{window.open(waLink(r.wa,t(purpose==='login'?'waMsgLogin':'waMsgVerify').replace('{c}',r.code)),'_blank');}catch(e){}
+    waGo(r.wa,t(purpose==='login'?'waMsgLogin':'waMsgVerify').replace('{c}',r.code));
     clearInterval(waTimer);waTimer=setInterval(waPoll,3000);
   }).catch(function(e){toast(t({nouser:'e_nouser',blocked:'e_blocked',phone:'errPhone',too_many:'e_locked'}[e.code]||'netErr'));});}
 function waPoll(){var J=S.waJob;if(!J){clearInterval(waTimer);return;}
