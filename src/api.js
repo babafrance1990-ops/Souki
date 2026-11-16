@@ -344,7 +344,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-wa-choix', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-16-messages-connexion', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -423,12 +423,13 @@ export async function onRequest(ctx) {
         const u = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(phone).first();
         if (!u) return fail('nouser', 404);
         if (u.blocked) return fail('blocked', 403);
-        if (u.lock_until > Date.now()) return fail('locked', 429);
+        if (u.lock_until > Date.now()) return json({ error: 'locked', min: Math.ceil((u.lock_until - Date.now()) / 60000) }, 429);
         if (!sameStr(await hashPass(pass, u.salt), u.pass_hash)) {
           const fails = (u.fails || 0) + 1, lockn = (u.lockn || 0) + (fails >= 5 ? 1 : 0);
           const wait = Math.min(24 * 3600000, 15 * 60000 * Math.pow(4, Math.max(0, lockn - 1)));
           await db.prepare('UPDATE users SET fails = ?, lock_until = ?, lockn = ? WHERE id = ?').bind(fails >= 5 ? 0 : fails, fails >= 5 ? Date.now() + wait : 0, lockn, u.id).run();
-          return fail('badpass', 401);
+          if (fails >= 5) return json({ error: 'locked', min: Math.ceil(wait / 60000) }, 429);
+          return json({ error: 'badpass', left: 5 - fails }, 401);
         }
         await db.prepare('UPDATE users SET fails = 0, lock_until = 0, lockn = 0 WHERE id = ?').bind(u.id).run();
         return json({ token: await newSession(db, u.id), user: publicUser(u, env) });
