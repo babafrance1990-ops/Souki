@@ -49,6 +49,16 @@ async function withShopPreview(request, env, url, slug) {
   }
 }
 
+// lien entre le site et l'application Android (Google Play) : enlève la barre d'adresse dans l'appli
+const ASSETLINKS = [{
+  relation: ['delegate_permission/common.handle_all_urls'],
+  target: {
+    namespace: 'android_app',
+    package_name: 'net.bi3li.twa',
+    sha256_cert_fingerprints: ['79:7F:E6:FB:0D:8B:C5:78:B9:BD:2C:DE:12:10:A7:EB:B1:E8:F6:F6:0F:B1:C1:9A:96:DF:F6:E9:EF:F5:35:53'],
+  },
+}];
+
 export default {
   // chaque nuit : suppression des photos de dépôts abandonnés (voir cleanupTmp)
   async scheduled(event, env, ctx) {
@@ -57,6 +67,8 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname.startsWith('/api/')) return onRequest({ request, env, ctx });
+    if (url.pathname === '/.well-known/assetlinks.json')
+      return new Response(JSON.stringify(ASSETLINKS, null, 2), { headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*', 'cache-control': 'public, max-age=3600' } });
     const id = url.searchParams.get('annonce');
     if (url.pathname === '/' && id) return withAdPreview(request, env, url, id);
     const b = url.searchParams.get('b');
