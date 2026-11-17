@@ -345,7 +345,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-17-video-label', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-17-admin-pub', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -936,6 +936,36 @@ export async function onRequest(ctx) {
         const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
         await db.prepare('INSERT INTO users (id, phone, name, pass_hash, salt, created) VALUES (?, ?, ?, ?, ?, ?)').bind(uid('u'), phone, name, await hashPass(pass, salt), salt, Date.now()).run();
         return json({ phone, name, pass });
+      }
+      // ---------- Administrateur : publier une annonce dans le compte de n'importe quel numéro ----------
+      if (parts[1] === 'lookup' && method === 'GET') {
+        const phone = String(url.searchParams.get('phone') || '').replace(/\D/g, '').slice(-8);
+        if (!/^[234]\d{7}$/.test(phone)) return fail('phone');
+        const u = await db.prepare("SELECT id, name, phone, verified, blocked, created, (SELECT COUNT(*) FROM ads a WHERE a.user_id = users.id) AS ads FROM users WHERE phone = ?").bind(phone).first();
+        return json({ phone, user: u ? { id: u.id, name: u.name, phone: u.phone, verified: !!u.verified, blocked: !!u.blocked, ads: u.ads || 0, since: u.created } : null });
+      }
+      if (parts[1] === 'publish' && method === 'POST') {
+        const b = await readBody(req), ad = b.ad || {};
+        const phone = String(b.phone || '').replace(/\D/g, '').slice(-8), name = String(b.name || '').trim().slice(0, 30);
+        if (!/^[234]\d{7}$/.test(phone)) return fail('phone');
+        if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
+        let owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(phone).first(), pass = '';
+        if (owner && owner.blocked) return fail('blocked', 403);
+        if (!owner) {
+          if (!name) return fail('name');
+          pass = await newPin();
+          const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+          await db.prepare('INSERT INTO users (id, phone, name, city, pass_hash, salt, created, verified, verified_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+            .bind(uid('u'), phone, name, String(ad.city || '').slice(0, 60), await hashPass(pass, salt), salt, Date.now(), b.verify ? 1 : 0, b.verify ? 'admin:' + me.id : null).run();
+          owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(phone).first();
+        } else if (b.verify && !owner.verified) {
+          await db.prepare('UPDATE users SET verified = 1, verified_by = ? WHERE id = ?').bind('admin:' + me.id, owner.id).run();
+          owner.verified = 1;
+        }
+        delete ad.shop;
+        const out = await createAd(db, owner, ad, me.id, [me.id]);
+        if (owner.verified) out.sv = 1;
+        return json({ ad: out, pass, existed: !pass, phone, name: owner.name, verified: !!owner.verified });
       }
       // ---------- Agent recruteur : vendeurs trouvés sur les réseaux sociaux ----------
       if (parts[1] === 'prospects') {

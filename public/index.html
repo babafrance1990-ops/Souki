@@ -2827,7 +2827,7 @@ V.post=function(){
      '<div class="field"><label for="fhood">'+t('hood')+O+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div>'+
      (MOD?'<div class="field"><label for="fmodnote">'+t('modNoteL')+O+'</label><textarea id="fmodnote" class="inp" rows="2" maxlength="300" data-mod="note" placeholder="'+esc(t('modNotePh'))+'">'+esc(S.modEdit.note||'')+'</textarea><div class="meta">'+t('modNoteH')+'</div></div>':
      '<fieldset style="margin:0;padding:0;border:none" class="field"><legend class="legend" style="margin-bottom:4px">'+t('contact')+'</legend>'+
-     (S.user&&S.user.phone?'<div class="meta" style="margin-bottom:4px">'+t('contactAt')+' <b dir="ltr" style="color:var(--fg)">'+esc(String(S.user.phone).replace(/(\d{2})(?=\d)/g,'$1 '))+'</b></div>':'')+
+     (S.user&&S.user.phone?'<div class="meta" style="margin-bottom:4px">'+t('contactAt')+' <b dir="ltr" style="color:var(--fg)">'+esc(String(d._uphone||d._rphone||S.user.phone).replace(/(\d{2})(?=\d)/g,'$1 '))+'</b></div>':'')+
      chk('wa','WhatsApp')+chk('call',t('call'))+chk('msg',t('message'))+'</fieldset>')+
      '<div class="field">'+chk('deliv',svg('<path d="M2 6h11v10H2zM13 9h4.5l3.5 3.5V16h-8"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',18)+' '+t('delivL'))+(d.deliv?'<input id="fdelivn" class="inp" data-f="delivNote" maxlength="80" value="'+esc(d.delivNote||'')+'" placeholder="'+t('delivNotePh')+'" aria-label="'+t('delivNoteL')+'">':'')+'</div>'+
      '<div class="field"><div class="legend" style="display:flex;gap:6px;align-items:center">'+svg(I.eye||'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',18)+t('pvSee')+'</div>'+pv+'</div>'+
@@ -4395,6 +4395,7 @@ function publish(dry,opt){
   if(opt&&opt.build)return ad;
   if(S.busy)return;S.busy=true;toast(t('sending'));var eid=S.editId;
   render(true);
+  if(!eid&&d._uphone){withVideo(ad).then(function(){return photosReady(ad);}).then(function(){render(true);return apPublish(ad,d);}).then(function(){S.busy=false;S.vidBlob=null;S.vidUrl=null;S.vidCut=false;}).catch(function(err){S.busy=false;S.upProg=null;render(true);toast(err&&err.code==='blocked'?rt('apBlocked'):t(err&&err.code==='too_big'?'e_too_big':'netErr'));});return;}
   if(!eid&&d._rid){withVideo(ad).then(function(){return photosReady(ad);}).then(function(){render(true);return rcPublish(ad,d);}).then(function(){S.busy=false;S.vidBlob=null;S.vidUrl=null;S.vidCut=false;}).catch(function(err){S.busy=false;S.upProg=null;render(true);toast(t(err&&err.code==='too_big'?'e_too_big':'netErr'));});return;}
   withVideo(ad).then(function(){return photosReady(ad);}).then(function(){render(true);return api(eid?'PUT':'POST',eid?'ads/'+eid:'ads',MODP?{ad:ad,note:S.modEdit.note||''}:{ad:ad});}).then(function(r){S.busy=false;S.vidBlob=null;S.vidUrl=null;S.vidCut=false;var wasMod=MODP;S.modEdit=null;
     if(eid){S.remote=S.remote.map(function(x){return x.id===eid?r.ad:x;});S.editId=null;S.draft=null;}
@@ -4475,10 +4476,17 @@ V.admin=function(){
      (del?(P.sure?'<button class="btn wide danger" data-a="prggo" style="height:52px">'+t('prgSure').replace('{n}',del)+'</button>':'<button class="btn wide" data-a="prgask" style="height:52px;color:#B3261E;border-color:#B3261E">'+t('prgDel').replace('{n}',del)+'</button>'):'<p class="meta">'+t('prgNone')+'</p>');}
   var shopsBox='<h2>'+t('admShops')+' ('+shs.length+')</h2>'+(shs.length?shs.map(function(x){return '<div class="box" style="gap:10px"><div style="flex:1;min-width:0"><b translate="no">'+esc(x.shop.name)+'</b>'+shopBadge(x.shop,13)+'<div class="meta" dir="ltr" style="text-align:start">'+esc(x.name)+' · '+esc(x.phone)+' · '+x.ads+' ann.</div></div>'+
     '<button class="btn small" data-a="shop" data-v="'+esc(x.id)+'">'+svg(I.eye||I.list,16)+'</button><button class="btn small'+(x.shop.verified?'':' primary')+'" data-a="admverify" data-id="'+esc(x.id)+'" data-v="'+(x.shop.verified?'0':'1')+'">'+t(x.shop.verified?'admUnverify':'admVerify')+'</button></div>';}).join(''):'<p class="meta">'+t('admNoShop')+'</p>');
-  return topbar(t('admin'),'account')+'<div class="scroll"><div class="sec" style="gap:14px">'+stats+'<button class="btn primary wide" data-a="go" data-s="recruit" style="height:54px;font-size:16px">'+svg(I.users||I.user,20)+rt('rcOpen')+'</button>'+'<div class="box" style="flex-direction:column;align-items:stretch;gap:8px">'+prgBox+'</div>'+shopsBox+shopBox+'<h2>'+t('admReports')+'</h2>'+reps+
+  return topbar(t('admin'),'account')+'<div class="scroll"><div class="sec" style="gap:14px">'+stats+'<button class="btn primary wide" data-a="go" data-s="recruit" style="height:54px;font-size:16px">'+svg(I.users||I.user,20)+rt('rcOpen')+'</button>'+apBox()+'<div class="box" style="flex-direction:column;align-items:stretch;gap:8px">'+prgBox+'</div>'+shopsBox+shopBox+'<h2>'+t('admReports')+'</h2>'+reps+
    '<h2>'+t('admUsers')+'</h2><div class="field"><label for="admq">'+t('admSearch')+'</label><input id="admq" class="inp" data-adm="admQ" inputmode="numeric" value="'+esc(S.admQ)+'" placeholder="XX XX XX XX"></div>'+users+'</div></div>';};
 function adminClick(a,el,id){
   switch(a){
+    case 'apfind':apFind();return true;
+    case 'apnew':S.ap={phone:'',name:'',ver:false};render(true);var ai=app.querySelector('#apph');if(ai)ai.focus();return true;
+    case 'apverchk':S.ap.ver=!S.ap.ver;render(true);return true;
+    case 'apver':var AU=S.ap&&S.ap.user;if(!AU)return true;if(!confirm(rt('apVerChk')+' ?'))return true;
+      api('POST','admin/users/'+AU.id+'/verify',{verified:true}).then(function(){AU.verified=true;S.remote.forEach(function(x){if(x.owner===AU.id)x.sv=1;});toast(rt('rcVerOk'));render(true);}).catch(function(){toast(t('netErr'));});return true;
+    case 'apgo':apPrep();return true;
+    case 'apcancel':S.draft=null;save('draft',null);go('admin');return true;
     case 'prgopen':S.prg={owners:null,keep:{},sure:false};render(true);api('GET','admin/owners').then(function(d){S.prg.owners=d.owners||[];render(true);}).catch(function(){S.prg=null;toast(t('netErr'));render(true);});return true;
     case 'admdelad':if(S.admDelAsk!==id){S.admDelAsk=id;render(true);return true;}S.admDelAsk=null;
       api('DELETE','ads/'+id).then(function(){S.remote=S.remote.filter(function(x){return x.id!==id;});toast(t('admDelOk'));go(S.prev&&S.prev!=='detail'?S.prev:'home');}).catch(function(){toast(t('netErr'));});return true;
@@ -4528,7 +4536,7 @@ var RX={fr:{
   f_all:'Tous',rcToday:'Messages envoyés aujourd’hui : {n} / 30',rcTodayTip:'Pour protéger votre numéro WhatsApp, n’envoyez pas plus de 30 messages par jour, et jamais deux fois le même jour à la même personne.',
   rcMsg1:'Envoyer le 1er message',rcMsg1b:'Renvoyer le 1er message',rcMsg2:'Relancer',rcYes:'Il est d’accord',rcNo:'Il refuse',rcPrep:'Préparer et publier l’annonce',rcSee:'Voir l’annonce',rcDel:'Retirer de la liste',rcDelSure:'Confirmer : retirer',rcBack:'Remettre « à contacter »',
   rcTries:'{n} message(s) · dernier {d}',rcMaxTries:'Déjà 3 messages sans réponse : n’insistez plus, marquez « Refusé ».',rcLang:'Langue du message',
-  rcFor:'Annonce pour le vendeur : {n} · +222 {p}',rcForCancel:'Annuler',rcDone:'Annonce publiée pour {n} !',rcCreds:'Compte créé : {p} · code {w}',rcExisted:'Ajoutée à son compte existant ({p}).',
+  rcFor:'Annonce pour le vendeur : {n} · +222 {p}',apT:'Publier pour un compte',apHelp:'Tapez le numéro du vendeur : l’annonce sera publiée dans son compte, avec son nom et son numéro. S’il n’a pas encore de compte, il sera créé.',apPhone:'Numéro du vendeur (8 chiffres)',apFind:'Chercher',apNoAcc:'Aucun compte avec ce numéro. Écrivez son nom : le compte sera créé au moment de la publication.',apName:'Nom du vendeur',apVerChk:'J’ai parlé au vendeur sur ce numéro : marquer « Numéro vérifié ✓ »',apVerOk:'Numéro vérifié',apNotVer:'Numéro non vérifié',apVerBtn:'Vérifier ce numéro',apGo:'Préparer l’annonce pour ce compte',apBlocked:'Ce compte est bloqué : impossible de publier.',apErrPhone:'Numéro invalide : 8 chiffres, commençant par 2, 3 ou 4.',apErrName:'Écrivez le nom du vendeur.',apAds:'{n} annonce(s)',apAnother:'Publier une autre annonce pour lui',apNew:'Autre numéro',rcForCancel:'Annuler',rcDone:'Annonce publiée pour {n} !',rcCreds:'Compte créé : {p} · code {w}',rcExisted:'Ajoutée à son compte existant ({p}).',
   rcSendCreds:'Envoyer ses accès sur WhatsApp',rcOk:'C’est fait',rcErrPhone:'Numéro invalide (8 chiffres, commence par 2, 3 ou 4).',rcErrName:'Indiquez le nom du vendeur.',rcSaved:'Vendeur enregistré',
   rcStats:'{a} à contacter · {c} en attente · {k} d’accord · {p} publiés',rcSearch:'Chercher un nom ou un numéro',
   src_fb:'Facebook',src_wa:'WhatsApp',src_tt:'TikTok',src_ig:'Instagram',src_other:'Autre',
@@ -4546,7 +4554,7 @@ ar:{
   f_all:'الكل',rcToday:'الرسائل المرسلة اليوم: {n} / 30',rcTodayTip:'لحماية رقم واتساب، لا ترسل أكثر من 30 رسالة في اليوم، ولا ترسل مرتين لنفس الشخص في نفس اليوم.',
   rcMsg1:'إرسال الرسالة الأولى',rcMsg1b:'إعادة إرسال الرسالة الأولى',rcMsg2:'تذكير',rcYes:'وافق',rcNo:'رفض',rcPrep:'تجهيز الإعلان ونشره',rcSee:'عرض الإعلان',rcDel:'حذف من القائمة',rcDelSure:'تأكيد الحذف',rcBack:'إرجاع إلى «للتواصل»',
   rcTries:'{n} رسالة · آخرها {d}',rcMaxTries:'3 رسائل بدون رد: لا تلح، ضع «رفض».',rcLang:'لغة الرسالة',
-  rcFor:'إعلان للبائع: {n} · ‎+222 {p}',rcForCancel:'إلغاء',rcDone:'تم نشر الإعلان لـ {n}!',rcCreds:'تم إنشاء الحساب: {p} · الرقم السري {w}',rcExisted:'أضيف إلى حسابه الموجود ({p}).',
+  rcFor:'إعلان للبائع: {n} · ‎+222 {p}',apT:'النشر لحساب بائع',apHelp:'اكتب رقم البائع: سيُنشر الإعلان في حسابه باسمه ورقمه. إذا لم يكن لديه حساب، سيتم إنشاؤه.',apPhone:'رقم البائع (8 أرقام)',apFind:'بحث',apNoAcc:'لا يوجد حساب بهذا الرقم. اكتب اسمه: سيُنشأ الحساب عند النشر.',apName:'اسم البائع',apVerChk:'تحدثت مع البائع على هذا الرقم: اجعله «رقم موثّق»',apVerOk:'رقم موثّق',apNotVer:'رقم غير موثّق',apVerBtn:'توثيق هذا الرقم',apGo:'تجهيز إعلان لهذا الحساب',apBlocked:'هذا الحساب محظور: لا يمكن النشر.',apErrPhone:'رقم غير صحيح: 8 أرقام تبدأ بـ 2 أو 3 أو 4.',apErrName:'اكتب اسم البائع.',apAds:'{n} إعلان',apAnother:'نشر إعلان آخر له',apNew:'رقم آخر',rcForCancel:'إلغاء',rcDone:'تم نشر الإعلان لـ {n}!',rcCreds:'تم إنشاء الحساب: {p} · الرقم السري {w}',rcExisted:'أضيف إلى حسابه الموجود ({p}).',
   rcSendCreds:'أرسل له بيانات الدخول على واتساب',rcOk:'تم',rcErrPhone:'رقم غير صحيح (8 أرقام، يبدأ بـ 2 أو 3 أو 4).',rcErrName:'اكتب اسم البائع.',rcSaved:'تم حفظ البائع',
   rcStats:'{a} للتواصل · {c} في الانتظار · {k} موافق · {p} منشور',rcSearch:'ابحث عن اسم أو رقم',
   src_fb:'فيسبوك',src_wa:'واتساب',src_tt:'تيك توك',src_ig:'إنستغرام',src_other:'آخر',
@@ -4901,9 +4909,9 @@ document.addEventListener('input',function(e){var el=e.target;if(!el.getAttribut
 function rcPrep(p){var it=p.item||{},d=it.cat?itemToDraft(Object.assign({photos:[]},it),{}):newDraft();
   d.stype='part';d._rid=p.id;d._rname=p.name;d._rphone=p.phone;d.wa=true;d.call=true;d.photos=(p.photos||[]).slice(0,MAXPH);
   S.editId=null;S.draft=d;S.draftRestored=false;var k=TYPE_KEY[d.cat],need=!d.cat||(k&&!d[k]);S.pstep=need?1:2;S.maxStep=need?1:2;S.errs={};go('post');}
-function rcBanner(){var d=S.draft;if(S.screen!=='post'||!d||!d._rid)return;var sc=app.querySelector('.scroll');if(!sc||sc.querySelector('.rcban'))return;
+function rcBanner(){var d=S.draft;if(S.screen!=='post'||!d||!(d._rid||d._uphone))return;var sc=app.querySelector('.scroll');if(!sc||sc.querySelector('.rcban'))return;
   var b=document.createElement('div');b.className='tip rcban';b.style.cssText='background:#FFF3D6;color:#5A3B00;margin:10px 16px 0;align-items:center;gap:8px';
-  b.innerHTML=svg(I.user,20)+'<b style="flex:1">'+esc(rt('rcFor').replace('{n}',d._rname||'').replace('{p}',String(d._rphone||'').replace(/(\d{2})(?=\d)/g,'$1 ')))+'</b><button class="btn small" data-a="rccancel">'+rt('rcForCancel')+'</button>';
+  b.innerHTML=svg(I.user,20)+'<b style="flex:1">'+esc(rt('rcFor').replace('{n}',d._rname||d._uname||'').replace('{p}',String(d._rphone||d._uphone||'').replace(/(\d{2})(?=\d)/g,'$1 ')))+'</b><button class="btn small" data-a="'+(d._uphone?'apcancel':'rccancel')+'">'+rt('rcForCancel')+'</button>';
   sc.insertBefore(b,sc.firstChild);}
 app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(!el)return;var a=el.getAttribute('data-a'),id=el.getAttribute('data-id');
   if(a==='go'&&el.getAttribute('data-s')==='recruit'){if(S.rc){S.rc.list=null;S.rc.loading=false;}return;}
@@ -4945,6 +4953,39 @@ app.addEventListener('click',function(e){var el=e.target.closest('[data-a]');if(
       .catch(function(err){R.busy=false;render(true);if(err&&err.code==='dup'){var o=R.list.filter(function(x){return x.phone===F.phone;})[0];toast(o?rt('rcDup').replace('{s}',rt('st_'+rcState(o))):rt('rcDupOther'));}
         else toast(err&&err.code==='phone'?rt('rcErrPhone'):err&&err.code==='name'?rt('rcErrName'):t('netErr'));});break;
   }},true);
+/* ---------- Administrateur : publier dans le compte de n'importe quel numéro ---------- */
+function apBox(){var P=S.ap=S.ap||{phone:'',name:'',ver:false},h='<h2>'+rt('apT')+'</h2><div class="box" style="flex-direction:column;align-items:stretch;gap:10px">';
+  if(P.res){var r=P.res;h+='<div class="tip" style="background:var(--tint);color:var(--fg);flex-direction:column;align-items:stretch;gap:8px"><b style="font-size:17px">✓ '+esc(rt('rcDone').replace('{n}',r.name))+'</b>'+
+    (r.pass?'<div>'+esc(rt('rcCreds').replace('{p}',fmtPh(r.phone)).replace('{w}',r.pass))+'</div><a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/222'+esc(r.phone)+'?text='+encodeURIComponent(t('admWaMsg').replace('{n}',r.name).replace('{p}',r.phone).replace('{w}',r.pass).replace('{u}',location.origin))+'">'+svg(I.wa||I.chat,18)+t('admSendWa')+'</a>':'<div class="meta">'+esc(rt('rcExisted').replace('{p}',fmtPh(r.phone)))+'</div>')+
+    '<button class="btn small" data-a="open" data-id="'+esc(r.ad.id)+'">'+rt('rcSee')+'</button></div>';}
+  h+='<p class="meta" style="margin:0">'+rt('apHelp')+'</p><div class="field"><label for="apph">'+rt('apPhone')+'</label><div class="row" style="gap:8px"><input id="apph" class="inp" data-ap="phone" inputmode="numeric" maxlength="8" dir="ltr" value="'+esc(P.phone)+'" placeholder="XX XX XX XX" style="flex:1" autocomplete="off"><button class="btn primary" data-a="apfind"'+(P.busy?' disabled':'')+'>'+(P.busy?'…':rt('apFind'))+'</button></div>'+(P.err?'<div class="err">'+esc(P.err)+'</div>':'')+'</div>';
+  if(P.found){var u=P.user;
+    if(u){h+='<div class="box" style="gap:10px;background:var(--bg)">'+svg(I.user,22)+'<div style="flex:1;min-width:0"><b translate="no">'+esc(u.name)+'</b><div class="meta"><bdi dir="ltr">+222 '+esc(fmtPh(u.phone))+'</bdi> · '+esc(rt('apAds').replace('{n}',u.ads))+'</div>'+
+        (u.verified?'<span class="badge vbg">'+svg(I.check||I.user,14)+rt('apVerOk')+'</span>':'<span class="meta" style="color:var(--danger);font-weight:700">'+rt('apNotVer')+'</span>')+'</div></div>';
+      if(u.blocked)h+='<div class="err">'+rt('apBlocked')+'</div>';
+      else{if(!u.verified)h+='<button class="btn" data-a="apver">'+rt('apVerBtn')+'</button>';
+        h+='<button class="btn primary wide" data-a="apgo" style="height:52px">'+svg(I.plus,18)+(P.res?rt('apAnother'):rt('apGo'))+'</button>';}}
+    else{h+='<p class="meta" style="margin:0;color:var(--fg);font-weight:700">'+rt('apNoAcc')+'</p><div class="field"><label for="apnm">'+rt('apName')+'</label><input id="apnm" class="inp" data-ap="name" maxlength="30" value="'+esc(P.name)+'" autocomplete="off"></div>'+
+      '<label class="box" style="gap:10px;cursor:pointer;background:var(--bg)"><input type="checkbox" data-a="apverchk"'+(P.ver?' checked':'')+' style="width:22px;height:22px"><span>'+rt('apVerChk')+'</span></label>'+
+      '<button class="btn primary wide" data-a="apgo" style="height:52px">'+svg(I.plus,18)+rt('apGo')+'</button>';}
+    h+='<button class="linkbtn" data-a="apnew" style="align-self:flex-start">'+rt('apNew')+'</button>';}
+  return h+'</div>';}
+function apFind(){var P=S.ap;if(!/^[234]\d{7}$/.test(P.phone||'')){P.err=rt('apErrPhone');render(true);return;}
+  P.err='';P.busy=true;render(true);
+  api('GET','admin/lookup?phone='+P.phone).then(function(d){P.busy=false;P.found=true;P.user=d.user;P.res=null;P.ver=false;render(true);if(!d.user){var n=app.querySelector('#apnm');if(n)n.focus();}})
+  .catch(function(err){P.busy=false;P.err=err&&err.code==='phone'?rt('apErrPhone'):t('netErr');render(true);});}
+function apPrep(){var P=S.ap,u=P.user;if(!u&&!(P.name||'').trim()){toast(rt('apErrName'));var n=app.querySelector('#apnm');if(n)n.focus();return;}
+  var d=newDraft();d.stype='part';d._uphone=P.phone;d._uname=u?u.name:P.name.trim();d._uver=!u&&P.ver;d.wa=true;d.call=true;d.photos=[];
+  S.editId=null;S.modEdit=null;S.vidBlob=null;S.vidUrl=null;S.vidCut=false;S.draft=d;S.draftRestored=false;S.pstep=1;S.maxStep=1;S.errs={};go('post');}
+function apPublish(ad,d){var ph=d._uphone,nm=d._uname,vf=!!d._uver;if(ad._d){delete ad._d._uphone;delete ad._d._uname;delete ad._d._uver;}delete ad.shop;
+  return api('POST','admin/publish',{phone:ph,name:nm,verify:vf,ad:ad}).then(function(r){
+    S.remote.unshift(r.ad);S.draft=null;S.draftRestored=false;save('draft',null);
+    S.ap=S.ap||{phone:ph,name:'',ver:false};S.ap.res=r;S.ap.found=true;S.ap.phone=ph;S.ap.user=S.ap.user||{id:r.ad.owner,name:r.name,phone:ph,verified:r.verified,blocked:false,ads:0};S.ap.user.ads=(S.ap.user.ads||0)+1;S.ap.user.verified=r.verified;
+    go('admin');toast(t('published'));try{app.querySelector('.scroll').scrollTop=0;}catch(e){}return r;});}
+document.addEventListener('input',function(e){var k=e.target.getAttribute&&e.target.getAttribute('data-ap');if(!k||!S.ap)return;var el=e.target;
+  if(k==='phone'){el.value=el.value.replace(/\D/g,'').slice(0,8);if(S.ap.phone!==el.value&&(S.ap.found||S.ap.err)){S.ap.phone=el.value;S.ap.found=false;S.ap.user=null;S.ap.res=null;S.ap.err='';render(true);var q=app.querySelector('#apph');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}e.stopImmediatePropagation();return;}}
+  S.ap[k]=el.value;e.stopImmediatePropagation();},true);
+document.addEventListener('keydown',function(e){if(e.target.id==='apph'&&e.key==='Enter'){e.preventDefault();apFind();}},true);
 /* publication : quand le brouillon vient de l'agent recruteur, l'annonce part dans le compte du vendeur */
 function rcPublish(ad,d){var rid=d._rid;if(ad._d){delete ad._d._rid;delete ad._d._rname;delete ad._d._rphone;}delete ad.shop;
   return api('POST','admin/prospects/'+rid+'/publish',{ad:ad}).then(function(r){
