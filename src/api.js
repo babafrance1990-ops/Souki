@@ -24,7 +24,7 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS prospects (id TEXT PRIMARY KEY, phone TEXT NOT NULL, name TEXT NOT NULL, src TEXT DEFAULT '', note TEXT DEFAULT '', item TEXT, txt TEXT DEFAULT '', thumb TEXT DEFAULT '', status TEXT DEFAULT 'new', tries INTEGER DEFAULT 0, contacted INTEGER DEFAULT 0, user_id TEXT, ad_id TEXT, created INTEGER NOT NULL, updated INTEGER NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS prospects_phone ON prospects(phone)`,
 ];
-const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`, `ALTER TABLE users ADD COLUMN role TEXT DEFAULT ''`, `ALTER TABLE prospects ADD COLUMN owner_id TEXT`, `ALTER TABLE prospects ADD COLUMN nowa INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN pverified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified_by TEXT`];
+const MIGRATIONS = [`ALTER TABLE users ADD COLUMN blocked INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN avatar TEXT`, `ALTER TABLE users ADD COLUMN last_seen INTEGER DEFAULT 0`, `ALTER TABLE messages ADD COLUMN img TEXT`, `ALTER TABLE users ADD COLUMN searches TEXT DEFAULT '[]'`, `ALTER TABLE ads ADD COLUMN views INTEGER DEFAULT 0`, `ALTER TABLE ads ADD COLUMN contacts INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN lockn INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN photos TEXT DEFAULT '[]'`, `ALTER TABLE users ADD COLUMN role TEXT DEFAULT ''`, `ALTER TABLE prospects ADD COLUMN owner_id TEXT`, `ALTER TABLE prospects ADD COLUMN nowa INTEGER DEFAULT 0`, `ALTER TABLE prospects ADD COLUMN pverified INTEGER DEFAULT 0`, `ALTER TABLE users ADD COLUMN verified_by TEXT`, `ALTER TABLE users ADD COLUMN teamok INTEGER DEFAULT 1`, `ALTER TABLE ads ADD COLUMN posted_by TEXT`];
 let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
@@ -116,7 +116,7 @@ function isAdmin(env, u) {
   return !!u && adminList(env).includes(String(u.phone || '').replace(/\D/g, '').slice(-8));
 }
 function publicUser(u, env) {
-  return { verified: !!u.verified, admin: isAdmin(env || {}, u), recruiter: isRecruiter(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]') };
+  return { verified: !!u.verified, admin: isAdmin(env || {}, u), recruiter: isRecruiter(env || {}, u), avatar: u.avatar || '', id: u.id, phone: fmtPhone(u.phone), name: u.name, city: u.city || '', since: u.created, shop: u.shop ? JSON.parse(u.shop) : null, favs: JSON.parse(u.favs || '[]'), searches: JSON.parse(u.searches || '[]'), teamok: u.teamok !== 0 };
 }
 async function newSession(db, userId) {
   const token = crypto.randomUUID() + crypto.randomUUID();
@@ -306,6 +306,25 @@ async function modNotify(db, me, row, ad, changed, note) {
     db.prepare('UPDATE convs SET updated = ?, buyer_read = ? WHERE id = ?').bind(t, t, c.id),
   ]);
 }
+// L'équipe peut-elle publier pour ce vendeur ? Administrateur : tout le monde ; recruteur : seulement ses vendeurs (agent recruteur).
+async function canTeamPost(db, env, me, owner) {
+  if (!me || !owner || me.id === owner.id) return false;
+  if (isAdmin(env, me)) return true;
+  if (me.role !== 'recruiter') return false;
+  return !!(await db.prepare('SELECT id FROM prospects WHERE owner_id = ? AND (user_id = ? OR phone = ?)').bind(me.id, owner.id, owner.phone).first());
+}
+// Message automatique au vendeur (dans sa messagerie Bi3li) quand l'équipe ajoute une annonce dans son compte / sa boutique
+async function teamNotify(db, me, owner, ad) {
+  const t = Date.now(), c = uid('c');
+  let txt = '➕ فريق بيعلي\nالسلام عليكم، أضفنا إعلاناً جديداً في ' + (owner.shop ? 'متجرك' : 'حسابك') + ': «' + ad.title + '».\n';
+  txt += '\nرقمك واسمك لم يتغيّرا. يمكنك مراجعة الإعلان أو تعديله أو حذفه من «إعلاناتي». إذا لا تريد أن ينشر الفريق لك، أوقف الخيار في «حسابي».';
+  txt += '\n— Bi3li : notre équipe a ajouté l’annonce « ' + ad.title + ' » dans votre ' + (owner.shop ? 'boutique' : 'compte') + '. Vous pouvez la modifier ou la supprimer dans « Mes annonces ».';
+  await db.batch([
+    db.prepare('INSERT INTO convs (id, ad_id, buyer_id, seller_id, title, updated, buyer_read) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(c, ad.id, me.id, owner.id, ad.title, t, t),
+    db.prepare('INSERT INTO messages (conv_id, sender_id, txt, t, img) VALUES (?, ?, ?, ?, ?)').bind(c, me.id, txt.slice(0, 1200), t, null),
+    db.prepare('UPDATE ads SET posted_by = ? WHERE id = ?').bind(me.id, ad.id),
+  ]);
+}
 function prospectOut(r) {
   return { id: r.id, phone: r.phone, name: r.name, src: r.src || '', note: r.note || '', item: r.item ? JSON.parse(r.item) : null, txt: r.txt || '', thumb: r.thumb || '',
     photos: JSON.parse(r.photos || '[]'), status: r.status, tries: r.tries || 0, contacted: r.contacted || 0, userId: r.user_id || '', adId: r.ad_id || '', created: r.created, updated: r.updated, registered: !!r.reg, nowa: !!r.nowa, ownerId: r.owner_id || '', ownerName: r.owner_name || '', verified: !!(r.pverified || r.uver) };
@@ -345,7 +364,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-17-admin-pub', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-17-team-pub', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -641,6 +660,8 @@ export async function onRequest(ctx) {
           AND EXISTS (SELECT 1 FROM messages m WHERE m.conv_id = c.id AND m.sender_id = ?)`).bind(viewer.id, u.id, u.id, viewer.id, u.id).first());
         const mr = await db.prepare('SELECT stars, txt FROM reviews WHERE target_id = ? AND author_id = ?').bind(u.id, viewer.id).first();
         if (mr) out.myReview = { stars: mr.stars, txt: mr.txt || '' };
+        out.teamok = u.teamok !== 0;
+        if (await canTeamPost(db, env, viewer, u)) { out.teamPost = true; out.phone = u.phone; }
       }
       return json({ user: out });
     }
@@ -788,6 +809,7 @@ export async function onRequest(ctx) {
           if (old) await dropMedia(db, [old[1]]);
           await db.prepare('UPDATE users SET avatar = ? WHERE id = ?').bind(av, me.id).run();
         }
+        if (b.teamok !== undefined) await db.prepare('UPDATE users SET teamok = ? WHERE id = ?').bind(b.teamok ? 1 : 0, me.id).run();
         await db.prepare('UPDATE users SET name = ?, city = ?, shop = ?, favs = ? WHERE id = ?').bind(name, city, shop, favs, me.id).run();
         if (name !== me.name || shop !== me.shop) {
           await syncShopAds(db, me.id, name, shop);
@@ -923,7 +945,7 @@ export async function onRequest(ctx) {
     // ---------- Administration ----------
     if (parts[0] === 'admin') {
       const boss = isAdmin(env, me);
-      if (!boss && !(parts[1] === 'prospects' && isRecruiter(env, me))) return fail('forbidden', 403);
+      if (!boss && !((parts[1] === 'prospects' || parts[1] === 'publish') && isRecruiter(env, me))) return fail('forbidden', 403);
       if (parts[1] === 'users' && !parts[2] && method === 'POST') {
         const b = await readBody(req);
         const phone = String(b.phone || '').replace(/\D/g, '').slice(-8);
@@ -951,6 +973,10 @@ export async function onRequest(ctx) {
         if (!ad.title || !ad.cat || typeof ad.price !== 'number') return fail('invalid');
         let owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(phone).first(), pass = '';
         if (owner && owner.blocked) return fail('blocked', 403);
+        // un recruteur publie seulement pour ses vendeurs déjà inscrits ; jamais si le vendeur a refusé que l'équipe publie pour lui
+        if (!boss && !(owner && await canTeamPost(db, env, me, owner))) return fail('not_yours', 403);
+        if (owner && owner.id !== me.id && owner.teamok === 0) return fail('team_off', 403);
+        if (!boss) b.verify = false;
         if (!owner) {
           if (!name) return fail('name');
           pass = await newPin();
@@ -965,6 +991,10 @@ export async function onRequest(ctx) {
         delete ad.shop;
         const out = await createAd(db, owner, ad, me.id, [me.id]);
         if (owner.verified) out.sv = 1;
+        if (owner.id !== me.id) {
+          if (!pass) await teamNotify(db, me, owner, out);
+          else await db.prepare('UPDATE ads SET posted_by = ? WHERE id = ?').bind(me.id, out.id).run();
+        }
         return json({ ad: out, pass, existed: !pass, phone, name: owner.name, verified: !!owner.verified });
       }
       // ---------- Agent recruteur : vendeurs trouvés sur les réseaux sociaux ----------
@@ -980,7 +1010,13 @@ export async function onRequest(ctx) {
         const one = async (id) => { const r = await db.prepare(SEL + ' WHERE p.id = ?').bind(id).first(); return r && (boss || r.owner_id === me.id) ? r : null; };
         if (!parts[2] && method === 'GET') {
           const { results } = boss ? await db.prepare(SEL + ' ORDER BY p.updated DESC LIMIT 2000').all() : await db.prepare(SEL + ' WHERE p.owner_id = ? ORDER BY p.updated DESC LIMIT 1000').bind(me.id).all();
-          return json({ prospects: results.map(prospectOut) });
+          let posted = {};
+          if (boss) {
+            const d0 = new Date(); d0.setUTCHours(0, 0, 0, 0);
+            const { results: pr2 } = await db.prepare('SELECT posted_by, COUNT(*) AS n, SUM(CASE WHEN created >= ? THEN 1 ELSE 0 END) AS today FROM ads WHERE posted_by IS NOT NULL GROUP BY posted_by').bind(d0.getTime()).all();
+            for (const r of pr2) posted[r.posted_by] = { n: r.n, today: r.today || 0 };
+          }
+          return json({ prospects: results.map(prospectOut), posted });
         }
         if (!parts[2] && method === 'POST') {
           const b = await readBody(req), c = clean(b);
@@ -1041,8 +1077,13 @@ export async function onRequest(ctx) {
             await db.prepare('INSERT INTO users (id, phone, name, city, pass_hash, salt, created, verified, verified_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
               .bind(uid('u'), pr.phone, pr.name, String(ad.city || '').slice(0, 60), await hashPass(pass, salt), salt, Date.now(), pr.pverified ? 1 : 0, pr.pverified ? 'team:' + me.id : null).run();
             owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(pr.phone).first();
-          }
+          } else if (owner.id !== me.id && owner.teamok === 0) return fail('team_off', 403);
           const out = await createAd(db, owner, ad, me.id, [me.id, pr.owner_id].filter(Boolean));
+          if (owner.id !== me.id) {
+            // compte déjà existant : on prévient le vendeur ; nouveau compte : ses accès partent par WhatsApp, on garde juste qui a publié
+            if (!pass) await teamNotify(db, me, owner, out);
+            else await db.prepare('UPDATE ads SET posted_by = ? WHERE id = ?').bind(me.id, out.id).run();
+          }
           await db.prepare("UPDATE prospects SET status = 'published', user_id = ?, ad_id = ?, updated = ? WHERE id = ?").bind(owner.id, out.id, Date.now(), pr.id).run();
           return json({ ad: out, pass, existed: !pass, phone: pr.phone, name: owner.name, prospect: prospectOut(await one(pr.id)) });
         }
