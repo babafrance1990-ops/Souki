@@ -71,6 +71,12 @@ h2{margin:0;font-size:17px;font-weight:700}
 .pbox{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--tint,#E8F1EC);color:var(--fg)}.pbox.warn{background:#FFF3D6;color:#5A3B00;font-weight:700}.pbig{font-size:19px;font-weight:800;color:var(--brand)}.pbeq{font-size:14.5px;margin-top:2px}
 .cattiles.row1{display:flex!important;overflow-x:auto;gap:2px;margin-inline:-14px;padding:2px 14px 6px;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch}.cattiles.row1::-webkit-scrollbar{display:none}
 .cattiles.row1 .ctile{flex:0 0 76px!important;scroll-snap-align:start}
+/* barre sous la rangée de catégories : montre qu'il y en a d'autres à faire défiler */
+.cattiles.row1{-webkit-mask-image:linear-gradient(to var(--catfade,left),#000 82%,transparent);mask-image:linear-gradient(to var(--catfade,left),#000 82%,transparent)}
+[dir=ltr] .cattiles.row1{--catfade:right}
+.cattiles.row1.end{-webkit-mask-image:none;mask-image:none}
+.catbar{position:relative;width:96px;height:6px;border-radius:3px;background:#e0d9c8;margin:2px auto 4px;overflow:hidden}
+.catbar i{position:absolute;top:0;bottom:0;inset-inline-start:0;width:40%;border-radius:3px;background:var(--g,#0B6B3A);transition:inset-inline-start .08s linear}
 .ctile .ic.allic{background:var(--tint,#E8F1EC);border:1.5px dashed var(--brand);color:var(--brand)}
 .vbadge{color:var(--brand);font-weight:700;display:flex;align-items:center;gap:3px}
 .badge.vbg{color:var(--brand);display:inline-flex;align-items:center;gap:4px;font-weight:800}
@@ -2679,7 +2685,7 @@ V.home=function(){
   return '<div class="scroll"><header class="hdr"><div class="row between"><button class="logo" data-a="gohome" aria-label="'+t('home')+'"><img class="hlogo" src="/icon-192.png" alt="" width="30" height="30">'+(S.lang==='ar'?'بيع<span>لي</span>':'Bi3<span>li</span>')+'</button><div class="row" style="gap:4px;min-width:0;flex:0 1 auto;margin-inline:6px">'+svg(I.pin,16)+'<label for="city" class="srh">'+t('city')+'</label><select id="city" class="hsel">'+opts+'</select></div><button class="pill" data-a="lang">'+(S.lang==='fr'?'عربي':'FR')+'</button></div>'+
    '<div style="position:relative"><div class="searchbox">'+svg(I.search,20)+'<label for="q" class="srh">'+t('search')+'</label><input id="q" type="search" enterkeyhint="search" placeholder="'+t('search')+'" value="'+esc(S.q)+'" autocomplete="off"><button type="button" class="camq" data-a="visual" aria-label="'+t('imgSearch')+'" title="'+t('imgSearch')+'">'+svg(I.cam,22)+'</button></div><div id="sugg" class="sugg" hidden></div></div>'+hoodRow+activeRow()+
    '</header>'+
-   '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles'+(row1?' row1':'')+'">'+(row1?allT:'')+cats+(!row1&&!S.cat?allT:'')+'</div></div>'+
+   '<div class="sec" style="padding:10px 14px 0;gap:8px">'+(hideTiles()?'<button class="linkbtn showcats" data-a="showcats">'+svg(I.list,16)+t('showCats')+'</button>':'')+'<div id="catwrap"'+(hideTiles()?' hidden':'')+'><div class="cattiles'+(row1?' row1':'')+'">'+(row1?allT:'')+cats+(!row1&&!S.cat?allT:'')+'</div>'+(row1?'<div class="catbar" aria-hidden="true"><i></i></div>':'')+'</div>'+
    /* comme Leboncoin : les résultats d'abord, les filtres de la catégorie restent derrière le bouton « Affiner » */
    (S.cat?refineBtn():'')+(S.cat&&S.refOpen?typeRow():'')+(S.cat&&S.refOpen?(S.cat==='serv'?servFilters():'')+(S.cat==='covoit'?covoitFilters():'')+(S.cat==='auto'?carFilters():'')+(S.cat==='immo'?estateFilters():'')+xfHTML()+(S.cat==='tel'?phoneFilters():'')+(isMM(S.cat)?multiFilters():'')+(S.cat==='maison'?homeFilters():'')+(S.cat==='menager'?menagerFilters():'')+(S.cat==='beaute'?beautyFilters():'')+(S.cat==='equip'?equipFilters():'')+(S.cat==='alim'?alimFilters():'')+(S.cat==='mode'?modeFilters():'')+(S.cat==='fam'?famFilters():'')+(S.cat==='job'?jobFilters():'')+(S.cat==='anim'?animFilters():'')+'<button type="button" class="btn primary wide refshow" data-a="refshow">'+svg(I.search,20)+t('seeAllN').replace('{n}',filtered().length)+'</button>':'')+
    '</div><div class="sec" id="list" style="padding-top:12px">'+listHTML()+'</div>'+(!S.cat&&!S.q.trim()?'<div class="sec" style="padding-top:4px">'+aboutCard()+'</div>':'')+'<div style="height:16px"></div>'+alertFab()+'</div>'+tabs('home');};
@@ -3710,6 +3716,16 @@ function subIcons(){
     b.classList.add('subt');b.style.setProperty('--subc',col);var ta=typeArt(key,S.draft.cat);b.innerHTML=(ta?'<span class="ic art">'+ta+'</span>':'<span class="ic">'+svg(p,21,1.8)+'</span>')+'<span>'+b.innerHTML+'</span>';
     var box=b.parentNode;if(box&&!box.classList.contains('subgrid'))box.classList.add('subgrid');}
 }
+// barre de défilement visible sous la rangée de catégories (accueil)
+function catBar(){var r=app.querySelector('.cattiles.row1'),b=app.querySelector('.catbar');if(!r||!b)return;
+  var max=r.scrollWidth-r.clientWidth;if(max<=2){b.hidden=true;r.classList.add('end');return;}b.hidden=false;
+  var w=Math.max(18,r.clientWidth/r.scrollWidth*100),p=Math.min(1,Math.abs(r.scrollLeft)/max);
+  b.firstChild.style.width=w+'%';b.firstChild.style.insetInlineStart=(p*(100-w))+'%';r.classList.toggle('end',p>0.97);}
+var catNudged=false;
+function catBarInit(){var r=app.querySelector('.cattiles.row1');if(!r)return;r.addEventListener('scroll',catBar,{passive:true});catBar();
+  // petit mouvement au 1er affichage pour montrer que la rangée défile
+  if(!catNudged&&r.scrollWidth-r.clientWidth>2){catNudged=true;var d=app.dir==='rtl'?-1:1;
+    setTimeout(function(){try{r.scrollBy({left:60*d,behavior:'smooth'});setTimeout(function(){r.scrollBy({left:-60*d,behavior:'smooth'});},700);}catch(e){}},900);}}
 function render(keepScroll){
   var sc=app.querySelector('.scroll'),top=keepScroll&&sc?sc.scrollTop:0;
   var ci=app.querySelector('#chatin'),cv=ci?ci.value:'',cfoc=!!ci&&document.activeElement===ci;
@@ -3719,6 +3735,7 @@ function render(keepScroll){
   app.innerHTML=V[S.screen]()+sheetHTML()+(S.screen==='home'?fsheetHTML():'')+(S.langPick?langPickHTML():'');
   if(oldLogo){var nl=app.querySelector('.vmimg');if(nl&&nl.getAttribute('src')===oldLogo.getAttribute('src'))nl.parentNode.replaceChild(oldLogo,nl);}
   if(fsOpen){var fsb2=app.querySelector('.fsbody');if(fsb2){fsb2.scrollTop=fst;fsb2.parentNode.classList.add('again');}}
+  if(S.screen==='home')catBarInit();
   if(S.screen==='home'){if(S.sfocus){var qi=app.querySelector('#q');if(qi){qi.focus();try{qi.setSelectionRange(qi.value.length,qi.value.length);}catch(er){}}}updateSugg();}
   if(S.screen==='post'){splitPostForm();subIcons();saveDraftSoon();rcBanner();}
   homeHist();
