@@ -5,6 +5,9 @@ import { recognise } from './vision.js';
 const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS wa_otp (nonce TEXT PRIMARY KEY, phone TEXT NOT NULL, purpose TEXT NOT NULL, code TEXT NOT NULL, created INTEGER NOT NULL, tries INTEGER DEFAULT 0, done INTEGER DEFAULT 0)',
   'CREATE TABLE IF NOT EXISTS wa_log (id INTEGER PRIMARY KEY AUTOINCREMENT, t INTEGER, st TEXT)',
+  // Notifications de l'application mobile (React Native / Expo) : un jeton par téléphone
+  'CREATE TABLE IF NOT EXISTS push_tokens (token TEXT PRIMARY KEY, user_id TEXT NOT NULL, platform TEXT DEFAULT \'\', lang TEXT DEFAULT \'ar\', t INTEGER NOT NULL)',
+  'CREATE INDEX IF NOT EXISTS push_tokens_user ON push_tokens(user_id)',
   `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, phone TEXT UNIQUE NOT NULL, name TEXT NOT NULL, city TEXT DEFAULT '', shop TEXT, favs TEXT DEFAULT '[]', pass_hash TEXT NOT NULL, salt TEXT NOT NULL, fails INTEGER DEFAULT 0, lock_until INTEGER DEFAULT 0, created INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, user_id TEXT NOT NULL, created INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS ads (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, data TEXT NOT NULL, status TEXT DEFAULT 'online', created INTEGER NOT NULL)`,
@@ -241,6 +244,62 @@ async function syncShopAds(db, userId, name, shopJson) {
 }
 
 // Création d'une annonce pour « owner ». uploader = celui qui a envoyé la vidéo (l'administrateur quand il publie pour un vendeur).
+// ---------- Notifications sur téléphone (application Bi3li, service gratuit d'Expo) ----------
+// msg : objet { title, body, data } ou fonction (ligne push_tokens) → objet, pour écrire dans la langue du téléphone.
+async function pushTo(db, userIds, msg) {
+  const ids = [...new Set((userIds || []).filter(Boolean))];
+  if (!ids.length) return;
+  const { results } = await db.prepare(`SELECT token, user_id, lang FROM push_tokens WHERE user_id IN (${ids.map(() => '?').join(',')})`).bind(...ids).all();
+  if (!results || !results.length) return;
+  const list = results.map((r) => ({ to: r.token, sound: 'default', channelId: 'default', priority: 'high', ...(typeof msg === 'function' ? msg(r) : msg) }));
+  for (let i = 0; i < list.length; i += 100) {
+    const part = list.slice(i, i + 100);
+    const res = await fetch('https://exp.host/--/api/v2/push/send', { method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json' }, body: JSON.stringify(part) });
+    const j = await res.json().catch(() => null);
+    // téléphone désinstallé ou notifications refusées : on oublie le jeton
+    const dead = ((j && j.data) || []).map((d, k) => (d && d.status === 'error' && d.details && d.details.error === 'DeviceNotRegistered' ? part[k].to : null)).filter(Boolean);
+    if (dead.length) await db.batch(dead.map((t) => db.prepare('DELETE FROM push_tokens WHERE token = ?').bind(t)));
+  }
+}
+const normQ = (x) => String(x || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/[ً-ْـ]/g, '');
+// Une annonce correspond-elle à une recherche enregistrée (alerte) ? Version simple de la recherche du site (sans les synonymes).
+function alertMatch(a, s) {
+  if (!s || s.alert === false) return false;
+  if (s.cat && a.cat !== s.cat) return false;
+  if (s.city && !String(s.city).startsWith('w:') && a.city !== s.city) return false;
+  if (s.hood && !String(s.hood).startsWith('w:') && a.hood !== s.hood) return false;
+  if (s.pmin && !(a.price >= +s.pmin)) return false;
+  if (s.pmax && !(a.price <= +s.pmax)) return false;
+  if (s.f && a.cat === 'immo') {
+    const e = a.estate || {};
+    if (s.f.mode && (s.f.mode === 'rent') !== (e.deal === 'rent')) return false;
+    if (s.f.kind && e.kind !== s.f.kind) return false;
+  }
+  if (s.q) {
+    const v = a.car || a.veh || {};
+    const h = normQ([a.title, a.desc, a.city, a.hood, v.brand, v.model].join(' '));
+    if (!normQ(s.q).split(/\s+/).filter(Boolean).every((w) => h.includes(w))) return false;
+  }
+  return true;
+}
+// Nouvelle annonce : prévenir (une seule fois) les personnes dont une alerte correspond et qui ont l'application
+async function alertPush(db, ad) {
+  const { results } = await db.prepare("SELECT id, searches FROM users WHERE id IN (SELECT DISTINCT user_id FROM push_tokens) AND searches IS NOT NULL AND searches != '[]'").all();
+  const who = [];
+  for (const u of results || []) {
+    if (u.id === ad.owner) continue;
+    let ss = [];
+    try { ss = JSON.parse(u.searches) || []; } catch (e) { /* ignore */ }
+    if (ss.some((x) => alertMatch(ad, x))) who.push(u.id);
+  }
+  if (!who.length) return;
+  const n = (x) => Math.round(x).toLocaleString('fr-FR').replace(/[  ]/g, ' ');
+  await pushTo(db, who, (r) => {
+    const fr = r.lang === 'fr';
+    const price = ad.hidep || !(ad.price > 0) ? '' : ' — ' + (ad.punit === 'old' ? n(ad.priceOld || ad.price * 10) + (fr ? ' anciennes UM' : ' أوقية قديمة') : n(ad.price) + (fr ? ' MRU' : ' أوقية جديدة'));
+    return { title: fr ? '🔔 Nouvelle annonce pour votre alerte' : '🔔 إعلان جديد يطابق تنبيهك', body: (ad.title + price).slice(0, 150), data: { type: 'ad', ad: ad.id } };
+  });
+}
 async function createAd(db, owner, ad, uploaderId, claim) {
   const id = uid('a');
   // Photos traitées en même temps (et non plus une par une), dans l'ordre choisi par le vendeur
@@ -364,7 +423,7 @@ export async function onRequest(ctx) {
       let wa = null;
       try { wa = { on: waOn(env), otp: otpOn(env), token: !!env.WA_TOKEN, phoneId: !!env.WA_PHONE_ID, secret: !!env.WA_APP_SECRET, log: ((await db.prepare('SELECT t, st FROM wa_log ORDER BY id DESC LIMIT 8').all()).results || []).map((r) => new Date(r.t).toISOString().slice(5, 19).replace('T', ' ') + ' UTC · ' + r.st) }; } catch (e) { /* ignore */ }
       if (wa && url.searchParams.get('check') === '1') wa.check = await waCheck(env);
-      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-18-catbar', wa });
+      return json({ ok: true, storage: R2 ? 'r2' : 'd1', v: '2026-11-23-push', wa });
     }
 
     // ---------- Médias (photos, vocal) ----------
@@ -787,6 +846,19 @@ export async function onRequest(ctx) {
         FROM follows f JOIN users u ON u.id = f.target_id WHERE f.follower_id = ? AND COALESCE(u.blocked, 0) = 0 ORDER BY f.t DESC LIMIT 200`).bind(me.id).all();
       return json({ users: results.map((u) => ({ id: u.id, name: u.name, city: u.city || '', avatar: u.avatar || '', shop: u.shop ? JSON.parse(u.shop).name : '', ads: u.ads })) });
     }
+    // ---------- Application mobile : enregistrer / oublier le téléphone pour les notifications ----------
+    if (parts[0] === 'push' && (method === 'POST' || method === 'DELETE')) {
+      const b = await readBody(req);
+      const token = String(b.token || '').slice(0, 200);
+      if (!/^Expo(nent)?PushToken\[[^\]]+\]$/.test(token)) return fail('invalid');
+      if (method === 'POST') {
+        await db.prepare('INSERT INTO push_tokens (token, user_id, platform, lang, t) VALUES (?, ?, ?, ?, ?) ON CONFLICT(token) DO UPDATE SET user_id = excluded.user_id, platform = excluded.platform, lang = excluded.lang, t = excluded.t')
+          .bind(token, me.id, String(b.platform || '').slice(0, 10), b.lang === 'fr' ? 'fr' : 'ar', Date.now()).run();
+      } else {
+        await db.prepare('DELETE FROM push_tokens WHERE token = ? AND user_id = ?').bind(token, me.id).run();
+      }
+      return json({ ok: true });
+    }
     if (parts[0] === 'me') {
       if (method === 'GET') return json({ user: publicUser(me, env) });
       if (method === 'PUT') {
@@ -832,7 +904,9 @@ export async function onRequest(ctx) {
           const on = await db.prepare("SELECT COUNT(*) AS n FROM ads WHERE user_id = ? AND status = 'online'").bind(me.id).first();
           if (on && on.n >= UNVERIFIED_MAX) return json({ error: 'verify_needed', limit: UNVERIFIED_MAX }, 403);
         }
-        return json({ ad: await createAd(db, me, ad, me.id, [me.id]) });
+        const created = await createAd(db, me, ad, me.id, [me.id]);
+        later(alertPush(db, created)); // notifications des alertes, après la réponse
+        return json({ ad: created });
       }
       const row = parts[1] ? await db.prepare('SELECT * FROM ads WHERE id = ?').bind(parts[1]).first() : null;
       if (!row) return fail('not_found', 404);
@@ -990,6 +1064,7 @@ export async function onRequest(ctx) {
         }
         delete ad.shop;
         const out = await createAd(db, owner, ad, me.id, [me.id]);
+        later(alertPush(db, out));
         if (owner.verified) out.sv = 1;
         if (owner.id !== me.id) {
           if (!pass) await teamNotify(db, me, owner, out);
@@ -1079,6 +1154,7 @@ export async function onRequest(ctx) {
             owner = await db.prepare('SELECT * FROM users WHERE phone = ?').bind(pr.phone).first();
           } else if (owner.id !== me.id && owner.teamok === 0) return fail('team_off', 403);
           const out = await createAd(db, owner, ad, me.id, [me.id, pr.owner_id].filter(Boolean));
+          later(alertPush(db, out));
           if (owner.id !== me.id) {
             // compte déjà existant : on prévient le vendeur ; nouveau compte : ses accès partent par WhatsApp, on garde juste qui a publié
             if (!pass) await teamNotify(db, me, owner, out);
@@ -1258,6 +1334,12 @@ export async function onRequest(ctx) {
         if (c.buyer_id === me.id) {
           try { await db.prepare('INSERT OR IGNORE INTO ad_contacts (ad_id, user_id, kind, t) VALUES (?, ?, ?, ?)').bind(c.ad_id, me.id, 'msg', t).run(); } catch (e) { /* ignore */ }
         }
+        // notification sur le téléphone de l'autre personne (si elle a l'application)
+        later(pushTo(db, [c.buyer_id === me.id ? c.seller_id : c.buyer_id], (r) => ({
+          title: (me.name + ' · ' + (c.title || '')).slice(0, 80),
+          body: (txt || (r.lang === 'fr' ? '📷 Photo' : '📷 صورة')).slice(0, 150),
+          data: { type: 'msg', conv: c.id },
+        })));
         return json({ ok: true, t, img });
       }
       if (parts[2] === 'read' && method === 'POST') {
