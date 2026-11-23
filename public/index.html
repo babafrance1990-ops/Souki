@@ -646,7 +646,7 @@ var I={video:'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="M16 10
 
 var TX={
  fr:{search:'Que cherchez-vous ?',allCities:'Toute la Mauritanie',all:'Tout',recent:'Annonces récentes',results:'résultats',sortNew:'Plus récentes',sortLow:'Prix croissant',sortHigh:'Prix décroissant',
-  home:'Accueil',favs:'Favoris',msgs:'Messages',account:'Compte',post:'Publier gratuitement',noRes:'Aucune annonce ne correspond. Essayez un autre mot ou une autre ville.',
+  home:'Accueil',askPrice:'Contactez le vendeur pour le prix',hidep:'Masquer le prix sur l’annonce',favs:'Favoris',msgs:'Messages',account:'Compte',post:'Publier gratuitement',noRes:'Aucune annonce ne correspond. Essayez un autre mot ou une autre ville.',
   example:'Exemple',sold:'Vendu',desc:'Description',safety:'Rencontrez le vendeur dans un lieu public et vérifiez le produit avant de payer. Ne payez jamais à l’avance.',
   report:'Signaler cette annonce',call:'Appeler',message:'Message',seller:'Vendeur',verified:'Numéro vérifié',
   photos:'Photos',upTo:'(jusqu’à 6)',add:'Ajouter',compress:'Les photos sont réduites pour économiser vos données.',title:'Titre',cat:'Catégorie',choose:'Choisir…',price:'Prix',city:'Ville',
@@ -777,7 +777,7 @@ var TX={
   newMsg:'Nouveau message de {n}',noMsgLogin:'Connectez-vous pour discuter avec les vendeurs.',you:'Vous',ownAd:'C’est votre propre annonce.',
   localNote:'Votre compte est enregistré sur le serveur Bi3li : vous retrouvez vos annonces, vos favoris et vos messages sur tous vos appareils.'},
  ar:{search:'عمّا تبحث؟',allCities:'كل موريتانيا',all:'الكل',recent:'أحدث الإعلانات',results:'نتيجة',sortNew:'الأحدث',sortLow:'السعر تصاعدياً',sortHigh:'السعر تنازلياً',
-  home:'الرئيسية',favs:'المفضلة',msgs:'الرسائل',account:'حسابي',post:'انشر إعلانك مجاناً',noRes:'لا توجد إعلانات مطابقة. جرّب كلمة أو مدينة أخرى.',
+  home:'الرئيسية',askPrice:'راسل البائع لمعرفة السعر',hidep:'إخفاء السعر على البطاقة',favs:'المفضلة',msgs:'الرسائل',account:'حسابي',post:'انشر إعلانك مجاناً',noRes:'لا توجد إعلانات مطابقة. جرّب كلمة أو مدينة أخرى.',
   example:'مثال',sold:'مُباع',desc:'الوصف',safety:'قابل البائع في مكان عام وافحص المنتج قبل الدفع. لا تدفع مسبقاً أبداً.',
   report:'الإبلاغ عن الإعلان',call:'اتصال',message:'رسالة',seller:'البائع',verified:'رقم موثّق',
   photos:'الصور',upTo:'(حتى 6)',add:'إضافة',compress:'يتم تصغير الصور لتوفير الإنترنت.',title:'العنوان',cat:'الفئة',choose:'اختر…',price:'السعر',city:'المدينة',
@@ -941,7 +941,7 @@ function oldLongW(v){var x=amtW(v);if(x.w===num(v))return num(v)+' '+t('oldLong'
 function eqOldW(v){var x=amtW(v);if(x.w===num(v))return t('eqOld').replace('{v}',num(v));return t(S.lang!=='ar'&&/million/.test(x.w)?'eqOldWd':'eqOldW').replace('{w}',x.w).replace('{v}',num(v));}
 function priceWords(a){if(!(a.price>0))return '';var old=a.punit==='old',x=amtW(old?a.price:a.price*10);
   return (x.exact?'= ':'≈ ')+x.w+' '+t(old?'newShort':'oldShort');}
-function priceStr(a){var e=normE(a.estate);return (a.punit==='old'?num(a.priceOld||a.price*10)+' '+t('oldUnit'):fmt(a.price))+((e&&e.deal==='rent')||a.job?t('perMonth'):'')+(a.trip?t('perPlace'):'')+(a.veh&&a.veh.kind==='rental'?t('perDay'):'');}
+function priceStr(a){if(a.hidep)return t('askPrice');var e=normE(a.estate);return (a.punit==='old'?num(a.priceOld||a.price*10)+' '+t('oldUnit'):fmt(a.price))+((e&&e.deal==='rent')||a.job?t('perMonth'):'')+(a.trip?t('perPlace'):'')+(a.veh&&a.veh.kind==='rental'?t('perDay'):'');}
 function estMeta(a){var e=normE(a.estate);if(!e)return '';var p=[kindDeal(e)];if(hasRooms(e.kind)&&e.rooms)p.push(S.lang==='ar'?arCount(e.rooms,'room'):e.rooms+' '+t('rooms').toLowerCase());if(e.surface)p.push(e.surface+' '+U('m2'));return p.join(' · ');}
 var VTYPES=['berline','suv','pickup','citadine','utilitaire','monospace'];
 var COLORS=['blanc','noir','gris','argent','bleu','rouge','vert','beige','marron','autre'];
@@ -1422,7 +1422,7 @@ function card(a){
   var over='<span class="cfav'+(fav?' on':'')+'" role="button" tabindex="0" data-a="fav" data-id="'+a.id+'" aria-pressed="'+fav+'" aria-label="'+t('favAdd')+'">'+svg(I.heart||'<path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.2 3.2 4.5 6.8 4.5c2 0 3.6 1.1 5.2 3 1.6-1.9 3.2-3 5.2-3 3.6 0 5.9 3.7 4.4 7.2C19.5 16.4 12 21 12 21z"/>',20,2.2)+'</span>'+
     (np>1?'<span class="cnph">'+svg(I.cam,13)+' '+np+'</span>':'')+(isNew?'<span class="cnew">'+t('newB')+'</span>':'');
   var sl=a.seller?'<div class="meta cseller">'+esc(a.seller)+(a.sn?' · <b class="stars">★ '+String(a.sr).replace('.',S.lang==='ar'?'٫':',')+'</b> '+t('revN').replace('{n}',a.sn):'')+'</div>':'';
-  return '<button class="card" data-a="open" data-id="'+a.id+'"><div class="thumb">'+thumb(a)+over+'</div><div class="cbody"><div class="ctitle" translate="no">'+esc(a.title)+'</div><div class="price">'+priceStr(a)+'</div>'+(a.price>0?'<div class="pwords">'+priceWords(a)+'</div>':'')+
+  return '<button class="card" data-a="open" data-id="'+a.id+'"><div class="thumb">'+thumb(a)+over+'</div><div class="cbody"><div class="ctitle" translate="no">'+esc(a.title)+'</div><div class="price">'+priceStr(a)+(a.nego&&!a.hidep?' <span style="font-size:12px;font-weight:600;color:var(--brand)">'+t('negoB')+'</span>':'')+'</div>'+(a.price>0?'<div class="pwords">'+priceWords(a)+'</div>':'')+
    (spec?'<div class="meta" style="font-weight:700;color:var(--fg)">'+spec+'</div>':'')+shopBadge(a.shop,13)+(a.sv&&!(a.shop&&a.shop.verified)?'<div><span class="badge vbg">'+svg(I.check,13,2.5)+t('verifiedB')+'</span></div>':'')+(flags?'<div class="flags">'+flags+'</div>':'')+
    sl+'<div class="meta">'+esc(a.hood?hoodName(a.hood)+t('comma'):'')+esc(city(a.city))+' · '+ago(a.t)+'</div></div></button>';}
 
@@ -2827,7 +2827,7 @@ V.post=function(){
      videoField(d)+'<div class="field"><div class="legend">'+t('voiceLbl')+O+'</div>'+voice+'<div class="meta">'+t('voiceHelp')+'</div></div></details>')+
    step(3,'<div class="field"><label for="fprice">'+(d.cat==='immo'&&d.deal==='rent'?t('rent'):d.cat==='auto'&&d.vkind==='service'?t('priceFrom'):d.cat==='auto'&&d.vkind==='rental'?t('priceDay'):d.cat==='serv'?t('tarif'):d.cat==='fam'&&isFamService(d.fsub)?t('salary'):d.cat==='job'?t(d.joffer==='demand'?'salaryW':'salaryM'):d.cat==='covoit'?t(d.ctype==='demand'?'budgetPlace':'pricePlace'):t('price'))+'</label>'+units+
      '<input id="fprice" class="inp" data-f="price" inputmode="numeric" value="'+esc(d.price)+'" placeholder="'+(unit==='old'?'2000000':unit==='new'?'200000':'')+'"'+(e.price?' aria-invalid="true"':'')+'>'+(e.price?'<div class="err">'+t('errPrice')+'</div>':'')+
-     '<div id="phint">'+priceBox(d)+'</div><div id="pwarn">'+priceWarnHTML(d)+'</div>'+chk('nego',t('nego'))+'</div>'+
+     '<div id="phint">'+priceBox(d)+'</div><div id="pwarn">'+priceWarnHTML(d)+'</div>'+chk('nego',t('nego'))+chk('hidep',t('hidep'))+'</div>'+
      (S.prefilled&&!S.editId?'<div class="tip" style="background:var(--tint);color:var(--fg);align-items:center"><span>'+svg(I.check,18,2.5)+'</span><p style="flex:1;margin:0">'+t('prefilled')+'</p></div>':'')+
      '<div class="field"><label for="fcity">'+t('city')+'</label><select id="fcity" class="inp" data-f="city">'+cityOpts+'</select></div>'+
      '<div class="field"><label for="fhood">'+t('hood')+O+'</label>'+hoodF+(e.hood?'<div class="err">'+t('errHood')+'</div>':'')+'</div>'+
@@ -3771,7 +3771,7 @@ function newDraft(){return {photos:[],title:'',cat:S.cat||'',price:'',city:S.cit
   pdtype:'',pbrand:'',pmodel:'',pstorage:'',pram:'',pcond:'',pcolor:'',pbatt:'',pdual:'',punlock:'',pincl:[],pimei:'',
   deliv:false,delivNote:'',ssub:'',soffer:'offer',sarea:'',shome:false,vdriver:false,
   ctype:'',cfrom:'',cto:'',cdate:'',ctime:'',cseats:'',ccar:'',cstops:'',cbags:'',cclim:false,cwomen:false,
-  species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'',nego:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'part',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
+  species:'',count:'1',sex:'',age:'',breed:'',tabaski:false,delivery:false,punit:'',nego:true,hidep:false,near:'',voice:'',mtype:'',mbrand:'',mmodel:'',mcond:'',msize:'',msmart:'',mres:'',mpads:'',mgames:'',mcpu:'',mram:'',mstorage:'',mstype:'',mscreen:'',macc:'',mcompat:'',hsub:'',hitem:'',hcond:'',hqty:'',hdims:'',hmat:'',hcolor:'',hbrand:'',hcap:'',hdeliv:false,vkind:'',vbrand:'',vmodel:'',vyear:'',vkm:'',vfuel:'',vseats:'',vttype:'',vload:'',vmtype:'',vcc:'',vbtype:'',vpart:'',vcompat:'',vservice:'',vhours:'',vhome:false,vcond:'',mosub:'',moitem:'',mopub:'',mosize:'',mofabric:'',mocolor:'',mobrand:'',mometal:'',moweight:'',mohand:false,mocond:'',fsub:'',fitem:'',fage:'',fgender:'',fsize:'',fcond:'',foffer:'',frole:'',fsched:'',fexp:'',flangs:[],joffer:'',jcontract:'',jtime:'',jsector:'',jfunc:'',jexp:'',jedu:'',stype:(S.user&&S.user.shop)?'pro':'part',sname:(S.user&&S.user.shop)?S.user.shop.name:'',saddr:(S.user&&S.user.shop)?(S.user.shop.market||''):'',pub:'',comm:'',avance:'',caution:'',dur:'',ilot:'',lot:'',dimL:'',dimW:'',built:'',servic:''};}
 function bumpWait(a){var last=a.bumpedAt||a.t;return Math.max(0,Math.ceil((last+7*864e5-Date.now())/864e5));}
 function bumpBtn(a){var w=bumpWait(a);return w?'<button class="btn small" data-a="bumpinfo" data-v="'+w+'" style="opacity:.6">'+svg(I.clock,14)+t('bumpIn').replace('{n}',w)+'</button>'
   :'<button class="btn small primary" data-a="bump" data-id="'+a.id+'">'+svg('<path d="M12 19V5M5 12l7-7 7 7"/>',16,2.5)+t('bump')+'</button>';}
@@ -4248,7 +4248,7 @@ function publish(dry,opt){
   if(!dry&&d.cat&&(!(d.title||'').trim()||d.title===d._autoT))d.title=d._autoT=autoTitle(d);
   if(!dry&&!(d.title||'').trim())e.title=1;
   if(!d.cat)e.cat=1;
-  var p=String(d.price).replace(/\s/g,'');var pm=d.punit==='old'?Math.round(+p/10):+p;if(!/^\d+$/.test(p)||pm<=0)e.price=1;if(d.punit!=='old'&&d.punit!=='new')e.punit=1;
+  var p=String(d.price).replace(/\s/g,'');var pm=d.punit==='old'?Math.round(+p/10):+p;if(!d.hidep&&(!/^\d+$/.test(p)||pm<=0))e.price=1;if(d.punit!=='old'&&d.punit!=='new')e.punit=1;
   var veh=null;
   if(d.cat==='auto'&&d.vkind!=='car'){
     var vk=d.vkind;
@@ -4389,7 +4389,7 @@ function publish(dry,opt){
   if(Object.keys(e).length){render(true);var fe=app.querySelector('#pf .err,#pf [aria-invalid="true"]'),ps=fe&&fe.closest('.pstep');
     if(fe&&fe.closest('#moredet')&&!S.detOpen){S.detOpen=true;render(true);}
     if(ps&&+ps.getAttribute('data-step')!==S.pstep){S.pstep=+ps.getAttribute('data-step');render(true);}setTimeout(guideErr,40);return;}
-  var ad={id:'m'+Date.now(),punit:d.punit==='old'?'old':'new',priceOld:d.punit==='old'?+p:undefined,title:d.title.trim(),cat:d.cat,price:pm,city:d.city,hood:(d.hood||'').trim(),near:(d.near||'').trim(),nego:!!d.nego,deliv:!!d.deliv,delivNote:d.deliv?(d.delivNote||'').trim():'',t:Date.now(),desc:d.desc.trim(),seller:S.user.name,phone:S.user.phone,photos:d.photos.slice(),contacts:{wa:d.wa,call:d.call,msg:d.msg}};
+  var ad={id:'m'+Date.now(),punit:d.punit==='old'?'old':'new',priceOld:d.punit==='old'?+p:undefined,title:d.title.trim(),cat:d.cat,price:pm,city:d.city,hood:(d.hood||'').trim(),near:(d.near||'').trim(),nego:!!d.nego,hidep:!!d.hidep,deliv:!!d.deliv,delivNote:d.deliv?(d.delivNote||'').trim():'',t:Date.now(),desc:d.desc.trim(),seller:S.user.name,phone:S.user.phone,photos:d.photos.slice(),contacts:{wa:d.wa,call:d.call,msg:d.msg}};
   if(car)ad.car=car;
   if(veh)ad.veh=veh;
   if(estate){ad.estate=estate;ad.hood=d.hood.trim();}
@@ -4531,7 +4531,7 @@ function adminClick(a,el,id){
       api('POST','ads/'+S.id+'/report',{reason:''}).then(function(){toast(t('reported'));}).catch(function(){toast(t('netErr'));});return true;
     case 'modedit':var ma=byId(id);if(!canMod(ma))return true;S.modEdit={id:id,name:ma.seller||'',phone:ma.phone||'',note:'',back:S.screen==='detail'?'detail':'home'};S.goDet=false;
     case 'adddet':if(a==='adddet')S.goDet=true;
-    case 'editad':if(a==='editad'||a==='adddet')S.modEdit=null;var ea=byId(id);if(!ea)return true;var base=ea._d?JSON.parse(JSON.stringify(ea._d)):{title:ea.title||'',cat:ea.cat||'',price:String(ea.punit==='old'?(ea.priceOld||(ea.price||0)*10):(ea.price||'')),punit:ea.punit==='old'?'old':'new',city:ea.city||'Nouakchott',hood:ea.hood||'',near:ea.near||'',desc:ea.desc||'',nego:!!ea.nego,deliv:!!ea.deliv,delivNote:ea.delivNote||'',stype:ea.stype||'',
+    case 'editad':if(a==='editad'||a==='adddet')S.modEdit=null;var ea=byId(id);if(!ea)return true;var base=ea._d?JSON.parse(JSON.stringify(ea._d)):{title:ea.title||'',cat:ea.cat||'',price:String(ea.punit==='old'?(ea.priceOld||(ea.price||0)*10):(ea.price||'')),punit:ea.punit==='old'?'old':'new',city:ea.city||'Nouakchott',hood:ea.hood||'',near:ea.near||'',desc:ea.desc||'',nego:!!ea.nego,hidep:!!ea.hidep,deliv:!!ea.deliv,delivNote:ea.delivNote||'',stype:ea.stype||'',
         sname:(ea.splace&&ea.splace.name)||'',saddr:(ea.splace&&ea.splace.addr)||'',wa:!ea.contacts||!!ea.contacts.wa,call:!ea.contacts||!!ea.contacts.call,msg:!!(ea.contacts&&ea.contacts.msg)};
       S.editId=id;S.pstep=S.goDet?3:1;S.maxStep=3;S.detOpen=!!S.goDet;S.goDet=false;if(base.cat!==ea.cat){base.cat=ea.cat;if(ea.cat==='menager')base.hsub='electro';if(ea.cat==='alim'&&ea.alim){base.lsub=ea.alim.sub;}if(ea.cat==='equip'&&ea.eqp){base.qsub=ea.eqp.sub;base.qbrand=ea.eqp.brand||'';base.qcond=ea.eqp.cond||'';}if(ea.cat==='beaute'&&ea.bty){base.bsub=ea.bty.sub;base.bbrand=ea.bty.brand||'';base.bcond=ea.bty.cond||'';}}
       if(ea.mo&&base.mosub!==ea.mo.sub){base.mosub=ea.mo.sub;base.moitem=ea.mo.item||'';}

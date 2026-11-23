@@ -283,7 +283,7 @@ const MOD_FIELDS = [
   ['title', 'العنوان', 'titre'], ['cat', 'الفئة', 'catégorie'], ['price', 'السعر', 'prix'], ['punit', 'عملة السعر (قديمة / جديدة)', 'unité du prix'],
   ['city', 'المدينة', 'ville'], ['hood', 'الحي', 'quartier'], ['near', 'المعلم القريب', 'repère'], ['desc', 'الوصف', 'description'], ['photos', 'الصور', 'photos'],
 ];
-const MOD_DETAILS = ['car', 'veh', 'estate', 'dev', 'mm', 'home', 'mo', 'fam', 'bty', 'eqp', 'alim', 'job', 'anim', 'trip', 'serv', 'nego', 'deliv', 'delivNote', 'stype', 'splace'];
+const MOD_DETAILS = ['car', 'veh', 'estate', 'dev', 'mm', 'home', 'mo', 'fam', 'bty', 'eqp', 'alim', 'job', 'anim', 'trip', 'serv', 'nego', 'hidep', 'deliv', 'delivNote', 'stype', 'splace'];
 function modChanges(a, b) {
   const same = (x, y) => JSON.stringify(x === undefined ? null : x) === JSON.stringify(y === undefined ? null : y);
   const out = MOD_FIELDS.filter(([k]) => !same(k === 'punit' ? a[k] || 'new' : a[k], k === 'punit' ? b[k] || 'new' : b[k]));
