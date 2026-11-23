@@ -2907,16 +2907,16 @@ V.login=function(){
   var L=S.login;if(!L.mode)L.mode='login';var reg=L.mode==='register';var ex=L.exists;
   var stage=reg?(L.ready?'ready':L.pin1?'confirm':'new'):'pin';
   var tabs='<div class="lgtabs" role="tablist" style="display:none">'+['login','register'].map(function(m){return '<button type="button" role="tab" aria-selected="'+(L.mode===m)+'" class="lgtab'+(L.mode===m?' on':'')+'" data-a="lgmode" data-v="'+m+'">'+t(m==='login'?'tabLogin':'tabReg')+'</button>';}).join('')+'</div>'+
-    (L.exists===false&&(L.phone||'').length===8?alertBox('warn',t('lgNoAccT').replace('{p}',phShow(L.phone)),t('lgNoAccS'),'<button type="button" class="btn small" data-a="lgfixphone" style="align-self:flex-start">'+t('lgFixPhone')+'</button>'):
+    (
      L.info?'<div class="meta lgnew" role="status">'+L.info+'</div>':'');
   var ph=(L.phone||''),shown='';for(var i=0;i<8;i++){shown+='<span class="dg'+(i<ph.length?' on':'')+'">'+(ph.charAt(i)||'')+'</span>'+(i%2&&i<7?'<span class="dgsp"></span>':'');}
   var phoneF='<div class="lgf'+(L.active==='phone'?' act':'')+'"><div class="lgl">'+svg(I.user||'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',20)+t('lgPhoneL')+'</div>'+
     '<button type="button" class="lgphonebox" data-a="lgact" data-v="phone" dir="ltr" aria-label="'+t('lgPhoneL')+' : '+esc(ph)+'">'+shown+'</button>'+(L.checking?'<div class="meta">'+t('lgChecking')+'</div>':'')+'</div>';
-  var nameF=reg?'<div class="lgf"><div class="lgstep">'+t('lgStepName')+'</div><label class="lgl" for="lname">'+t('lgNameL')+'</label><input id="lname" class="inp" data-l="name" autocomplete="given-name" maxlength="30" enterkeyhint="next" value="'+esc(L.name||'')+'"></div>':'';
+  var nameF=reg?'<div class="lgf"><label class="lgl" for="lname">'+t('lgNameL')+'</label><input id="lname" class="inp" data-l="name" autocomplete="given-name" maxlength="30" enterkeyhint="next" value="'+esc(L.name||'')+'"></div>':'';
   var codeF;
   var nameStep=reg&&!L.nameOk;if(nameStep&&L.active!=null)L.active=null;
   var phoneStep=!reg&&L.exists!==true;
-  if(nameStep){codeF='<div class="lgf act"><button type="button" class="btn primary wide lgbig" data-a="lgnamenext">'+t('lgNext')+'</button></div>';}
+  if(nameStep){codeF='<div class="lgf act"><button type="button" class="btn primary wide lgbig" data-a="lgnamenext">'+t('lgNext')+'</button><button type="button" class="linkbtn lgsmall" data-a="lgfixphone" style="align-self:center;color:var(--brand)">'+t('lgFixPhone')+'</button></div>';}
   else if(phoneStep){codeF='';}
   else if(L.old){codeF='<div class="lgf act"><label class="lgl" for="lpass">'+t('lgOldH')+'</label><div class="pwrap"><input id="lpass" class="inp" type="password" data-l="pass" autocomplete="current-password" maxlength="64" value="'+esc(L.pass||'')+'"></div>'+
       '<button type="button" class="btn primary wide lgbig" data-a="lgold"'+(S.busy?' disabled':'')+'>'+(S.busy?t('sending'):t('doLogin'))+'</button></div>';}
@@ -2942,7 +2942,7 @@ V.login=function(){
       if(!k)return '<span></span>';
       if(k==='del')return '<button type="button" class="pk pkdel" data-a="pk" data-v="del" aria-label="'+t('lgDel')+'">'+svg('<path d="M21 5H9l-6 7 6 7h12z"/><path d="M12 9l6 6M18 9l-6 6"/>',26)+'</button>';
       return '<button type="button" class="pk" data-a="pk" data-v="'+k+'">'+k+'<small>'+({'2':'ABC','3':'DEF','4':'GHI','5':'JKL','6':'MNO','7':'PQRS','8':'TUV','9':'WXYZ'}[k]||'&nbsp;')+'</small></button>';}).join('')+'</div></div>';
-  var wa=S.wa?(S.otp&&S.otp.purpose==='login'?otpBox('login'):S.otp&&S.otp.purpose==='reset'?'':S.waJob?waWaitBox():'<button type="button" class="btn wa wide" data-a="'+(S.otpOn?'otpsend" data-v="login':'walogin')+'">'+svg(I.msg,20)+t('waLogin')+'</button>'):'';
+  var wa=(S.otp&&S.otp.purpose==='login')?otpBox('login'):(S.waJob&&S.waJob.purpose==='login'?waWaitBox():'');
   return '<form id="lform" class="scroll lgscreen'+(kbOn?' kbpad':'')+'" autocomplete="on" novalidate><button type="button" class="icon lgclose" data-a="go" data-s="home" aria-label="'+t('back')+'">'+svg('<path d="M6 6l12 12M18 6 6 18"/>',22)+'</button>'+
     '<div class="sec lgsec">'+siteLogo()+(S.after?'<p class="meta" style="margin:0;text-align:center">'+t('needLogin')+'</p>':'')+tabs+phoneF+nameF+codeF+err+(S.busy&&!L.old?'<p class="meta" style="text-align:center;margin:0">'+t('sending')+'</p>':'')+links+wa+'</div></form>'+keys;};
 document.addEventListener('submit',function(e){if(e.target&&e.target.id==='lform'){e.preventDefault();if(S.login.old)lgOld();}},true);
