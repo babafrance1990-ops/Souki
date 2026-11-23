@@ -1320,7 +1320,7 @@ function bulkPublish(){
 function credsBox(){var c=S.newCreds||load('newCreds',null);if(!c||!S.user)return '';
   var msg=t('credsMsg').replace('{p}',c.phone.replace(/(\d{2})(?=\d)/g,'$1 ')).replace('{w}',c.pass).replace('{u}',location.origin);
   return '<div class="credbox"><b>'+t('credsH')+'</b><p style="margin:0">'+t('credsP')+'</p>'+
-   '<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/222'+esc(c.phone)+'?text='+encodeURIComponent(msg)+'">'+svg(I.msg,18)+t('credsWa')+'</a>'+
+
    '<button class="linkbtn" data-a="credsok" style="align-self:center">'+t('credsDone')+'</button></div>';}
 function mgmtSheet(a){var sold=a.status==='sold',conf=S.mgmtDel===a.id;
   function it(act,ic,l,cls){return '<button class="msi'+(cls?' '+cls:'')+'" data-a="'+act+'" data-id="'+a.id+'">'+svg(ic,22)+'<span>'+l+'</span></button>';}
@@ -3195,7 +3195,7 @@ V.welcome=function(){var c=S.newCreds||load('newCreds',null)||{},u=S.user||{},ph
      row(svg('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',20),t('wcCode'),'<span dir="ltr" style="letter-spacing:2px">'+esc(code)+'</span>',c.pass?'<button type="button" class="linkbtn" data-a="wcshow" style="color:var(--brand);font-weight:700">'+t(S.wcShow?'wcHide':'wcShow')+'</button>':'')+
    '</div>'+
    '<p style="margin:0;font-weight:800">'+t('wcKeep')+'</p>'+
-   (ph&&c.pass?'<a class="btn wa wide" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/222'+esc(ph)+'?text='+encodeURIComponent(msg)+'">'+svg(I.msg,18)+t('wcWa')+'</a>':'')+
+
    '<p class="meta" style="margin:-6px 0 0">'+t('wcShot')+'</p>'+
    verifyLinkBtn()+'<button type="button" class="btn primary wide lgbig" data-a="wcpost" style="margin-top:6px">'+svg(I.plus||'<path d="M12 5v14M5 12h14"/>',20)+t(S.wcAfter==='post'?'wcCont':'wcFirst')+'</button>'+
    '<button type="button" class="btn wide" data-a="wcbrowse">'+t('wcBrowse')+'</button>'+
