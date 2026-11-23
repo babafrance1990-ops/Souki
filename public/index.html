@@ -158,7 +158,7 @@ nav.tabs{position:relative;z-index:10;display:grid;grid-template-columns:repeat(
 .tab[aria-current="page"]{color:var(--brand);font-weight:800}
 .fab{width:56px;height:56px;border-radius:28px;background:var(--gold);color:var(--gold-fg);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .tab.post{color:var(--fg);justify-content:flex-start;gap:3px}
-.tab.post .fab{margin-top:-34px;width:66px;height:66px;border-radius:33px;box-shadow:0 3px 12px rgba(0,0,0,.22)}.fab svg{width:34px;height:34px}
+.tab.post .fab{margin-top:-34px;width:66px;height:66px;border-radius:33px;box-shadow:0 0 0 3px var(--brand),0 3px 12px rgba(0,0,0,.22)}.fab svg{width:34px;height:34px}
 .postlbl{font-size:11px;font-weight:800;line-height:1.15;text-align:center;max-width:100%}
 .topbar{display:flex;align-items:center;gap:8px;padding:10px 10px;background:var(--surface);border-bottom:1px solid var(--line)}
 .topbar h1{font-size:18px;flex:1}
@@ -646,7 +646,7 @@ var I={video:'<rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="M16 10
 
 var TX={
  fr:{search:'Que cherchez-vous ?',allCities:'Toute la Mauritanie',all:'Tout',recent:'Annonces récentes',results:'résultats',sortNew:'Plus récentes',sortLow:'Prix croissant',sortHigh:'Prix décroissant',
-  home:'Accueil',favs:'Favoris',msgs:'Messages',account:'Compte',post:'Déposer une annonce',noRes:'Aucune annonce ne correspond. Essayez un autre mot ou une autre ville.',
+  home:'Accueil',favs:'Favoris',msgs:'Messages',account:'Compte',post:'Publier gratuitement',noRes:'Aucune annonce ne correspond. Essayez un autre mot ou une autre ville.',
   example:'Exemple',sold:'Vendu',desc:'Description',safety:'Rencontrez le vendeur dans un lieu public et vérifiez le produit avant de payer. Ne payez jamais à l’avance.',
   report:'Signaler cette annonce',call:'Appeler',message:'Message',seller:'Vendeur',verified:'Numéro vérifié',
   photos:'Photos',upTo:'(jusqu’à 6)',add:'Ajouter',compress:'Les photos sont réduites pour économiser vos données.',title:'Titre',cat:'Catégorie',choose:'Choisir…',price:'Prix',city:'Ville',
@@ -777,7 +777,7 @@ var TX={
   newMsg:'Nouveau message de {n}',noMsgLogin:'Connectez-vous pour discuter avec les vendeurs.',you:'Vous',ownAd:'C’est votre propre annonce.',
   localNote:'Votre compte est enregistré sur le serveur Bi3li : vous retrouvez vos annonces, vos favoris et vos messages sur tous vos appareils.'},
  ar:{search:'عمّا تبحث؟',allCities:'كل موريتانيا',all:'الكل',recent:'أحدث الإعلانات',results:'نتيجة',sortNew:'الأحدث',sortLow:'السعر تصاعدياً',sortHigh:'السعر تنازلياً',
-  home:'الرئيسية',favs:'المفضلة',msgs:'الرسائل',account:'حسابي',post:'أضف إعلاناً',noRes:'لا توجد إعلانات مطابقة. جرّب كلمة أو مدينة أخرى.',
+  home:'الرئيسية',favs:'المفضلة',msgs:'الرسائل',account:'حسابي',post:'انشر إعلانك مجاناً',noRes:'لا توجد إعلانات مطابقة. جرّب كلمة أو مدينة أخرى.',
   example:'مثال',sold:'مُباع',desc:'الوصف',safety:'قابل البائع في مكان عام وافحص المنتج قبل الدفع. لا تدفع مسبقاً أبداً.',
   report:'الإبلاغ عن الإعلان',call:'اتصال',message:'رسالة',seller:'البائع',verified:'رقم موثّق',
   photos:'الصور',upTo:'(حتى 6)',add:'إضافة',compress:'يتم تصغير الصور لتوفير الإنترنت.',title:'العنوان',cat:'الفئة',choose:'اختر…',price:'السعر',city:'المدينة',
