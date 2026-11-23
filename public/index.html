@@ -2915,7 +2915,9 @@ V.login=function(){
   var nameF=reg?'<div class="lgf"><div class="lgstep">'+t('lgStepName')+'</div><label class="lgl" for="lname">'+t('lgNameL')+'</label><input id="lname" class="inp" data-l="name" autocomplete="given-name" maxlength="30" enterkeyhint="next" value="'+esc(L.name||'')+'"></div>':'';
   var codeF;
   var nameStep=reg&&!L.nameOk;if(nameStep&&L.active!=null)L.active=null;
+  var phoneStep=!reg&&L.exists!==true;
   if(nameStep){codeF='<div class="lgf act"><button type="button" class="btn primary wide lgbig" data-a="lgnamenext">'+t('lgNext')+'</button></div>';}
+  else if(phoneStep){codeF='';}
   else if(L.old){codeF='<div class="lgf act"><label class="lgl" for="lpass">'+t('lgOldH')+'</label><div class="pwrap"><input id="lpass" class="inp" type="password" data-l="pass" autocomplete="current-password" maxlength="64" value="'+esc(L.pass||'')+'"></div>'+
       '<button type="button" class="btn primary wide lgbig" data-a="lgold"'+(S.busy?' disabled':'')+'>'+(S.busy?t('sending'):t('doLogin'))+'</button></div>';}
   else{var pin=L.pin||'',boxes='',showPin=stage==='pin'?!!L.showPin:!L.hidePin;for(var j=0;j<4;j++)boxes+='<span class="pinbox'+(j<pin.length?' on':'')+(showPin?' see':'')+(L.active==='pin'&&j===pin.length?' cur':'')+'">'+(j<pin.length?(showPin?pin.charAt(j):'•'):'')+'</span>';
