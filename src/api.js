@@ -698,7 +698,9 @@ export async function onRequest(ctx) {
       const { results } = await db.prepare(`SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE ${where.join(' AND ')} ORDER BY a.created DESC LIMIT ?`)
         .bind(...args, CANDIDATES).all();
       const hits = searchAds(results.map(adOut), { q: sp.get('q') || '', cat, f });
-      return json({ ads: hits.slice(0, limit), more: hits.length > limit || results.length === CANDIDATES });
+      // Pas de copie _d dans les résultats : la liste est plus légère
+      const page = hits.slice(0, limit).map(({ _d, ...ad }) => ad);
+      return json({ ads: page, more: hits.length > limit || results.length === CANDIDATES });
     }
 
     // ---------- Vues et contacts (ouverts à tous, même sans compte) ----------
