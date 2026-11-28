@@ -698,6 +698,22 @@ export async function onRequest(ctx) {
       if (seller) { where.push("json_extract(a.data, '$.seller') = ?"); args.push(seller); }
       const win = { today: 864e5, '7d': 7 * 864e5, '30d': 30 * 864e5 }[sp.get('date')];
       if (win) { where.push("a.created >= ?"); args.push(Date.now() - win); }
+      // Filtres propres aux catégories (mêmes noms que dans l'appli : src/search.js et src/details/*)
+      const pick = (path) => `COALESCE(json_extract(a.data, '$.car.${path}'), json_extract(a.data, '$.veh.${path}'), json_extract(a.data, '$.dev.${path}'), json_extract(a.data, '$.mm.${path}'))`;
+      const brand = (sp.get('brand') || '').trim().toLowerCase().slice(0, 40);
+      if (brand) { where.push(`LOWER(${pick('brand')}) LIKE ?`); args.push('%' + brand + '%'); }
+      const yMin = +sp.get('yearMin'); if (yMin) { where.push(`CAST(${pick('year')} AS INTEGER) >= ?`); args.push(yMin); }
+      const yMax = +sp.get('yearMax'); if (yMax) { where.push(`CAST(${pick('year')} AS INTEGER) <= ?`); args.push(yMax); }
+      const kmMax = +sp.get('kmMax'); if (kmMax) { where.push(`CAST(${pick('km')} AS INTEGER) <= ?`); args.push(kmMax); }
+      for (const k of ['fuel', 'gear', 'cond']) {
+        const v = sp.get(k); if (v) { where.push(`${pick(k)} = ?`); args.push(v); }
+      }
+      const stor = +sp.get('storage'); if (stor) { where.push(`CAST(${pick('storage')} AS INTEGER) >= ?`); args.push(stor); }
+      const deal = sp.get('deal'); if (deal) { where.push("json_extract(a.data, '$.estate.deal') = ?"); args.push(deal); }
+      const kind = sp.get('kind'); if (kind) { where.push("json_extract(a.data, '$.estate.kind') = ?"); args.push(kind); }
+      const sMin = +sp.get('surfMin'); if (sMin) { where.push("CAST(json_extract(a.data, '$.estate.surface') AS INTEGER) >= ?"); args.push(sMin); }
+      const sMax = +sp.get('surfMax'); if (sMax) { where.push("CAST(json_extract(a.data, '$.estate.surface') AS INTEGER) <= ?"); args.push(sMax); }
+      const rooms = +sp.get('rooms'); if (rooms) { where.push("CAST(json_extract(a.data, '$.estate.rooms') AS INTEGER) >= ?"); args.push(rooms); }
       const q = (sp.get('q') || '').trim().toLowerCase().slice(0, 80);
       if (q) {
         where.push("(lower(json_extract(a.data, '$.title')) LIKE ? OR lower(json_extract(a.data, '$.desc')) LIKE ?)");
