@@ -677,6 +677,40 @@ export async function onRequest(ctx) {
       return json({ ads, more });
     }
 
+    // ---------- Recherche (lecture publique) : filtres faits par le serveur, pagination comme GET /ads ----------
+    if (parts[0] === 'ads' && parts[1] === 'search' && method === 'GET') {
+      const sp = url.searchParams;
+      const limit = Math.max(1, Math.min(300, +sp.get('limit') || 300));
+      const before = +sp.get('before') || 9e15;
+      const where = ["COALESCE(u.blocked, 0) = 0", "a.status NOT IN ('sold', 'deleted')", "a.created < ?"];
+      const args = [before];
+      const cat = sp.get('cat');
+      if (cat) { where.push("json_extract(a.data, '$.cat') = ?"); args.push(cat); }
+      const city = sp.get('city');
+      if (city && !city.startsWith('w:')) { where.push("json_extract(a.data, '$.city') = ?"); args.push(city); }
+      const hood = sp.get('hood');
+      if (hood && !hood.startsWith('w:')) { where.push("json_extract(a.data, '$.hood') = ?"); args.push(hood); }
+      const pmin = +sp.get('pmin'); if (pmin) { where.push("CAST(json_extract(a.data, '$.price') AS INTEGER) >= ?"); args.push(pmin); }
+      const pmax = +sp.get('pmax'); if (pmax) { where.push("CAST(json_extract(a.data, '$.price') AS INTEGER) <= ?"); args.push(pmax); }
+      if (sp.get('photo') === '1') where.push("json_array_length(json_extract(a.data, '$.photos')) > 0");
+      if (sp.get('nego') === '1') where.push("json_extract(a.data, '$.nego') = 1");
+      const seller = sp.get('seller');
+      if (seller) { where.push("json_extract(a.data, '$.seller') = ?"); args.push(seller); }
+      const win = { today: 864e5, '7d': 7 * 864e5, '30d': 30 * 864e5 }[sp.get('date')];
+      if (win) { where.push("a.created >= ?"); args.push(Date.now() - win); }
+      const q = (sp.get('q') || '').trim().toLowerCase().slice(0, 80);
+      if (q) {
+        where.push("(lower(json_extract(a.data, '$.title')) LIKE ? OR lower(json_extract(a.data, '$.desc')) LIKE ?)");
+        args.push('%' + q + '%', '%' + q + '%');
+      }
+      const order = sp.get('sort') === 'pa' ? 'CAST(json_extract(a.data, \'$.price\') AS INTEGER) ASC, a.created DESC'
+        : sp.get('sort') === 'pd' ? 'CAST(json_extract(a.data, \'$.price\') AS INTEGER) DESC, a.created DESC' : 'a.created DESC';
+      const { results } = await db.prepare(`SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE ${where.join(' AND ')} ORDER BY ${order} LIMIT ?`)
+        .bind(...args, limit + 1).all();
+      const more = results.length > limit;
+      return json({ ads: results.slice(0, limit).map(adOut), more });
+    }
+
     // ---------- Vues et contacts (ouverts à tous, même sans compte) ----------
     if (parts[0] === 'ads' && parts[1] && (parts[2] === 'view' || parts[2] === 'contact') && method === 'POST') {
       const row = await db.prepare('SELECT id, user_id FROM ads WHERE id = ?').bind(parts[1]).first();
