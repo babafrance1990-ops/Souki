@@ -1,3 +1,4 @@
+import { search as searchAds } from './shared/search.js';
 import { recognise } from './vision.js';
 // Bi3li API — Cloudflare Pages Function, base de données D1 (binding "DB").
 // Toutes les routes /api/* passent ici.
@@ -677,54 +678,27 @@ export async function onRequest(ctx) {
       return json({ ads, more });
     }
 
-    // ---------- Recherche (lecture publique) : filtres faits par le serveur, pagination comme GET /ads ----------
+    // ---------- Recherche (lecture publique) : même logique que l'appli (src/shared/search.js), sur les annonces les plus récentes ----------
     if (parts[0] === 'ads' && parts[1] === 'search' && method === 'GET') {
       const sp = url.searchParams;
       const limit = Math.max(1, Math.min(300, +sp.get('limit') || 300));
       const before = +sp.get('before') || 9e15;
-      const where = ["COALESCE(u.blocked, 0) = 0", "a.status NOT IN ('sold', 'deleted')", "a.created < ?"];
+      const cat = sp.get('cat') || null;
+      const f = {
+        city: sp.get('city') || '', hood: sp.get('hood') || '', pmin: sp.get('pmin') || '', pmax: sp.get('pmax') || '',
+        seller: sp.get('seller') || '', photo: sp.get('photo') === '1', nego: sp.get('nego') === '1', deliv: sp.get('deliv') === '1',
+        date: sp.get('date') || '', sort: sp.get('sort') || '', brand: sp.get('brand') || '', yearMin: sp.get('yearMin') || '',
+        deal: sp.get('deal') || '', kind: sp.get('kind') || '',
+      };
+      // Pré-filtre SQL (catégorie, date, vendeurs bloqués) ; le reste est filtré par le même code que l'appli
+      const CANDIDATES = 2000;
+      const where = ['COALESCE(u.blocked, 0) = 0', 'a.created < ?'];
       const args = [before];
-      const cat = sp.get('cat');
       if (cat) { where.push("json_extract(a.data, '$.cat') = ?"); args.push(cat); }
-      const city = sp.get('city');
-      if (city && !city.startsWith('w:')) { where.push("json_extract(a.data, '$.city') = ?"); args.push(city); }
-      const hood = sp.get('hood');
-      if (hood && !hood.startsWith('w:')) { where.push("json_extract(a.data, '$.hood') = ?"); args.push(hood); }
-      const pmin = +sp.get('pmin'); if (pmin) { where.push("CAST(json_extract(a.data, '$.price') AS INTEGER) >= ?"); args.push(pmin); }
-      const pmax = +sp.get('pmax'); if (pmax) { where.push("CAST(json_extract(a.data, '$.price') AS INTEGER) <= ?"); args.push(pmax); }
-      if (sp.get('photo') === '1') where.push("json_array_length(json_extract(a.data, '$.photos')) > 0");
-      if (sp.get('nego') === '1') where.push("json_extract(a.data, '$.nego') = 1");
-      const seller = sp.get('seller');
-      if (seller) { where.push("json_extract(a.data, '$.seller') = ?"); args.push(seller); }
-      const win = { today: 864e5, '7d': 7 * 864e5, '30d': 30 * 864e5 }[sp.get('date')];
-      if (win) { where.push("a.created >= ?"); args.push(Date.now() - win); }
-      // Filtres propres aux catégories (mêmes noms que dans l'appli : src/search.js et src/details/*)
-      const pick = (path) => `COALESCE(json_extract(a.data, '$.car.${path}'), json_extract(a.data, '$.veh.${path}'), json_extract(a.data, '$.dev.${path}'), json_extract(a.data, '$.mm.${path}'))`;
-      const brand = (sp.get('brand') || '').trim().toLowerCase().slice(0, 40);
-      if (brand) { where.push(`LOWER(${pick('brand')}) LIKE ?`); args.push('%' + brand + '%'); }
-      const yMin = +sp.get('yearMin'); if (yMin) { where.push(`CAST(${pick('year')} AS INTEGER) >= ?`); args.push(yMin); }
-      const yMax = +sp.get('yearMax'); if (yMax) { where.push(`CAST(${pick('year')} AS INTEGER) <= ?`); args.push(yMax); }
-      const kmMax = +sp.get('kmMax'); if (kmMax) { where.push(`CAST(${pick('km')} AS INTEGER) <= ?`); args.push(kmMax); }
-      for (const k of ['fuel', 'gear', 'cond']) {
-        const v = sp.get(k); if (v) { where.push(`${pick(k)} = ?`); args.push(v); }
-      }
-      const stor = +sp.get('storage'); if (stor) { where.push(`CAST(${pick('storage')} AS INTEGER) >= ?`); args.push(stor); }
-      const deal = sp.get('deal'); if (deal) { where.push("json_extract(a.data, '$.estate.deal') = ?"); args.push(deal); }
-      const kind = sp.get('kind'); if (kind) { where.push("json_extract(a.data, '$.estate.kind') = ?"); args.push(kind); }
-      const sMin = +sp.get('surfMin'); if (sMin) { where.push("CAST(json_extract(a.data, '$.estate.surface') AS INTEGER) >= ?"); args.push(sMin); }
-      const sMax = +sp.get('surfMax'); if (sMax) { where.push("CAST(json_extract(a.data, '$.estate.surface') AS INTEGER) <= ?"); args.push(sMax); }
-      const rooms = +sp.get('rooms'); if (rooms) { where.push("CAST(json_extract(a.data, '$.estate.rooms') AS INTEGER) >= ?"); args.push(rooms); }
-      const q = (sp.get('q') || '').trim().toLowerCase().slice(0, 80);
-      if (q) {
-        where.push("(lower(json_extract(a.data, '$.title')) LIKE ? OR lower(json_extract(a.data, '$.desc')) LIKE ?)");
-        args.push('%' + q + '%', '%' + q + '%');
-      }
-      const order = sp.get('sort') === 'pa' ? 'CAST(json_extract(a.data, \'$.price\') AS INTEGER) ASC, a.created DESC'
-        : sp.get('sort') === 'pd' ? 'CAST(json_extract(a.data, \'$.price\') AS INTEGER) DESC, a.created DESC' : 'a.created DESC';
-      const { results } = await db.prepare(`SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE ${where.join(' AND ')} ORDER BY ${order} LIMIT ?`)
-        .bind(...args, limit + 1).all();
-      const more = results.length > limit;
-      return json({ ads: results.slice(0, limit).map(adOut), more });
+      const { results } = await db.prepare(`SELECT a.* FROM ads a JOIN users u ON u.id = a.user_id WHERE ${where.join(' AND ')} ORDER BY a.created DESC LIMIT ?`)
+        .bind(...args, CANDIDATES).all();
+      const hits = searchAds(results.map(adOut), { q: sp.get('q') || '', cat, f });
+      return json({ ads: hits.slice(0, limit), more: hits.length > limit || results.length === CANDIDATES });
     }
 
     // ---------- Vues et contacts (ouverts à tous, même sans compte) ----------
